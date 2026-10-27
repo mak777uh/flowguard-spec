@@ -112,3 +112,19 @@ false-accept measurement can answer.
 One question does survive, and it is not for a review: **whether to build the independent inventory ourselves, or to
 define the interface and let the customer's own tooling supply it.** That is a product decision with a technical
 consequence, and it is the owner's.
+
+---
+
+## Addendum — M7 has an explicit marker
+
+A kit conformance number that can be inflated by prose is worthless. `lab/check-interop.py` counted M7 as present
+because `E-M10` mentioned "independent rebuild" in its consequences section — a fourth false positive of our own
+instrument.
+
+From now on M7 is satisfied only by an experiment card carrying the line:
+
+```
+rebuild_result: <agreed | differed | not attempted> by <party> on <date>: <what happened>
+```
+
+Nothing else counts. A note asking someone to rebuild is a request, not a result, and the counter now says so.

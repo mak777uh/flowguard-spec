@@ -186,15 +186,13 @@ def main():
     out.append(row("M6 guards", "present" if len(have) == 3 else ("partial" if have else "absent"),
                    ", ".join(have) if have else "none found"))
 
-    # M7 must be a recorded RUN, not a document that mentions the idea. Require an experiment
-    # card (or a file inside an experiments directory) that names the rebuild and a result.
+    # M7 is a recorded rebuild by a party that did not write the code. Mentioning the idea is not
+    # a result: E-M10 mentions M7 in its consequences and was wrongly counted as one (4th false
+    # positive of this instrument). The marker is explicit, so it cannot be satisfied by prose.
     rebuild = None
     for p in md_files(root):
-        in_experiments = "experiment" in p.parent.name.lower() or re.match(r"E-?\d", p.name)
-        if not in_experiments:
-            continue
         text = p.read_text(encoding="utf-8", errors="ignore")
-        if re.search(r"independent (re)?build|rebuild from (the )?document", text, re.I) and re.search(r"\b(verdict:|defects?|caught|found \d)\b", text, re.I):
+        if re.search(r"(?m)^rebuild_result\s*:", text):
             rebuild = p
             break
     out.append(row("M7 independent-rebuild test", "present" if rebuild else "absent",
