@@ -369,6 +369,20 @@ def main() -> int:
             "; ".join(examples),
             "resolve the call by signature or oid, or leave the path outside the core", False)
 
+    # A truncated inventory is not a denominator. If a source kept only part of what it found, any
+    # ratio computed over the remainder is a ratio over an unknown subset (E-M35).
+    truncated_sources = []
+    for s in inventory.get("sources", []):
+        if s.get("completeness_claim") == "partial":
+            tr = s.get("truncated") or {}
+            truncated_sources.append("%s: kept %s of %s" % (
+                s.get("source_id"), tr.get("kept"), tr.get("total")))
+    if truncated_sources:
+        err("MISSING_EVIDENCE", "coverage_basis",
+            "every source reports everything it found",
+            "; ".join(truncated_sources),
+            "re-run without --max-paths before computing coverage", False)
+
     # A witness is not an inventory. Runtime and agent sources observe or interpret; they cannot
     # establish how many paths exist, so a denominator resting only on them is not a coverage
     # number (E-M17 measured that a runtime source under-counts by construction).

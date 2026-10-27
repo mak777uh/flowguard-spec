@@ -75,6 +75,9 @@ def main() -> int:
     ap.add_argument("--table", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--target-lock", default="unset")
+    ap.add_argument("--max-paths", type=int, default=0,
+                    help="keep at most N paths, highest-value kinds first; a truncated source is "
+                         "declared partial and cannot serve as a coverage denominator")
     a = ap.parse_args()
 
     rows = run_psql(a)
@@ -93,6 +96,19 @@ def main() -> int:
     # A flat list is fine for a machine and useless for a reader: on a 400-function schema this
     # produced 480 paths (E-M34). The summary comes first so a human can triage, and the full list
     # stays for the machine.
+    truncated = None
+
+    if a.max_paths and len(paths) > a.max_paths:
+        # Order matters: a truncated list must keep the paths a reader can act on first.
+        priority = {"dynamic_sql": 0, "disabled_control": 1, "view_trigger": 2, "trigger_chain": 3,
+                    "function": 4, "privilege": 5}
+        ordered = sorted(paths, key=lambda q: (priority.get(q["kind"], 9), q["entry"]))
+        kept = ordered[: a.max_paths]
+        truncated = {"total": len(paths), "kept": len(kept), "omitted": len(paths) - len(kept)}
+        paths = kept
+
+    # Counters are computed on what is actually published: a summary that describes the list before
+    # truncation would contradict the list beside it (found while verifying E-M35).
     by_kind = {}
     by_cp = {"inside": 0, "outside": 0}
     for p_ in paths:
@@ -125,7 +141,8 @@ def main() -> int:
         "blind_spots": BLIND_SPOTS,
         "paths": paths,
         "control_points": control_points,
-        "completeness_claim": "exhaustive_within_covers",
+        "completeness_claim": "partial" if truncated else "exhaustive_within_covers",
+        "truncated": truncated,
     }
     Path(a.out).write_text(json.dumps(source, indent=1, ensure_ascii=False), encoding="utf-8")
     print(f"source: {len(paths)} paths, {len(control_points)} control point(s) -> {a.out}")

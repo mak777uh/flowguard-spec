@@ -249,6 +249,9 @@ def main() -> int:
                 "source_id": s["source_id"], "kind": s["kind"],
                 "covers": s.get("covers", []), "blind_spots": s.get("blind_spots", []),
                 "completeness_claim": s.get("completeness_claim"),
+                # Propagated so the verifier can refuse a coverage ratio over a truncated list:
+                # the count is meaningless without the totals it was cut from (E-M35).
+                "truncated": s.get("truncated"),
             } for s in sources
         ],
         "target_lock": target_lock,

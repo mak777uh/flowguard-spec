@@ -1,0 +1,4 @@
+paths kept 100, truncated {'total': 480, 'kept': 100, 'omitted': 380}, claim partial
+summary matches the published list: True
+coverage refused on a truncated source: True (codes ['CLAIM_EXCEEDS_EVIDENCE', 'MISSING_EVIDENCE'])
+RESULT: PASS
