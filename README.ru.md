@@ -35,6 +35,7 @@ python lab/check-links.py    # каждая относительная ссыл�
 | [docs/90-DEV-AND-NEXT-ROUND.md](docs/90-DEV-AND-NEXT-ROUND.md) | метод разработки, трезвая картина, вопросы следующего круга |
 | [docs/CLAIMS.md](docs/CLAIMS.md) | реестр утверждений с типом свидетельства и разрешённой формулировкой |
 | [docs/eliminations.md](docs/eliminations.md) | что отброшено за пять кругов и при каком свидетельстве вернётся |
+| [docs/95-CLOSED-LOOP.md](docs/95-CLOSED-LOOP.md) | замкнутый контур: продукт — витрина метода, метод — фабрика продукта |
 
 ## Как устроен репозиторий
 
@@ -45,7 +46,7 @@ python lab/check-links.py    # каждая относительная ссыл�
 | Крипта | [в скоупе с первого дня](docs/61-CRYPTO-IN-SCOPE.md) · [крипта и автооплата](docs/60-CRYPTO-AND-AUTOPAY.md) |
 | Экономика | [SKU и сервисы](docs/70-SERVICE-TIERS.md) · [доктрина цены](docs/80-PRICING-DOCTRINE.md) |
 | Реализация | [стенд](docs/50-IMPLEMENTATION-STAND.md) · [харнесс](docs/51-HARNESS-BUILD.md) · [OSS-продукт](docs/52-OSS-PRODUCT.md) |
-| Разработка | [метод и следующий круг](docs/90-DEV-AND-NEXT-ROUND.md) · [eval и roadmap](docs/03-EVAL-ROADMAP.md) |
+| Разработка | [метод и следующий круг](docs/90-DEV-AND-NEXT-ROUND.md) · [замкнутый контур](docs/95-CLOSED-LOOP.md) · [eval и roadmap](docs/03-EVAL-ROADMAP.md) |
 | Циклы ревью | [свод 2](docs/00-SYNTHESIS.md) · [решения](docs/20-ROUND2-DECISIONS.md) · [свод 3](docs/30-ROUND3-SYNTHESIS.md) · [свод 4](docs/31-ROUND4-SYNTHESIS.md) |
 | Вопросы для прогона | [круг 2](docs/10-ROUND2-QUESTIONS.md) · [3](docs/11-ROUND3-QUESTIONS.md) · [4](docs/12-ROUND4-QUESTIONS.md) · [5](docs/13-ROUND5-QUESTIONS.md) |
 

@@ -20,6 +20,7 @@ tokens, keys, private keys or local paths — in files **and across the whole hi
 ```bash
 bash lab/check-secrets.sh    # tokens, keys, local paths: files + history
 python lab/check-links.py    # every relative link between documents resolves
+python lab/check-claims.py   # every claim typed; every cited artifact traceable
 ```
 
 Both run automatically on every push and pull request (`.github/workflows/guards.yml`). If someone ever
@@ -35,6 +36,7 @@ commits a token, CI goes red instead of the reputation.
 | [docs/90-DEV-AND-NEXT-ROUND.md](docs/90-DEV-AND-NEXT-ROUND.md) | development method, sober assessment, next round's questions |
 | [docs/CLAIMS.md](docs/CLAIMS.md) | claim registry: evidence type and the strongest permitted wording |
 | [docs/eliminations.md](docs/eliminations.md) | what five rounds ruled out, and what would revive it |
+| [docs/95-CLOSED-LOOP.md](docs/95-CLOSED-LOOP.md) | the loop: product is the showcase, the approach is the factory |
 
 ## Repository map
 
@@ -45,7 +47,7 @@ commits a token, CI goes red instead of the reputation.
 | Crypto | [in scope from day one](docs/61-CRYPTO-IN-SCOPE.md) · [crypto and auto-payout](docs/60-CRYPTO-AND-AUTOPAY.md) |
 | Economics | [SKUs and services](docs/70-SERVICE-TIERS.md) · [pricing doctrine](docs/80-PRICING-DOCTRINE.md) |
 | Implementation | [the stand](docs/50-IMPLEMENTATION-STAND.md) · [the harness](docs/51-HARNESS-BUILD.md) · [OSS product](docs/52-OSS-PRODUCT.md) |
-| Development | [method and next round](docs/90-DEV-AND-NEXT-ROUND.md) · [evals and roadmap](docs/03-EVAL-ROADMAP.md) |
+| Development | [method and next round](docs/90-DEV-AND-NEXT-ROUND.md) · [closed loop](docs/95-CLOSED-LOOP.md) · [evals and roadmap](docs/03-EVAL-ROADMAP.md) |
 | Review rounds | [synthesis 2](docs/00-SYNTHESIS.md) · [decisions](docs/20-ROUND2-DECISIONS.md) · [synthesis 3](docs/30-ROUND3-SYNTHESIS.md) · [synthesis 4](docs/31-ROUND4-SYNTHESIS.md) |
 | Question sets | [round 2](docs/10-ROUND2-QUESTIONS.md) · [3](docs/11-ROUND3-QUESTIONS.md) · [4](docs/12-ROUND4-QUESTIONS.md) · [5](docs/13-ROUND5-QUESTIONS.md) |
 

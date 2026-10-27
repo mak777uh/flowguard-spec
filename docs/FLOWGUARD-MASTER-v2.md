@@ -72,7 +72,7 @@ It is printed **in the verdict header**, next to the level:
 ```
 verdict: ENFORCED_TESTED(R2)
 coverage: 11/14 (0.79)   excluded: 3   unknown: 0
-detector: slither+cast+manual | recall 0.71 (M1, corpus C-20)
+detector: slither+cast+manual | recall 0.71 (M1, corpus 20)
 ```
 
 Rules:

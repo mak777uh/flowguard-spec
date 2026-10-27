@@ -16,3 +16,5 @@ jobs:
         run: bash lab/check-secrets.sh
       - name: relative links resolve
         run: python3 lab/check-links.py
+      - name: claim registry
+        run: python3 lab/check-claims.py
