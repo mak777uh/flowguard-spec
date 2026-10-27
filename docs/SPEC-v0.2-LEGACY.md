@@ -1,71 +1,71 @@
 # SPEC v0.2 — flowguard Legacy
 
-**Статус:** проектная спецификация legacy-трека. Парный документ к `SPEC-v0.1.md` (on-chain).
-**Метки:** `[Д]` доказано машинно · `[И]` измерено/воспроизведено · `[Г]` гипотеза.
-**Что это:** полный свод того, что понято про legacy-поток за все круги: замыкание, медиатор, свидетельства, оракулы, лестница исправлений, границы применимости.
-**Чего это не обещает:** отсутствия уязвимостей. Legacy-аттестация утверждает: «в объявленном замыкании мимо медиатора нельзя» — и ничего больше.
+**Status:** design specification for the legacy track. Companion document to `SPEC-v0.1.md` (on-chain).
+**Tags:** `[PROVED]` machine-proved · `[MEASURED]` measured/reproduced · `[HYPOTHESIS]` hypothesis.
+**What this is:** a complete summary of what has been understood about the legacy flow across all rounds: closure, mediator, evidence, oracles, the remediation ladder, the limits of applicability.
+**What it does not promise:** the absence of vulnerabilities. Legacy attestation asserts: "within the declared closure nothing gets past the mediator" — and nothing more.
 
 ---
 
-## 1. Рамка
+## 1. Framing
 
-### 1.1. Почему legacy идёт вторым, а не первым
+### 1.1. Why legacy comes second, not first
 
-On-chain (v0.1) требует только EVM — работает на ноутбуке. Legacy требует трёх дорогих вещей:
+On-chain (v0.1) requires only EVM — it runs on a laptop. Legacy requires three expensive things:
 
-| Что нужно | Стоимость |
+| What is needed | Cost |
 |---|---|
-| МикроVM + host с KVM | bare-metal, вложенная виртуализация не годится |
-| Динамический witness | eBPF на хосте + `pgaudit` + перехват IdP = 12 ч-дней на цель |
-| Воспроизводимый деплой приложения клиента | каждый адаптер — инженерные дни; главный источник `DEPLOY_FAILED` |
+| MicroVM + host with KVM | bare-metal; nested virtualisation will not do |
+| Dynamic witness | eBPF on the host + `pgaudit` + IdP interception = 12 person-days per target |
+| Reproducible deployment of the client application | every adapter is engineering days; the main source of `DEPLOY_FAILED` |
 
-Поэтому legacy — это v0.2: сначала механизм доказывается на контракте, где witness бесплатен, и только потом переносится на инфраструктуру, где witness стоит две недели.
+Hence legacy is v0.2: first the mechanism is proved on a contract, where the witness is free, and only then is it carried over to infrastructure where the witness costs two weeks.
 
-### 1.2. Что входит в v0.2
+### 1.2. What is included in v0.2
 
-| Входит | Не входит |
+| Included | Not included |
 |---|---|
-| `scan --runtime`: eBPF + `pgaudit` → фактический реестр writer'ов | Шесть портов за пределами Postgres |
-| Медиатор в двух режимах: `in_process` и `single_writer` | Мультиоблачные деплои |
-| `Permit` (Ed25519) + PL/pgSQL-триггер | Key-management-сервис под клиента |
-| Witness: tap + DB-дайджест + идентичность; 2 приёмочных теста | Windows-цели (отдельный трек, ETW) |
-| Оракулы 3 классов: SQLi, BOLA, path traversal | Оракулы для бизнес-логики (вне продукта) |
-| 3 политики из 5 (ownership, лимит, тенант) | PII и state-machine (v0.4) |
-| 7 атак, грид R0–R2 | R3–R5 (v0.3+) |
-| Акт из 8 полей, 4 подписи, правило 3 дней | Автовыплаты |
+| `scan --runtime`: eBPF + `pgaudit` → the actual registry of writers | The six ports beyond Postgres |
+| Mediator in two modes: `in_process` and `single_writer` | Multi-cloud deployments |
+| `Permit` (Ed25519) + PL/pgSQL trigger | A key-management service for the client |
+| Witness: tap + DB digest + identity; 2 acceptance tests | Windows targets (a separate track, ETW) |
+| Oracles of 3 classes: SQLi, BOLA, path traversal | Oracles for business logic (outside the product) |
+| 3 policies out of 5 (ownership, limit, tenant) | PII and the state machine (v0.4) |
+| 7 attacks, the R0–R2 grid | R3–R5 (v0.3+) |
+| An act of 8 fields, 4 signatures, the 3-day rule | Automatic payouts |
 
 ---
 
-## 2. Доменная модель legacy
+## 2. Legacy domain model
 
-Те же семь сущностей, иначе инстанциированы:
+The same seven entities, instantiated differently:
 
-| Сущность | В legacy это | Порт |
+| Entity | In legacy this is | Port |
 |---|---|---|
-| **Resource** | строка леджера, баланс, таблица, объект по `object_id` | `StateProvider` → Postgres |
-| **Subject** | `userId`/`tenantId` из проверенного JWT/сессии | `StateProvider` + IdP |
-| **Policy P** | правила «кто что может с объектом» | DSL → Z3 |
-| **Closure Z** | 12 элементов (§8) | инвентаризация |
-| **EnforcementPoint M** | функция в процессе **или** единственный сервис-writer **+ DB-триггер** | `EnforcementPoint` |
-| **Witness** | eBPF tap, WAL/`pgaudit`, IdP-лог | `ObservationChannel` |
-| **Attestation** | бандл акта с 4 подписями | `verify` |
+| **Resource** | a ledger row, a balance, a table, an object by `object_id` | `StateProvider` → Postgres |
+| **Subject** | `userId`/`tenantId` from a verified JWT/session | `StateProvider` + IdP |
+| **Policy P** | the rules for "who may do what with an object" | DSL → Z3 |
+| **Closure Z** | 12 elements (§8) | inventory |
+| **EnforcementPoint M** | a function in the process **or** the single service-writer **+ DB trigger** | `EnforcementPoint` |
+| **Witness** | eBPF tap, WAL/`pgaudit`, IdP log | `ObservationChannel` |
+| **Attestation** | the act bundle with 4 signatures | `verify` |
 
-### 2.1. Шесть портов — конкретные реализации
+### 2.1. The six ports — concrete implementations
 
-| Порт | Реализация v0.2 | Что заменяемо позже |
+| Port | v0.2 implementation | What can be replaced later |
 |---|---|---|
-| `StateProvider` | Postgres: `read(resource, version)`, `history(resource, range)` | другой SQL, object store |
-| `EnforcementPoint` | `in_process` (библиотека) + `postgres_trigger` | gateway, sidecar |
-| `ObservationChannel` | `ebpf_tap`, `wal_digest`, `idp_log` | chain events (для v0.1-целей) |
-| `Clock` | системные часы + `(timestamp, height=txid)` | — |
-| `Domain` | `tenant_id` + `app_id` в подписи `Permit` | `chain_id` для on-chain |
+| `StateProvider` | Postgres: `read(resource, version)`, `history(resource, range)` | another SQL, an object store |
+| `EnforcementPoint` | `in_process` (library) + `postgres_trigger` | gateway, sidecar |
+| `ObservationChannel` | `ebpf_tap`, `wal_digest`, `idp_log` | chain events (for v0.1 targets) |
+| `Clock` | system clock + `(timestamp, height=txid)` | — |
+| `Domain` | `tenant_id` + `app_id` in the `Permit` signature | `chain_id` for on-chain |
 | `Prover` | Verus (Rust) | Dafny, Certora |
 
 ---
 
-## 3. `flowguard.yml` — расширение для legacy (нормативно)
+## 3. `flowguard.yml` — the extension for legacy (normative)
 
-Те же правила: неизвестные поля в `policy`/`closure`/`enforcement`/`evidence` → **MUST** отвергать.
+The same rules: unknown fields in `policy`/`closure`/`enforcement`/`evidence` → **MUST** reject.
 
 ```yaml
 schema_version: "1.0"
@@ -80,28 +80,28 @@ flow:
 subject:
   kind: legacy.flow                  # MUST
   repo: "github.com/org/payments"    # MUST
-  commit: "9f3a1c"                   # MUST для подписи
-  build_cmd: "make build"            # MUST — контракт валидируемости, §14
+  commit: "9f3a1c"                   # MUST for the signature
+  build_cmd: "make build"            # MUST — the contract of validatability, §14
   run_cmd: "docker compose -f ci.yml up -d"   # MUST
-  test_cmd: "make test"              # MUST либо health_oracle
+  test_cmd: "make test"              # MUST or health_oracle
   health_oracle: null
   runtime: "node@22"                 # MUST
   db:
     engine: postgres                 # MUST
     migrations: "db/migrations"      # MUST
-    write_principals: [svc_balance, job_settlement]   # MUST, реестр §8.5
+    write_principals: [svc_balance, job_settlement]   # MUST, registry §8.5
 
 policy:
   id: "authz-v1"
   version: 3
   fail_closed: true
-  rules_file: "policy/rules.yaml"    # MUST для legacy
-  invariants:                        # MUST, ≥2 из §5.2
+  rules_file: "policy/rules.yaml"    # MUST for legacy
+  invariants:                        # MUST, ≥2 from §5.2
     - id: "I2"
     - id: "I4"
 
 closure:
-  elements:                          # MUST, из 12 элементов §8
+  elements:                          # MUST, from the 12 elements of §8
     - sync_entrypoints
     - batch_jobs
     - admin_console
@@ -116,7 +116,7 @@ closure:
     - mediator_self
   excluded:
     - path: "ci_supply_chain"
-      reason: "целостность цепочки поставки не доказывается; CI не имеет кредов данных"
+      reason: "supply-chain integrity is not proved; CI holds no data credentials"
   unknown_behavior: INCONCLUSIVE
 
 enforcement:
@@ -127,40 +127,40 @@ enforcement:
     placement: library               # MUST: library | sidecar | gateway | service
   permit:
     algorithm: Ed25519               # DEFAULT
-    max_ttl_seconds: 300             # DEFAULT 300 (короче, чем on-chain)
-    version_bound: true              # MUST, false запрещён
-    domain_bound: true               # MUST, false запрещён
-  database_trigger:                  # MUST при placement=library
-    enabled: true                    # MUST, false запрещён для гарантии
+    max_ttl_seconds: 300             # DEFAULT 300 (shorter than on-chain)
+    version_bound: true              # MUST, false is forbidden
+    domain_bound: true               # MUST, false is forbidden
+  database_trigger:                  # MUST when placement=library
+    enabled: true                    # MUST, false is forbidden for the guarantee
     verify_signature: true           # MUST
 
 evidence:
-  observation_channels: [ebpf_tap, wal_digest, idp_log]   # MUST, ≥2; 3 = полный witness
-  human_review_coverage: 1.0         # MUST, печатается в отчёте
-  reorg_behavior: null               # не применимо
+  observation_channels: [ebpf_tap, wal_digest, idp_log]   # MUST, ≥2; 3 = full witness
+  human_review_coverage: 1.0         # MUST, printed in the report
+  reorg_behavior: null               # not applicable
   prover_backend: [verus]
 
 attestation:
-  expires_after_seconds: 7776000     # DEFAULT 90 дней
+  expires_after_seconds: 7776000     # DEFAULT 90 days
   signatures_required: 4
   signer_roles: [product_owner, infra_owner, security_lead, verifier]
-  reissue_within_days: 3             # MUST, правило перевыпуска
+  reissue_within_days: 3             # MUST, the reissue rule
   bundle_format: "fg-bundle/1"
 
 limits:
-  max_compute_seconds: 7200          # DEFAULT 2 ч (сборка + тесты)
+  max_compute_seconds: 7200          # DEFAULT 2 h (build + tests)
   max_vm_seconds: 14400
 
 # FORBIDDEN:
-# - database_trigger.enabled: false при placement=library
-# - excluded с reason = "не успели"
+# - database_trigger.enabled: false when placement=library
+# - excluded with reason = "we ran out of time"
 # - human_review_coverage < 0.25
-# - write_principals, не совпадающие с обнаруженными
+# - write_principals that do not match the discovered ones
 ```
 
 ---
 
-## 4. Бандл legacy (нормативно)
+## 4. The legacy bundle (normative)
 
 ```
 bundle/
@@ -168,34 +168,34 @@ bundle/
 ├── flowguard.yml
 ├── subject.json                 # repo, commit, build_cmd, run_cmd, runtime
 ├── closure/
-│   ├── declaration.json         # 8 полей акта + 12 элементов + excluded
-│   ├── writers.json             # реестр writer'ов: сервис, кред, ресурс, тип
-│   ├── discovered_vs_declared.json   # diff — ключевой файл
-│   └── db_principals.json       # кто имеет INSERT/UPDATE на леджер
+│   ├── declaration.json         # 8 act fields + 12 elements + excluded
+│   ├── writers.json             # registry of writers: service, credential, resource, type
+│   ├── discovered_vs_declared.json   # diff — the key file
+│   └── db_principals.json       # who holds INSERT/UPDATE on the ledger
 ├── policy/
 │   ├── rules.yaml
 │   ├── rules.smt2               # SMT-LIB
-│   └── counterexamples/         # sat-модели от Z3
+│   └── counterexamples/         # sat models from Z3
 ├── mediator/
-│   ├── source/                  # код медиатора
+│   ├── source/                  # mediator code
 │   ├── artifact_hash
 │   └── trigger.sql              # PL/pgSQL
 ├── witness/
-│   ├── tap.jsonl.zst            # запрос/ответ + nonce
-│   ├── db_digest.json           # состояние до/после, hash-chain
+│   ├── tap.jsonl.zst            # request/response + nonce
+│   ├── db_digest.json           # state before/after, hash-chain
 │   ├── identity.json            # token → principal
 │   └── acceptance/
-│       ├── replay_test.json     # тест A: подделка/replay
-│       └── independence_test.json  # тест B: агент не отключает канал
+│       ├── replay_test.json     # test A: forgery/replay
+│       └── independence_test.json  # test B: the agent cannot disable the channel
 ├── oracles/
 │   ├── sqli.json
 │   ├── bola.json
 │   └── traversal.json
 ├── findings/
-│   ├── proven.json              # C/T/N × K, вердикты
-│   └── hypotheses.json          # Lane A, отдельный артефакт
+│   ├── proven.json              # C/T/N × K, verdicts
+│   └── hypotheses.json          # Lane A, a separate artefact
 ├── attacks/
-│   └── results.json             # 7 сценариев
+│   └── results.json             # 7 scenarios
 ├── proof/
 │   ├── results.json             # Verus
 │   └── assumptions.json
@@ -205,9 +205,9 @@ bundle/
 └── signatures/
 ```
 
-| Файл | Обязательные поля | Подписант |
+| File | Required fields | Signatory |
 |---|---|---|
-| `closure/declaration.json` | 8 полей §9 | product_owner, infra_owner, security_lead, verifier |
+| `closure/declaration.json` | the 8 fields of §9 | product_owner, infra_owner, security_lead, verifier |
 | `closure/discovered_vs_declared.json` | `discovered[]`, `declared[]`, `diff[]`, `unknown_count` | security_lead |
 | `closure/db_principals.json` | `principal`, `privilege`, `resource`, `discovered_by` | infra_owner |
 | `policy/counterexamples/*` | `rule_id`, `model`, `impact` | security_lead |
@@ -217,13 +217,13 @@ bundle/
 | `attacks/results.json` | 7 × `attack_id`, `expected`, `observed`, `replay_cmd` | security_lead + verifier |
 | `verdict.json` | `status`, `reason_code`, `human_review_coverage`, `expires_at` | verifier |
 
-**Правило:** `findings/hypotheses.json` **никогда** не смешивается с `proven.json`. Это два файла, и клиент видит только `proven` в разделе «находки».
+**Rule:** `findings/hypotheses.json` is **never** mixed with `proven.json`. These are two files, and the client sees only `proven` in the "findings" section.
 
 ---
 
-## 5. Вердикт и инварианты
+## 5. Verdict and invariants
 
-### 5.1. Правило
+### 5.1. The rule
 
 ```
 PROVEN(x) ⟺ attacks_all_blocked(x) ∧ invariants_discharged(x)
@@ -231,71 +231,71 @@ PROVEN(x) ⟺ attacks_all_blocked(x) ∧ invariants_discharged(x)
            ∧ build_reproducible(x) ∧ policy_matches(x)
 ```
 
-Четыре значения — как в v0.1: `PROVEN` / `NOT_PROVEN` / `INCONCLUSIVE` / `INVALID`. Для legacy добавляется обязательное поле `human_review_coverage` — доля находок, просмотренных человеком перед отгрузкой. В v0.2 оно `1.0`; снижение ниже `0.25` запрещено.
+Four values — as in v0.1: `PROVEN` / `NOT_PROVEN` / `INCONCLUSIVE` / `INVALID`. For legacy a mandatory field is added, `human_review_coverage` — the share of findings reviewed by a human before shipment. In v0.2 it is `1.0`; dropping below `0.25` is forbidden.
 
-### 5.2. Восемь инвариантов леджер-потока
+### 5.2. The eight invariants of the ledger flow
 
-Свод из четвёртого круга, каждый — с механизмом проверки:
+A summary from the fourth round, each with its verification mechanism:
 
-| # | Инвариант | Чем проверяется |
+| # | Invariant | How it is verified |
 |---|---|---|
-| **I1** | Полное посредничество: каждая мутация леджера проходит через M | сверка `pgaudit`-дельты с журналом `Allow`-событий |
-| **I2** | Capability enforcement: запись принимается только с валидным `Permit` | триггер отклоняет запись без подписи; попытка без → `BLOCKED` |
-| **I3** | Атомарность: проверка, `Permit`, событие и мутация — одна транзакция | инъекция сбоя на каждом шаге |
-| **I4** | Нет ambient authority: `INSERT/UPDATE` на леджер только у M | сканер кредов: множество принципалов = {M} |
-| **I5** | Подписанный деплой: M, политика, миграции — только при совпадении хешей | CI-гейт + проверка хеша при старте M |
-| **I6** | Fail-closed audit: недоступность журнала → `Deny` | chaos-тест: убить канал, ожидать отказ |
-| **I7** | Version-bound: решение валидно только для версии объекта и политики | параллельный тест: изменить объект между `Permit` и записью |
-| **I8** | Процедура restore | приёмочный тест из 6 шагов (§11.3) |
+| **I1** | Full mediation: every ledger mutation passes through M | reconciling the `pgaudit` delta against the log of `Allow` events |
+| **I2** | Capability enforcement: a write is accepted only with a valid `Permit` | the trigger rejects a write without a signature; an attempt without one → `BLOCKED` |
+| **I3** | Atomicity: the check, the `Permit`, the event and the mutation are one transaction | fault injection at every step |
+| **I4** | No ambient authority: `INSERT/UPDATE` on the ledger only for M | credential scanner: the set of principals = {M} |
+| **I5** | Signed deployment: M, the policy and the migrations only when the hashes match | CI gate + hash check at M start-up |
+| **I6** | Fail-closed audit: the log being unavailable → `Deny` | chaos test: kill the channel, expect a refusal |
+| **I7** | Version-bound: a decision is valid only for the version of the object and of the policy | concurrent test: change the object between the `Permit` and the write |
+| **I8** | The restore procedure | an acceptance test of 6 steps (§11.3) |
 
-**Ключевое различение, которое нельзя размывать:** I1, I6, I8 — **не доказательство, а тест**. Для произвольной системы они недоказуемы, но проверяемы каждый прогон. В акте они помечаются `[И]`, а не `[Д]`.
+**The key distinction that must not be blurred:** I1, I6, I8 are **not a proof but a test**. For an arbitrary system they are unprovable, yet they are checkable on every run. In the act they are marked `[MEASURED]`, not `[PROVED]`.
 
-**И второй инвариант, без которого первый бесполезен:**
+**And the second invariant, without which the first is useless:**
 
 ```
-I1' : ∀ мутация(ledger) ⟹ ∃ Permit ∧ ∃ подписанное Allow-событие
+I1' : ∀ mutation(ledger) ⟹ ∃ Permit ∧ ∃ signed Allow event
 ```
 
-`∀ Permit ⟹ P` говорит «медиатор не врёт». `I1'` говорит «мимо медиатора не прошли». Без второго типовая защита остаётся библиотекой, которую можно не вызвать.
+`∀ Permit ⟹ P` says "the mediator does not lie". `I1'` says "nothing got past the mediator". Without the second, a typical protection remains a library that can simply not be called.
 
 ---
 
-## 6. CLI legacy
+## 6. The legacy CLI
 
-| Команда | Что | Коды |
+| Command | What it does | Codes |
 |---|---|---|
-| `flowguard scan` | статика: writer'ы, IaC, OpenAPI, правила авторизации | 0 |
-| `flowguard scan --runtime` | микроVM + eBPF + `pgaudit` → фактический реестр | 0 ok · 5 `DEPLOY_FAILED` |
-| `flowguard mediate init --lang rust\|java\|ts\|py` | скелет медиатора + `Permit` + `trigger.sql` | 0 |
-| `flowguard mediate check` | триггер включён, `Permit` версионно привязан | 0 · 1 нарушение |
-| `flowguard check` | правила → SMT; инварианты I1–I8 | 0 · 1 violation |
-| `flowguard attack` | 7 сценариев (нужен target) | 0 all blocked · 1 any passed |
-| `flowguard witness test` | тесты A (replay/подделка) и B (независимость) | 0 · 1 |
-| `flowguard prove` | Verus на медиаторе | 0 · 2 timeout |
-| `flowguard attest` | бандл + 4 подписи | 0 |
-| `flowguard verify` / `replay` | как в v0.1 | 0 / 1 / 2 / 4 / 5 |
+| `flowguard scan` | static: writers, IaC, OpenAPI, authorisation rules | 0 |
+| `flowguard scan --runtime` | microVM + eBPF + `pgaudit` → the actual registry | 0 ok · 5 `DEPLOY_FAILED` |
+| `flowguard mediate init --lang rust\|java\|ts\|py` | mediator skeleton + `Permit` + `trigger.sql` | 0 |
+| `flowguard mediate check` | the trigger is enabled, the `Permit` is version-bound | 0 · 1 violation |
+| `flowguard check` | rules → SMT; invariants I1–I8 | 0 · 1 violation |
+| `flowguard attack` | 7 scenarios (a target is required) | 0 all blocked · 1 any passed |
+| `flowguard witness test` | tests A (replay/forgery) and B (independence) | 0 · 1 |
+| `flowguard prove` | Verus on the mediator | 0 · 2 timeout |
+| `flowguard attest` | bundle + 4 signatures | 0 |
+| `flowguard verify` / `replay` | as in v0.1 | 0 / 1 / 2 / 4 / 5 |
 
 ---
 
-## 7. Медиатор и `Permit`
+## 7. The mediator and the `Permit`
 
-### 7.1. Контракт медиатора
+### 7.1. The mediator contract
 
 ```
 authorize(subject: VerifiedSubject, action: Action, resource: ResourceRef,
           store: &dyn StateProvider) -> Result<Permit, Deny>
 ```
 
-Шесть правил, сошедшихся у всех рецензентов четвёртого круга:
+Six rules that all reviewers of the fourth round converged on:
 
-1. `subject` — **только** из проверенного токена/сессии; поле владельца из тела игнорируется.
-2. Владелец ресурса читается из доверенного хранилища, не из клиента.
-3. `deny-beats-allow`, default deny, отсутствие данных → `Deny`.
-4. Привязка к версии ресурса; проверка и изменение атомарны (запрет TOCTOU).
-5. Решение журналируется **до** исполнения; отказ журнала → `Deny`.
-6. `Deny` для несуществующего объекта неотличим от `Deny` для чужого — иначе медиатор сам становится оракулом для перебора.
+1. `subject` comes **only** from a verified token/session; the owner field from the body is ignored.
+2. The owner of the resource is read from trusted storage, not from the client.
+3. `deny-beats-allow`, default deny, missing data → `Deny`.
+4. Binding to the resource version; the check and the change are atomic (TOCTOU is forbidden).
+5. The decision is logged **before** execution; a failure of the log → `Deny`.
+6. `Deny` for a non-existent object is indistinguishable from `Deny` for someone else's — otherwise the mediator itself becomes an oracle for enumeration.
 
-### 7.2. `Permit` — непередаваемый токен
+### 7.2. The `Permit` — a non-transferable token
 
 ```
 Permit := Ed25519 {
@@ -304,20 +304,20 @@ Permit := Ed25519 {
 }
 ```
 
-Доказательство сводится к одному утверждению: `∀ Permit ⟹ P(subject, resource, action)` `[Д]` (Verus).
+The proof reduces to a single statement: `∀ Permit ⟹ P(subject, resource, action)` `[PROVED]` (Verus).
 
-**Как эмулируется непередаваемость по языкам:**
+**How non-transferability is emulated per language:**
 
-| Стек | Механизм | Сила |
+| Stack | Mechanism | Strength |
 |---|---|---|
-| Rust | приватный конструктор типа, `Permit` не `Clone` | компилятор |
-| Java / TS | приватный конструктор + фабрика у медиатора | дисциплина + линтер |
-| Python | `__slots__` + приватный модуль | дисциплина + линтер |
-| **все** | **PL/pgSQL-триггер** | **физическая** |
+| Rust | a private type constructor, `Permit` is not `Clone` | compiler |
+| Java / TS | a private constructor + a factory in the mediator | discipline + linter |
+| Python | `__slots__` + a private module | discipline + linter |
+| **all** | **PL/pgSQL trigger** | **physical** |
 
-Только четвертая строка — гарантия. Первые три — снижение шума.
+Only the fourth row is a guarantee. The first three are noise reduction.
 
-### 7.3. Триггер — последняя линия
+### 7.3. The trigger — the last line
 
 ```sql
 CREATE OR REPLACE FUNCTION guard_ledger_write() RETURNS trigger AS $$
@@ -347,274 +347,274 @@ CREATE TRIGGER ledger_guard BEFORE UPDATE ON ledger
   FOR EACH ROW EXECUTE FUNCTION guard_ledger_write();
 ```
 
-Приложение обязано в одной транзакции выполнить `SET LOCAL app.permit = '<b64>'`. Без этого запись физически не проходит.
+The application must execute `SET LOCAL app.permit = '<b64>'` within the same transaction. Without this the write physically does not go through.
 
-### 7.4. Размещение: гибрид
+### 7.4. Placement: a hybrid
 
-| Что | Где | Почему |
+| What | Where | Why |
 |---|---|---|
-| принадлежность, тенант, переход состояния | **in-process библиотека** | нужна одна транзакция с операцией (TOCTOU), малое ядро — дёшево доказать |
-| лимит суммы и деньги | **единственный сервис-writer** | один путь записи; закрывается отзывом кредов |
+| ownership, tenant, state transition | **in-process library** | one transaction together with the operation is required (TOCTOU); a small core is cheap to prove |
+| the amount limit and money | **the single service-writer** | one write path; it is closed by revoking credentials |
 
-«Единственный» — **логически**, не физически. На v0.2 берём не event sourcing, а **DB-level enforcement**: writer'ов может быть много, но триггер не даст записать без `Permit`.
+"Single" is **logical**, not physical. In v0.2 we take not event sourcing but **DB-level enforcement**: there may be many writers, but the trigger will not let anything be written without a `Permit`.
 
 ---
 
-## 8. Замыкание Z: 12 элементов
+## 8. Closure Z: 12 elements
 
-Девять обязательных (сошлись 4/4) + три структурных.
+Nine mandatory ones (agreed 4/4) + three structural ones.
 
-| # | Элемент | «Иначе ложно» |
+| # | Element | "Otherwise false" |
 |---|---|---|
-| 1 | Синхронные входы: API, web, мобильное, партнёрское, вебхуки | перевод без проверки P |
-| 2 | Batch / cron / ETL денежных операций | фоновая запись мимо M |
-| 3 | Админка, support, break-glass | привилегированный обход |
-| 4 | Бэкап, restore, репликация, failover | откат или дублирование баланса |
-| 5 | Все точки записи, включая хранимки и миграции | обход через SQL |
-| 6 | Реестр принципалов БД с правом записи | общая учётка пишет мимо M |
-| 7 | Очереди, ретраи, идемпотентность | повтор без проверки состояния |
-| 8 | Конфигурация политики: лимиты, флаги, override | лимит меняется без перевыпуска P |
-| 9 | CI/CD, секреты, деплой M и миграций | в прод идёт недоказанный код |
-| **10** | **Наблюдаемый слой** (tap, DB-дайджест, IdP, события M) | **нельзя отличить обход от сбоя** |
-| **11** | **Внешние зачисления и reconciliation провайдера** | входящие деньги идут мимо M |
-| **12** | **Сам M с подписанной версией политики** | подмена M вне Z делает утверждение ложным |
+| 1 | Synchronous entry points: API, web, mobile, partner, webhooks | a transfer without a check of P |
+| 2 | Batch / cron / ETL of money operations | a background write past M |
+| 3 | The admin console, support, break-glass | a privileged bypass |
+| 4 | Backup, restore, replication, failover | a rollback or duplication of the balance |
+| 5 | All write points, including stored procedures and migrations | a bypass through SQL |
+| 6 | The registry of DB principals with write rights | a shared account writes past M |
+| 7 | Queues, retries, idempotency | a repeat without a check of state |
+| 8 | Policy configuration: limits, flags, overrides | the limit changes without reissuing P |
+| 9 | CI/CD, secrets, deployment of M and of the migrations | unproved code goes to production |
+| **10** | **The observable layer** (tap, DB digest, IdP, M events) | **a bypass cannot be told apart from a failure** |
+| **11** | **External credits and the provider's reconciliation** | incoming money goes past M |
+| **12** | **M itself, with a signed policy version** | substituting M outside Z makes the statement false |
 
-### 8.1. Семь путей обхода и решения
+### 8.1. The seven bypass paths and the decisions
 
-| Путь | Решение | Почему |
+| Path | Decision | Why |
 |---|---|---|
-| Batch / cron / ETL | медиировать | пишет баланс → обязан ходить как клиент M |
-| Админка / support | медиировать + двойной контроль | корректировки через M с классом субъекта |
-| Бэкап / restore | **запретить прямой restore**; только подписанный snapshot + пост-сверка + перевыпуск акта | самая опасная операция: возврат старого состояния с балансами |
-| Партнёрское / мобильное API | медиировать; старые версии отключить | второй ingress |
-| Прямой доступ к БД | **запретить**; write-креды только у M; break-glass с журналом | убивает замыкание |
-| Логи / аналитика | **запретить запись** в денежный путь; копия PII — отдельный поток | иначе копия уходит за Z |
-| CI / supply chain | **запретить креды данных** + проверка хеша деплоя; целостность цепочки — вне гарантии | подмена M |
+| Batch / cron / ETL | mediate | it writes the balance → it is obliged to go as a client of M |
+| Admin console / support | mediate + dual control | adjustments go through M with a subject class |
+| Backup / restore | **forbid a direct restore**; only a signed snapshot + post-reconciliation + reissue of the act | the most dangerous operation: the return of an old state with balances |
+| Partner / mobile API | mediate; disable old versions | a second ingress |
+| Direct access to the DB | **forbid**; write credentials only held by M; break-glass with logging | it kills the closure |
+| Logs / analytics | **forbid writing** into the money path; a copy of PII is a separate flow | otherwise the copy leaves Z |
+| CI / supply chain | **forbid data credentials** + deployment hash check; supply-chain integrity is outside the guarantee | substitution of M |
 
-**Итог: все семь внутри продукта, ноль «вне гарантии» на уровне пути.** Вне гарантии остаётся ровно одно — компрометация цепочки поставки, и это заявлено.
+**Bottom line: all seven are inside the product, zero "outside the guarantee" at the path level.** Exactly one thing remains outside the guarantee — compromise of the supply chain — and that is declared.
 
 ---
 
-## 9. Акт: 8 полей и 4 подписи
+## 9. The act: 8 fields and 4 signatures
 
-| Поле | Содержание |
+| Field | Content |
 |---|---|
-| `z_id`, версия, хеш | идентификация |
-| Поток F | операции, данные, владельцы, критерий успеха |
-| Реестр путей: `ресурс \| путь \| владелец \| решение` | медиировать / запретить / вне гарантии |
-| Хеш M: код, коммит, toolchain, хеш доказательства | что именно доказано |
-| Реестр принципалов БД на дату подписи | кто мог писать мимо |
-| Метод построения реестра | аудит прав + 14 дней `pgaudit` + 30 дней ingress-логов `[Г]` |
-| Список «вне гарантии» с причиной по каждой строке | негативный скоуп |
-| Результаты 7 атак с датой и версией M | подтверждение замыкания |
+| `z_id`, version, hash | identification |
+| Flow F | operations, data, owners, success criterion |
+| Registry of paths: `resource \| path \| owner \| decision` | mediate / forbid / outside the guarantee |
+| M hash: code, commit, toolchain, proof hash | what exactly was proved |
+| Registry of DB principals as at the signing date | who could write past it |
+| Method of building the registry | privilege audit + 14 days of `pgaudit` + 30 days of ingress logs `[HYPOTHESIS]` |
+| The "outside the guarantee" list with a reason for each row | negative scope |
+| Results of the 7 attacks with the date and the version of M | confirmation of the closure |
 
-**Четыре подписи, каждая за одно утверждение:**
+**Four signatures, each for one statement:**
 
-| Подписант | За что |
+| Signatory | For what |
 |---|---|
-| Product owner клиента | полнота реестра **продуктовых** входов |
-| **Infra owner клиента** | полнота **инфраструктурных** путей: batch, БД, CI, бэкап |
-| Security lead клиента | реестр кредов и принципалов БД |
-| Наш lead verifier | хеши M, доказательство, прогон атак |
+| The client's product owner | completeness of the registry of **product** entry points |
+| **The client's infra owner** | completeness of the **infrastructure** paths: batch, DB, CI, backup |
+| The client's security lead | the registry of credentials and DB principals |
+| Our lead verifier | the M hashes, the proof, the attack run |
 
-Два владельца у клиента, а не один, — прямой ответ на «забыли ночную джобу».
+Two owners at the client, not one, is the direct answer to "we forgot the night job".
 
-**Договорное ограничение:** гарантия действует только для путей из акта версии N. Новый путь — вне гарантии до перевыпуска, **обязательного в течение 3 рабочих дней**. На время окна — состояние `DEGRADED`: новые пути `deny by default`, денежные — полный deny.
+**Contractual limitation:** the guarantee applies only to the paths in the act of version N. A new path is outside the guarantee until a reissue, **mandatory within 3 business days**. During the window the state is `DEGRADED`: new paths are `deny by default`, money paths a full deny.
 
 ---
 
-## 10. Witness: три канала, два теста
+## 10. Witness: three channels, two tests
 
-### 10.1. Каналы
+### 10.1. Channels
 
-| Канал | Что фиксирует | Чего не доказывает | Дни `[Г]` |
+| Channel | What it records | What it does not prove | Days `[HYPOTHESIS]` |
 |---|---|---|---|
-| **eBPF tap** на хосте | реальные запросы/ответы, nonce, идентификаторы сессий | не доказывает, кому принадлежит объект | 4,5 |
-| **DB-дайджест** (`pgaudit`/WAL) | фактические чтения и записи с указанием роли | не доказывает, что ответ содержал именно эти данные | 3,5 |
-| **Идентичность** (IdP) | token → principal → roles | не доказывает отсутствие ошибки в выдаче прав | 3 |
-| склейка пакета | один witness на E2E-прогон | — | 1 |
-| **Итого** | | | **12** (wall-clock 5 дней при параллели) |
+| **eBPF tap** on the host | the actual requests/responses, nonce, session identifiers | it does not prove who owns the object | 4.5 |
+| **DB digest** (`pgaudit`/WAL) | the actual reads and writes, with the role | it does not prove that the response contained exactly this data | 3.5 |
+| **Identity** (IdP) | token → principal → roles | it does not prove the absence of an error in granting rights | 3 |
+| bundle assembly | one witness per E2E run | — | 1 |
+| **Total** | | | **12** (wall-clock 5 days when run in parallel) |
 
-**Остаточная граница, которую нельзя скрывать:** witness не защищает, если скомпрометирован сам стенд или IdP. Это в негативный скоуп.
+**The residual boundary that must not be hidden:** the witness does not protect if the bench itself or the IdP is compromised. That goes into the negative scope.
 
-### 10.2. Два приёмочных теста (не один)
+### 10.2. Two acceptance tests (not one)
 
-**Тест A — целостность свидетельства.** Агент предъявляет старое свидетельство с новым nonce, подменяет объект, пишет nonce в свой лог → `verify` возвращает `INVALID`. Провал: любой поддельный/повторный witness получил `PROVEN`.
+**Test A — integrity of the evidence.** The agent presents an old piece of evidence with a new nonce, substitutes the object, writes the nonce into its own log → `verify` returns `INVALID`. Failure: any forged/replayed witness obtained `PROVEN`.
 
-**Тест B — независимость наблюдателя.** Агент с root внутри VM пытается отключить/подменить канал → канал живёт на хосте, изменение фиксируется как инцидент, прогон → `INVALID`. Провал: агент отключил witness и всё равно получил `PROVEN`.
+**Test B — independence of the observer.** An agent with root inside the VM tries to disable/substitute the channel → the channel lives on the host, the change is recorded as an incident, the run → `INVALID`. Failure: the agent disabled the witness and still obtained `PROVEN`.
 
-**Поправка, которую нельзя терять:** nonce ловит повтор, но **не доказывает независимость**. Поэтому тестов два.
+**A correction that must not be lost:** the nonce catches a replay but **does not prove independence**. That is why there are two tests.
 
 ---
 
-## 11. Оракулы, находки, атаки
+## 11. Oracles, findings, attacks
 
-### 11.1. Три класса и их предикаты
+### 11.1. Three classes and their predicates
 
-| Класс | Предикат оракула | Что теряем |
+| Class | Oracle predicate | What we lose |
 |---|---|---|
-| **SQLi** | canary-строка в DB-дайджесте изменилась в результате инъекции | blind/time-based, нестандартные СУБД |
-| **BOLA / IDOR** | субъект A прочитал/изменил объект, принадлежащий B | сложные RBAC/ABAC и мульти-тенант политики |
-| **Path traversal** | доступ к маркерному файлу вне разрешённого корня | LFI/RFI, нестандартные sink'и |
+| **SQLi** | the canary string in the DB digest changed as a result of the injection | blind/time-based, non-standard DBMS |
+| **BOLA / IDOR** | subject A read/changed an object owned by B | complex RBAC/ABAC and multi-tenant policies |
+| **Path traversal** | access to the marker file outside the permitted root | LFI/RFI, non-standard sinks |
 
-**Классы, которые публично не продаём в v0.2:** бизнес-логика без детерминированного оракула — только Lane A, бесплатно, без обещаний. Публичный перечень отказа — часть продукта, а не мелкий шрифт.
+**The classes we do not sell publicly in v0.2:** business logic without a deterministic oracle — Lane A only, free of charge, without promises. The public list of refusals is part of the product, not the fine print.
 
-### 11.2. C/T/N и адаптивный K
+### 11.2. C/T/N and the adaptive K
 
 ```
-PROVEN(находка) ⟺ C=false ∧ T=true ∧ N=false, на K свежих VM
-K: 3 по умолчанию → эскалация до 10 только при неоднозначности
+PROVEN(finding) ⟺ C=false ∧ T=true ∧ N=false, on K fresh VMs
+K: 3 by default → escalation to 10 only on ambiguity
 ```
 
-`K` печатается в бандле. Фиксированный `K=10 × 3 ветки × N перезапусков` — главный источник взрыва стоимости `[Г]`.
+`K` is printed in the bundle. A fixed `K=10 × 3 branches × N restarts` is the main source of the cost explosion `[HYPOTHESIS]`.
 
-Вердикт-агрегатор: три изолированных суждения (по одному на контроль) → тупой агрегатор применяет `!C ∧ T ∧ !N`. Оракул **никогда** не выдаёт финальный `PROVEN` — только `PROVEN_CANDIDATE` по одному контролю.
+The verdict aggregator: three isolated judgements (one per control) → a dumb aggregator applies `!C ∧ T ∧ !N`. The oracle **never** issues the final `PROVEN` — only `PROVEN_CANDIDATE` for a single control.
 
-### 11.3. Семь атак
+### 11.3. The seven attacks
 
-| # | Атака | Ожидание | Провал |
+| # | Attack | Expectation | Failure |
 |---|---|---|---|
-| A1 | прямая запись в леджер под сервисным/админ-кредом | exception от триггера | дельта без `Allow`-события |
-| A2 | batch/возвратная джоба сверх лимита | отказ/лимит | запись без M |
-| A3 | restore старого бэкапа и replay | сверка хеш-цепочки падает | восстановленное состояние допускает повторную трату |
-| A4 | старая версия партнёрского/мобильного API | отключена | перевод без M |
-| A5 | PR/деплой, меняющий лимит или обходящий M | CI-гейт + хеш | деплой с неподписанным хешем |
-| A6 | эскалация через админку/support | двойной контроль | изменение без M |
-| A7 | drain через очередь/ретрай (повтор операции) | идемпотентность | повторное списание |
+| A1 | a direct write to the ledger under a service/admin credential | an exception from the trigger | a delta without an `Allow` event |
+| A2 | a batch/refund job above the limit | refusal/limit | a write without M |
+| A3 | restore of an old backup and replay | the hash-chain check fails | the restored state allows a repeated spend |
+| A4 | an old version of the partner/mobile API | disabled | a transfer without M |
+| A5 | a PR/deployment that changes the limit or bypasses M | CI gate + hash | a deployment with an unsigned hash |
+| A6 | escalation through the admin console/support | dual control | a change without M |
+| A7 | drain through a queue/retry (repeating the operation) | idempotency | a repeated debit |
 
-### 11.4. Процедура restore (6 шагов, приёмочный тест I8)
+### 11.4. The restore procedure (6 steps, acceptance test I8)
 
-1. freeze денежных мутаций;
-2. подписанный snapshot с хешем состояния;
-3. проверка, что restore не откатывает уже исполненные внешние обязательства;
-4. восстановление только из подписанного snapshot;
+1. freeze of money mutations;
+2. a signed snapshot with the state hash;
+3. a check that the restore does not roll back external obligations already fulfilled;
+4. restoration only from the signed snapshot;
 5. post-restore reconciliation;
-6. обязательный перевыпуск акта Z.
+6. a mandatory reissue of act Z.
 
 ### 11.5. Break-glass
 
-Медиировать нельзя по определению — он нужен, когда медиатор сломан.
+It cannot be mediated by definition — it is needed when the mediator is broken.
 
-- аппаратный ключ (HSM/YubiKey) у CISO клиента, **не в системе**;
-- DBA подписывает сырой SQL этим ключом; БД принимает, но ставит `is_emergency = true`;
-- witness немедленно алертит;
-- **гарантия суспендируется автоматически** до реконсиляции и подписания акта инцидента.
+- a hardware key (HSM/YubiKey) held by the client's CISO, **not in the system**;
+- the DBA signs the raw SQL with this key; the DB accepts it but sets `is_emergency = true`;
+- the witness raises an alert immediately;
+- **the guarantee is suspended automatically** until reconciliation and the signing of the incident act.
 
 ---
 
-## 12. Политики и их цена
+## 12. Policies and their cost
 
-| Политика | SMT | Harness | Дни `[Г]` |
+| Policy | SMT | Harness | Days `[HYPOTHESIS]` |
 |---|---|---|---|
-| Изоляция тенантов | да | да | 6 |
-| Принадлежность объекта (BOLA) | да | да | 6 |
-| Лимит суммы / частоты (с overflow) | да | да | 8 |
-| Класс PII × роль | частично | да | 10 |
-| Допустимый переход состояния | да | да | 5 |
-| **Все пять** | | | **35 (максимум)** |
-| **Нужные для v0.2 (ownership + лимит + тенант)** | | | **20** |
+| Tenant isolation | yes | yes | 6 |
+| Object ownership (BOLA) | yes | yes | 6 |
+| Amount / rate limit (with overflow) | yes | yes | 8 |
+| PII class × role | partially | yes | 10 |
+| Permitted state transition | yes | yes | 5 |
+| **All five** | | | **35 (maximum)** |
+| **Those needed for v0.2 (ownership + limit + tenant)** | | | **20** |
 
 ---
 
-## 13. Контракт валидируемости и отказ
+## 13. The contract of validatability and refusal
 
-### 13.1. Что обязано быть у клиента
+### 13.1. What the client must have
 
-1. Воспроизводимая сборка.
-2. Lock-файлы и закреплённые версии.
-3. Команда тестов **или** health-оракул.
-4. Изолированное окружение без секретов.
-5. Фиксация версии runtime и конфигурации.
+1. A reproducible build.
+2. Lock files and pinned versions.
+3. A test command **or** a health oracle.
+4. An isolated environment without secrets.
+5. A record of the runtime version and of the configuration.
 
-Не проходит хотя бы одно → только Lane A (гипотезы) или отказ.
+If even one is missing → Lane A only (hypotheses) or a refusal.
 
-### 13.2. Пять случаев, ломающих автоматизацию
+### 13.2. Five cases that break automation
 
-| Случай | Детектор | Решение |
+| Case | Detector | Decision |
 |---|---|---|
-| Монорепо | >1 deployable-манифеста, общий CI | ручной режим, клиент указывает целевой сервис |
-| Полиглот | >1 язык с исполняемым кодом на потоке | отказ для языков вне набора |
-| Нет IaC | нет Terraform/Helm/compose | ручной режим; гарантия ограничена кодом |
-| Нет тестов | покрытие 0 / нет runner | надбавка на acceptance-тесты либо отказ |
-| Сгенерированный код >30% LOC | маркеры codegen | анализируем генератор; нет источника → отказ |
+| Monorepo | >1 deployable manifest, a shared CI | manual mode, the client names the target service |
+| Polyglot | >1 language with executable code on the flow | refusal for languages outside the set |
+| No IaC | no Terraform/Helm/compose | manual mode; the guarantee is limited to the code |
+| No tests | coverage 0 / no runner | a surcharge for acceptance tests, or a refusal |
+| Generated code >30% LOC | codegen markers | we analyse the generator; no source → refusal |
 
 ---
 
-## 14. Детерминизм и безопасность инструмента
+## 14. Determinism and tool security
 
-| Требование | Мера |
+| Requirement | Measure |
 |---|---|
-| Один вход → один выход | JCS, SHA-256, сортировка, отсутствие времени в хеше |
-| Пиннинг | digest образа, версии тулчейна, `seed`, записанные сетевые ответы |
-| Отсутствие сети при `verify` | `verify` не делает запросов вообще |
-| Гейт релиза | `attest` + `replay` дают байт-в-байт одинаковый бандл |
-| Prompt injection из цели | содержимое цели — только tool-result, `taint`-трекинг; в v0.2 вердикт детерминированный |
-| Подмена артефактов | подпись над digest всего бандла + Rekor |
-| Утечка кода | бандл хранит хеши, не исходники |
+| One input → one output | JCS, SHA-256, sorting, no time in the hash |
+| Pinning | image digest, toolchain versions, `seed`, recorded network responses |
+| No network during `verify` | `verify` makes no requests at all |
+| Release gate | `attest` + `replay` produce a byte-for-byte identical bundle |
+| Prompt injection from the target | target content is a tool-result only, `taint` tracking; in v0.2 the verdict is deterministic |
+| Substitution of artefacts | a signature over the digest of the whole bundle + Rekor |
+| Code leakage | the bundle stores hashes, not sources |
 
 ---
 
-## 15. Критерии приёмки v0.2
+## 15. v0.2 acceptance criteria
 
-1. `scan --runtime` на эталонном приложении даёт реестр writer'ов, совпадающий со статическим **и** с `discovered_vs_declared`.
-2. `db_principals` содержит **ровно одну** роль с `INSERT/UPDATE` на леджер после миграции.
-3. Попытка записи без `Permit` даёт исключение триггера, а не запись.
-4. `attack A1` (прямая запись) — `BLOCKED`; при отключённом триггере — `PASSED` (проверка, что тест не тавтологичен).
-5. `witness test` A и B — оба зелёные.
-6. `C/T/N × K=3` на эталонной уязвимости даёт `PROVEN`; на исправленной — `NOT_PROVEN`.
-7. `consistent`: `findings/proven.json` и `findings/hypotheses.json` не пересекаются.
-8. `verify` на бандле с изменённым `manifest.sha256` → 4 (`INVALID`).
-9. `replay` воспроизводит бандл на чистой машине байт-в-байт.
-10. Изменение границы (новый writer) переводит состояние в `DEGRADED` и блокирует `PROVEN`.
+1. `scan --runtime` on the reference application yields a registry of writers that matches the static one **and** `discovered_vs_declared`.
+2. `db_principals` contains **exactly one** role with `INSERT/UPDATE` on the ledger after the migration.
+3. A write attempt without a `Permit` raises a trigger exception, not a write.
+4. `attack A1` (a direct write) — `BLOCKED`; with the trigger disabled — `PASSED` (a check that the test is not tautological).
+5. `witness test` A and B — both green.
+6. `C/T/N × K=3` on the reference vulnerability yields `PROVEN`; on the fixed one — `NOT_PROVEN`.
+7. `consistent`: `findings/proven.json` and `findings/hypotheses.json` do not intersect.
+8. `verify` on a bundle with a modified `manifest.sha256` → 4 (`INVALID`).
+9. `replay` reproduces the bundle on a clean machine byte for byte.
+10. A change of the boundary (a new writer) moves the state to `DEGRADED` and blocks `PROVEN`.
 
 ---
 
-## 16. Дорожная карта legacy
+## 16. Legacy roadmap
 
-| Версия | Срок `[Г]` | Содержание |
+| Version | Timeline `[HYPOTHESIS]` | Content |
 |---|---|---|
-| v0.2 | 8 нед после v0.1 | микроVM + eBPF + witness, медиатор + триггер, 3 класса, 7 атак, R0–R2 |
-| v0.3 | +8 нед | Verus-доказательство медиатора, R3, 5 политик |
-| v0.4 | +6 нед | R4–R5, PII и state-machine, отчёт-акт с 4 подписями |
-| v0.5 | +8 нед | ре-аттестация одной командой, 15 минут |
+| v0.2 | 8 weeks after v0.1 | microVM + eBPF + witness, mediator + trigger, 3 classes, 7 attacks, R0–R2 |
+| v0.3 | +8 weeks | Verus proof of the mediator, R3, 5 policies |
+| v0.4 | +6 weeks | R4–R5, PII and the state machine, a report-act with 4 signatures |
+| v0.5 | +8 weeks | re-attestation with a single command, 15 minutes |
 
 ---
 
-## 17. Известные слабости legacy
+## 17. Known weaknesses of legacy
 
-| # | Слабость | Механизм | Горизонт | Ранний признак |
+| # | Weakness | Mechanism | Horizon | Early sign |
 |---|---|---|---|---|
-| **L1** | Неполнота реестра writer'ов | офчейн-скрипт, ручной cron оператора, внешний сервис с общим кредом | первые 3–10 целей | инцидент с путём вне `Z` |
-| **L2** | Дрейф после хотфикса | новый endpoint/роль вне окна перевыпуска | 30–90 дней | `code_hash` расходится, путь вне `declaration.json` |
-| **L3** | Шум witness | нестабильный tap, потеря `pgaudit` | пилот | рост `INCONCLUSIVE` без нарушений |
-| **L4** | Медиатор вызывают не всегда | разработчик обходит библиотеку; триггер спасает только леджер | всегда | `A1` проходит в тесте при отключённом триггере |
-| **L5** | Стоимость ревью | 100% человеческого ревью при 3–4 находках = $500–1000/находка | сразу | маржа < 40% |
-| **L6** | Воспроизводимость деплоя | `DEPLOY_FAILED` на монолитах | пилот | >30% целей не поднимаются |
+| **L1** | Incompleteness of the registry of writers | an off-chain script, an operator's manual cron, an external service with a shared credential | the first 3–10 targets | an incident with a path outside `Z` |
+| **L2** | Drift after a hotfix | a new endpoint/role outside the reissue window | 30–90 days | `code_hash` diverges, a path outside `declaration.json` |
+| **L3** | Witness noise | an unstable tap, loss of `pgaudit` | the pilot | a rise in `INCONCLUSIVE` without violations |
+| **L4** | The mediator is not always called | a developer bypasses the library; the trigger saves only the ledger | always | `A1` passes in the test with the trigger disabled |
+| **L5** | The cost of review | 100% human review at 3–4 findings = $500–1000/finding | immediately | margin < 40% |
+| **L6** | Reproducibility of deployment | `DEPLOY_FAILED` on monoliths | the pilot | >30% of targets do not come up |
 
-**L1 не лечится полностью.** Лечится правилом `unknown ⇒ INCONCLUSIVE`, публичным списком «чего анализатор не видит» и тем, что подписывает инфраструктурный владелец, а не только продуктовый.
+**L1 is not cured completely.** What cures it is the rule `unknown ⇒ INCONCLUSIVE`, the public list of "what the analyser does not see", and the fact that the infrastructure owner signs, not only the product owner.
 
 ---
 
-## Приложение A. Глоссарий legacy
+## Appendix A. Legacy glossary
 
-| Термин | Значение |
+| Term | Meaning |
 |---|---|
-| `writer` | процесс/роль, способная изменить защищённый ресурс |
-| `Permit` | подписанный токен права, привязанный к объекту, версии, политике, домену |
-| `DEGRADED` | состояние между изменением границы и перевыпуском акта: новые пути deny |
-| `Lane A` | трек гипотез: не биллится, не смешивается с находками |
-| `human_review_coverage` | доля находок, просмотренных человеком перед отгрузкой |
-| `break-glass` | аварийный доступ вне медиатора; суспендирует гарантию |
+| `writer` | a process/role able to change a protected resource |
+| `Permit` | a signed token of authority bound to the object, the version, the policy and the domain |
+| `DEGRADED` | the state between a change of the boundary and the reissue of the act: new paths are denied |
+| `Lane A` | the hypothesis track: not billed, not mixed with findings |
+| `human_review_coverage` | the share of findings reviewed by a human before shipment |
+| `break-glass` | emergency access outside the mediator; it suspends the guarantee |
 
-## Приложение B. Чек-лист ревьюера legacy-бандла
+## Appendix B. Reviewer's checklist for a legacy bundle
 
-1. `discovered_vs_declared.diff` пуст?
-2. `db_principals`: ровно одна роль с write на леджер?
-3. Триггер включён, `verify_signature: true`?
-4. Оба witness-теста (A и B) зелёные?
-5. Все 7 атак `BLOCKED`?
-6. `proven.json` и `hypotheses.json` не пересекаются?
-7. `human_review_coverage` = 1.0 (или ≥0.25 с обоснованием)?
-8. `assumptions.json`: у каждого допущения есть `what_breaks_if_false`?
-9. 4 подписи от 4 разных ключей, `infra_owner` отдельно от `product_owner`?
-10. `expires_at` в будущем, `DEGRADED` не активен?
+1. Is `discovered_vs_declared.diff` empty?
+2. `db_principals`: exactly one role with write on the ledger?
+3. Is the trigger enabled, `verify_signature: true`?
+4. Are both witness tests (A and B) green?
+5. Are all 7 attacks `BLOCKED`?
+6. Do `proven.json` and `hypotheses.json` not intersect?
+7. `human_review_coverage` = 1.0 (or ≥0.25 with a justification)?
+8. `assumptions.json`: does every assumption have `what_breaks_if_false`?
+9. 4 signatures from 4 different keys, `infra_owner` separate from `product_owner`?
+10. Is `expires_at` in the future, is `DEGRADED` not active?

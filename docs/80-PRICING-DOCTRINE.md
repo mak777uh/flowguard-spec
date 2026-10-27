@@ -1,45 +1,45 @@
-# 80. Доктрина цены: снижать цену и повышать качество одновременно
+# 80. Pricing Doctrine: cut the price and raise the quality at the same time
 
-> Установка: не выдаивать клиентов. Цель — чтобы экономика не разваливалась, а деньги на апгрейды были.
-> Проблема: «мы будем снижать цену и повышать качество» — это обещание, а обещания в безопасности не стоят ничего. Нужен **механизм**, который заставляет это делать, и **условие**, при котором обещание честно отзывается.
-> Все числа — `[Г]`, кроме тех, что помечены иначе.
+> Stance: do not milk clients. The goal is for the economics not to fall apart, and for the money for upgrades to be there.
+> Problem: "we will cut the price and raise the quality" is a promise, and promises in security are worth nothing. What is needed is a **mechanism** that forces this to happen, and a **condition** under which the promise is honestly withdrawn.
+> All numbers are `[HYPOTHESIS]` unless marked otherwise.
 
 ---
 
-## 1. Что значит «не выдоить» операционально
+## 1. What "not milking" means operationally
 
-Шесть правил. Каждое проверяемо снаружи, а не декларируется.
+Six rules. Each is verifiable from outside rather than declared.
 
-| # | Правило | Как проверяется снаружи |
+| # | Rule | How it is verified from outside |
 |---|---|---|
-| **P1** | **Никогда не цена за находку.** Цена — за скоуп, изменение или подписку | публичный прайс; в договоре нет строки «за находку» |
-| **P2** | **Потолок валовой маржи**: услуги ≤45%, подписка ≤70%. Избыток сверх потолка идёт на снижение цены следующего цикла или в публичный фонд | публикуемая отчётность по марже раз в год |
-| **P3** | **Дивиденд автоматизации**: когда человеко-минуты на находку падают, экономия делится 50/50 — половина в цену, половина в R&D | публикуемая метрика `assessor_minutes_per_finding` и её динамика |
-| **P4** | **Цена падает по расписанию, а не по доброй воле**: тот же скоуп — не дороже, чем год назад минус 10% | публичный индекс цен с историей |
-| **P5** | **Никакой премии за страх**: цена гарантии не растёт от новостей об инцидентах в отрасли | сравнение прайса до/после инцидента |
-| **P6** | **Критическая инфраструктура — по себестоимости или бесплатно** (больницы, ЖКХ, малые OSS-проекты), финансируется из потолка маржи и грантов | публичный список получателей и объём |
+| **P1** | **Never a price per finding.** The price is for scope, change or subscription | public price list; the contract has no "per finding" line |
+| **P2** | **Gross margin ceiling**: services ≤45%, subscription ≤70%. The excess above the ceiling goes to cutting the price in the next cycle or into a public fund | published margin reporting once a year |
+| **P3** | **Automation dividend**: when person-minutes per finding fall, the savings are split 50/50 — half into the price, half into R&D | the published metric `assessor_minutes_per_finding` and its trend |
+| **P4** | **The price falls on a schedule, not by goodwill**: the same scope costs no more than a year ago minus 10% | a public price index with history |
+| **P5** | **No premium for fear**: the price of the guarantee does not rise on news of incidents in the industry | a comparison of the price list before and after an incident |
+| **P6** | **Critical infrastructure at cost or free of charge** (hospitals, utilities, small OSS projects), funded from the margin ceiling and grants | a public list of recipients and the volume |
 
-Правило **P2** — главное. Пока маржа не ограничена, любое «мы не выдоим» остаётся словами, потому что стимул противоположный.
+Rule **P2** is the main one. As long as the margin is not capped, any "we will not milk" remains words, because the incentive points the other way.
 
 ---
 
-## 2. Где именно живёт риск выдаивания
+## 2. Where exactly the milking risk lives
 
-Три вида выручки, и риск только в одном.
+Three kinds of revenue, and the risk is in only one.
 
-| Выручка | Что это | Динамика цены | Риск выдаивания |
+| Revenue | What it is | Price dynamics | Milking risk |
 |---|---|---|---|
-| **Коммодити** — «найти проблемы» | сканирование, инвентаризация, отчёт | **стремится к нулю**, и это правильно: OSS-ядро специально делает это бесплатным | нет — здесь мы сами обнуляем цену |
-| **Ассуранс** — подпись, ответственность, доказательство | акт, гарантия, приёмка аудитором | растёт с доверием, но **ограничена потолком** | **здесь** — если брать % от стоимости под риском, появляется стимул преувеличивать риск |
-| **Инфраструктура** — стенд, ре-аттестация | подписка | падает с автоматизацией | умеренный |
+| **Commodity** — "find problems" | scanning, inventory, report | **tends to zero**, and rightly so: the OSS core deliberately makes this free | none — here we drive the price to zero ourselves |
+| **Assurance** — signature, liability, proof | an act, a guarantee, acceptance by an auditor | grows with trust, but **is capped** | **here** — if you take a % of the value at risk, an incentive appears to overstate the risk |
+| **Infrastructure** — test bench, re-attestation | subscription | falls with automation | moderate |
 
-Отсюда принцип: **в ассурансе нельзя зарабатывать на страхе.** Значит — потолок, регрессия и запрет премии за инциденты (`P5`).
+Hence the principle: **in assurance one must not earn from fear.** That means a ceiling, regression and a ban on an incident premium (`P5`).
 
 ---
 
-## 3. Механизм снижения цены: дивиденд автоматизации
+## 3. The mechanism for cutting the price: the automation dividend
 
-Единственный физический способ одновременно снижать цену и повышать качество — **чтобы стоимость падала быстрее, чем растёт охват**. У нас в стоимости доминирует человек (§10.2 свода), значит механизм один:
+The only physical way to cut the price and raise the quality at the same time is **for cost to fall faster than coverage grows**. In our cost base the human dominates (§10.2 of the compendium), so there is one mechanism:
 
 ```
 savings = (minutes_old − minutes_new) × hourly_rate × findings_per_engagement
@@ -48,31 +48,31 @@ price_cut   = 0.5 × savings
 rnd_budget  = 0.5 × savings
 ```
 
-Пример `[Г]`: ревью 6 ч → 15 мин на находку, 4 находки, $120/ч.
-`savings = (6 − 0.25) × 120 × 4 = $2 760` на ангажемент.
-Из них $1 380 → в цену (с $12k до $10.6k), $1 380 → в R&D.
+Example `[HYPOTHESIS]`: review 6 h → 15 min per finding, 4 findings, $120/h.
+`savings = (6 − 0.25) × 120 × 4 = $2 760` per engagement.
+Of that, $1 380 → into the price (from $12k to $10.6k), $1 380 → into R&D.
 
-**Это и есть ответ на «деньги на апгрейды нужны»**: апгрейды финансируются **из сэкономленных человеко-часов**, а не из роста цены. Логика замкнута: чем лучше автоматизация, тем дешевле продукт и тем больше денег на следующую автоматизацию.
-
----
-
-## 4. Условие, при котором обещание честно отзывается
-
-Это самое важное в документе.
-
-Вся доктрина опирается **на одно число**: `assessor_minutes_per_finding`. Если ревью не сжимается до 15 минут, себестоимость не падает, и P3/P4 становятся ложью.
-
-Поэтому обязательство формулируется **условно и публично**:
-
-> Мы снижаем цену на 10% в год при том же скоупе **при условии, что `assessor_minutes_per_finding` снижается**. Мы публикуем это число каждый квартал. Если оно не снижается два квартала подряд — мы публикуем это и **приостанавливаем обещание по цене**, вместо того чтобы тихо его нарушить.
-
-Так «не выдоить» превращается из лозунга в проверяемое обязательство с честным выходом. Лозунг без выхода нарушается молча; обязательство с выходом — нет.
+**This is the answer to "money for upgrades is needed"**: upgrades are funded **out of saved person-hours**, not out of a price increase. The logic is closed: the better the automation, the cheaper the product and the more money there is for the next automation.
 
 ---
 
-## 5. Ассуранс: ad valorem с потолком и регрессией
+## 4. The condition under which the promise is honestly withdrawn
 
-Цена гарантии привязана к сумме под риском (иначе продукт бессмысленен для крупных), но с тремя ограничителями:
+This is the most important thing in the document.
+
+The whole doctrine rests **on a single number**: `assessor_minutes_per_finding`. If the review does not compress to 15 minutes, the cost base does not fall, and P3/P4 become a lie.
+
+Therefore the commitment is formulated **conditionally and publicly**:
+
+> We cut the price by 10% a year for the same scope **provided that `assessor_minutes_per_finding` falls**. We publish this number every quarter. If it does not fall for two quarters in a row, we publish that and **suspend the price promise**, rather than quietly breaking it.
+
+This is how "not milking" turns from a slogan into a verifiable commitment with an honest exit. A slogan without an exit is broken silently; a commitment with an exit is not.
+
+---
+
+## 5. Assurance: ad valorem with a ceiling and regression
+
+The price of the guarantee is tied to the amount at risk (otherwise the product is meaningless for large clients), but with three limits:
 
 ```
 price_guarantee = clamp(
@@ -81,74 +81,74 @@ price_guarantee = clamp(
     ceiling = $250k
 )
 
-k(v) = 0.60% при v ≤ $10M
-       0.30% при $10M < v ≤ $100M
-       0.15% при v > $100M
+k(v) = 0.60% for v ≤ $10M
+       0.30% for $10M < v ≤ $100M
+       0.15% for v > $100M
 ```
 
-| Свойство | Зачем |
+| Property | Why |
 |---|---|
-| **Регрессия k** | крупный клиент платит меньше в процентах — рынок не наказывается за размер |
-| **Потолок $250k** | выше — мы не можем обеспечить покрытие, и продавать дороже значит обещать больше, чем можем |
-| **Пол $12k** | ниже — не покрываем себестоимость и начинаем экономить на качестве |
-| **Определение `value_at_risk`** | **MUST** быть в договоре: суточный неотмитигированный поток, а не «капитализация» — иначе метрика раздувается |
+| **Regression of k** | a large client pays a smaller percentage — the market is not punished for size |
+| **$250k ceiling** | above that we cannot provide the coverage, and selling dearer means promising more than we can |
+| **$12k floor** | below that we do not cover the cost base and start economising on quality |
+| **Definition of `value_at_risk`** | **MUST** be in the contract: the daily unmitigated flow, not "capitalisation" — otherwise the metric inflates |
 
-**Правило P5 в действии:** после крупного инцидента в отрасли наш прайс **не меняется**. Иначе мы зарабатываем на чужой катастрофе, а это ровно то выдаивание, которого не хотим.
+**Rule P5 in action:** after a major incident in the industry our price list **does not change**. Otherwise we would be earning from someone else's catastrophe, and that is exactly the milking we do not want.
 
 ---
 
-## 6. Четыре источника денег на апгрейды (и только один — из цены)
+## 6. Four sources of money for upgrades (and only one from the price)
 
-| Источник | Доля `[Г]` | Условие |
+| Source | Share `[HYPOTHESIS]` | Condition |
 |---|---|---|
-| Дивиденд автоматизации (§3) | 50% экономии человеко-часов | растёт вместе с качеством |
-| Фиксированная доля выручки на R&D | **≥30%, закреплено в уставе** | не обсуждается при планировании |
-| Гранты и публичное финансирование | внешнее | миссия частично публичное благо: DARPA/ARPA-H финансировали AIxCC, фонды финансируют безопасность OSS |
-| Предоплата за 2–3 года | внешнее | стабильный кэшфлоу **без повышения цены** |
+| Automation dividend (§3) | 50% of the person-hour savings | grows together with quality |
+| A fixed share of revenue for R&D | **≥30%, fixed in the charter** | not up for discussion during planning |
+| Grants and public funding | external | the mission is partly a public good: DARPA/ARPA-H funded AIxCC, foundations fund OSS security |
+| Prepayment for 2–3 years | external | stable cash flow **without raising the price** |
 
-Ключевое: **ни один из четырёх не требует повышать цену.** Поэтому доктрина не жертвует развитием — она меняет его источник.
-
----
-
-## 7. Почему это коммерчески сильнее, а не только этичнее
-
-Три причины, каждая проверяемая:
-
-1. **У покупателя есть бесплатная альтернатива** (OSS-ядро + своя команда). Значит pricing power ограничен физически, и публичное обязательство снижать цену — это оружие против конкурентов, а не альтруизм.
-2. **В безопасности доверие разрушается асимметрично**: один неверный отчёт или один спор о деньгах стоит дороже, чем вся прибыль от завышенной цены.
-3. **Публичный прайс и потолок маржи — это тот же артефакт доверия, что негативный скоуп.** Мы уже продаём «проверьте, не веря нам»; странно не применять ту же дисциплину к деньгам.
+The key point: **not one of the four requires raising the price.** That is why the doctrine does not sacrifice development — it changes its source.
 
 ---
 
-## 8. Утверждения для критики
+## 7. Why this is commercially stronger, not merely more ethical
 
-| ID | Утверждение | Метка | Что его ломает |
+Three reasons, each verifiable:
+
+1. **The buyer has a free alternative** (OSS core + their own team). Pricing power is therefore physically limited, and a public commitment to cut the price is a weapon against competitors rather than altruism.
+2. **In security, trust is destroyed asymmetrically**: one wrong report or one dispute about money costs more than all the profit from an inflated price.
+3. **A public price list and a margin ceiling are the same artefact of trust as the negative scope.** We already sell "check it, do not take our word for it"; it would be strange not to apply the same discipline to money.
+
+---
+
+## 8. Claims for criticism
+
+| ID | Claim | Tag | What breaks it |
 |---|---|---|---|
-| **P-1** | Потолок маржи 45%/70% удерживается при текущей структуре затрат | `[Г]` | R3/R4 дают 35–40%; если ревью не сожмётся — потолок недостижим |
-| **P-2** | Дивиденд автоматизации 50/50 реален | `[Г]` | экономия уйдёт в компенсацию ручных исключений |
-| **P-3** | `assessor_minutes_per_finding` измерим и управляем | `[Г]` | метрика окажется шумной и её начнут считать по-разному |
-| **P-4** | Регрессия k (0.6/0.3/0.15) не убивает экономику крупных сделок | `[Г]` | при v > $100M цена упадёт ниже себестоимости |
-| **P-5** | `value_at_risk` можно определить так, чтобы клиент не спорил | `[Г]` | клиент потребует «капитализацию» — метрика раздуется |
-| **P-6** | Отказ от премии за страх выполним при росте спроса после инцидента | `[Г]` | рынок сам поднимет цену — удержимся ли |
-| **P-7** | Критическая инфраструктура по себестоимости финансируема из маржи | `[Г]` | объём таких клиентов съест маржу |
-| **P-8** | 30% выручки на R&D закрепляемо в уставе | `[И]` | юрисдикция/инвесторы не дадут |
-| **P-9** | Публичный индекс цен не даст конкурентам использовать наши цены против нас | `[Г]` | конкуренты будут демпинговать точечно |
-| **P-10** | Грантовое финансирование применимо к коммерческой компании | `[Г]` | структура не позволит (нужен некоммерческий рукав) |
+| **P-1** | The 45%/70% margin ceiling holds under the current cost structure | `[HYPOTHESIS]` | R3/R4 give 35–40%; if the review does not compress, the ceiling is unreachable |
+| **P-2** | The 50/50 automation dividend is real | `[HYPOTHESIS]` | the savings will go into compensating for manual exceptions |
+| **P-3** | `assessor_minutes_per_finding` is measurable and controllable | `[HYPOTHESIS]` | the metric will turn out to be noisy and will start being counted differently |
+| **P-4** | The regression of k (0.6/0.3/0.15) does not kill the economics of large deals | `[HYPOTHESIS]` | at v > $100M the price will fall below the cost base |
+| **P-5** | `value_at_risk` can be defined so that the client does not argue | `[HYPOTHESIS]` | the client will demand "capitalisation" — the metric will inflate |
+| **P-6** | Refusing the fear premium is feasible when demand rises after an incident | `[HYPOTHESIS]` | the market will raise the price itself — will we hold |
+| **P-7** | Critical infrastructure at cost is fundable from the margin | `[HYPOTHESIS]` | the volume of such clients will eat the margin |
+| **P-8** | 30% of revenue for R&D can be fixed in the charter | `[MEASURED]` | the jurisdiction/investors will not allow it |
+| **P-9** | A public price index will not let competitors use our prices against us | `[HYPOTHESIS]` | competitors will dump prices in a targeted way |
+| **P-10** | Grant funding is applicable to a commercial company | `[HYPOTHESIS]` | the structure will not allow it (a non-profit arm is needed) |
 
 ---
 
-## 9. Что это ломает в уже принятой спеке
+## 9. What this breaks in the spec already adopted
 
-| Было | Стало |
+| Was | Now |
 |---|---|
-| SKU C = $48k + $12k/год (фикс) | **ad valorem** с потолком и регрессией: `clamp(v×k, 12k, 250k)` |
-| Цена — гипотеза, проверяется интервью | цена — **формула**, проверяется готовностью платить на трёх уровнях `v` |
-| Маржа — расчёт | маржа — **потолок**, публикуется |
-| Ре-аттестация входит в подписку | остаётся, но подписка **дешевеет** по мере автоматизации |
-| «Мы не выдоим» — намерение | **P1–P6 + условное обязательство §4** |
+| SKU C = $48k + $12k/year (fixed) | **ad valorem** with a ceiling and regression: `clamp(v×k, 12k, 250k)` |
+| The price is a hypothesis, tested by interviews | the price is a **formula**, tested by willingness to pay at three levels of `v` |
+| Margin is a calculation | margin is a **ceiling**, and is published |
+| Re-attestation is included in the subscription | it stays, but the subscription **gets cheaper** as automation advances |
+| "We will not milk" is an intention | **P1–P6 + the conditional commitment of §4** |
 
 ---
 
-## 10. Одной фразой
+## 10. In one sentence
 
-**Не «мы добрые», а: цена за находку запрещена, маржа ограничена, цена падает по расписанию, экономия от автоматизации делится 50/50 с клиентом, премии за страх нет — и всё это условно на одном измеряемом числе, которое мы публикуем, а при его отсутствии честно отзываем обещание.** Апгрейды финансируются из сэкономленных человеко-часов, а не из роста цены.
+**Not "we are kind", but: a price per finding is forbidden, the margin is capped, the price falls on a schedule, the saving from automation is split 50/50 with the client, there is no premium for fear — and all of it is conditional on one measurable number that we publish and, in its absence, we honestly withdraw the promise.** Upgrades are funded out of saved person-hours, not out of a price increase.

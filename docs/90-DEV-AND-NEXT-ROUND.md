@@ -1,181 +1,181 @@
-# 90. Разработка, трезвая картина и следующий круг
+# 90. Development, the sober picture, and the next round
 
-**Статус документа:** свод круга 2 (пять ревью) + метод разработки + вопросы круга 3.
-**Ссылки на спеку:** [мастер v2](FLOWGUARD-MASTER-v2.md) · [on-chain деталь](SPEC-v0.1.md) · [legacy деталь](SPEC-v0.2-LEGACY.md) · [доктрина цены](80-PRICING-DOCTRINE.md) · [реестр утверждений](SPEC-CRITIQUE.md)
-
----
-
-# 1. Что дал круг 2: одно сквозное требование и три приговора
-
-## 1.1. Сквозное требование, которое сформулировал один ревьюер и поддержали остальные
-
-> **Каждое утверждение продукта обязано нести внешне якорённый denominator, который платящая сторона не может изменить молча.**
-
-Это лучшее, что было сказано за два круга. Разложим на четыре применения:
-
-| Утверждение | Denominator | Кто его якорит |
-|---|---|---|
-| «обхода нет» | множество путей `discovered` и доля покрытия `covered/discovered` | машина + независимый ручной перебор (M1) |
-| «находка подтверждена» | `C/T/N` на свежих VM, K прогонов, FP-потолок оракула | verifier, не агент |
-| «цель та, что в акте» | хеш развёрнутого артефакта **из внешнего источника**, не из бандла | блокчейн / OCI-registry / нода |
-| «покрыт X% денежного потока» | `Σvalue(covered) / Σvalue(все пути)` | наблюдаемый трафик, не декларация |
-
-Без denominator любое наше «PROVEN» — это `covered/discovered` без `discovered`. **Это и есть T3 (вакуумный PROVEN), переведённый из риска в архитектурное правило.**
-
-## 1.2. Три приговора, которые придётся принять
-
-**Приговор 1. Полнота замыкания недоказуема — только измерима.**
-5/5 ревью: `unknown_paths = ∅` доказывает отсутствие неизвестного *внутри модели анализатора*. Значит `PROVEN` без явного детектора и измеренного recall — неверное утверждение. Уже исправлено в [мастере v2 §1.2–1.3](FLOWGUARD-MASTER-v2.md): вердикт стал `PROVEN(R)` со скаляром покрытия. **Но это не решение, а честная формулировка** — recall надо мерить (M1), и он почти наверняка будет 0.6–0.8, а не 1.0.
-
-**Приговор 2. Legacy в текущем виде не проходит собственный критерий смерти.**
-Все пять оценили медиану находок в ≈1 при нашем пороге `<2`. Плюс отдельное замечание, которое снимает сам критерий: **нулевой выход находок — это успех для гарантии и «смерть» по метрике.** Метрика обслуживала два разных продукта.
-Следствие: **сужаем scope до изолированного леджера-ядра** и меняем метрику на `closure_complete` + конверсию SKU. Деталь — [SPEC-v0.2 §3.1–3.4](SPEC-v0.2-LEGACY.md).
-
-**Приговор 3. Вопрос не в том, можем ли мы выдать гарантию, а в том, кому она нужна.**
-Формулировка одного ревьюера: если ни один **внешний потребитель** — страховщик, аудитор, банк, контрагент — письменно не изменит решение при наличии бандла, то офлайн-верифицируемость решает несуществующую задачу, а цена от `value_at_risk` теряет основание. Наш собственный эскроу потребителем не считается: это круговая проверка.
-Это измерение **M8** и, вероятно, главный фильтр: без него продукт — инструмент, а не гарантия.
-
-## 1.3. Где ревью разошлись, и как решили
-
-| Вопрос | Расклад | Решение |
-|---|---|---|
-| Сузить scope (а) / сменить метрику (б) / убрать критерий (в) | (а) 2, (б) 3 | **Гибрид: (а) как scope, (б) как метрика.** Ядро — изолированный леджер; метрика — `closure_complete` на ядре; `G25` (урожай находок) понижен до метрики SKU-1 |
-| Минуты на находку | 20, 25, 35, 38, 45 | **план 35–40**, цель 15 недостижима для подписывающего (все пять сошлись) |
-| Условие «не строить» | 5 разных | **набор из трёх, все принимаются**: (i) ≥6/10 клиентов не исключают DBA/superuser из модели нарушителя; (ii) воспроизводимый ложный `PROVEN`; (iii) `closure_complete < 50%` на 10 пилотах |
-| Кто подписывает on-chain акт | 4 варианта | **product owner (мультисиг) · custody quorum · security lead · verifier**; для immutable — подтверждение отсутствия ролей вместо custody |
-| Потолок автовыплаты | $500…$25k | **$500 на старте**, лестница до $25k по трек-роду; на старте защищает потолок, не бонд |
+**Document status:** round 2 summary (five reviews) + development method + round 3 questions.
+**Spec references:** [master v2](FLOWGUARD-MASTER-v2.md) · [on-chain detail](SPEC-v0.1.md) · [legacy detail](SPEC-v0.2-LEGACY.md) · [pricing doctrine](80-PRICING-DOCTRINE.md) · [claims register](SPEC-CRITIQUE.md)
 
 ---
 
-# 2. Как это разрабатывать: метод, а не талант
+# 1. What round 2 produced: one cross-cutting requirement and three rulings
 
-Код пишут только ИИ-агенты в харнессе на одной машине. Из этого следует главное: **качество определяется процессом, а не квалификацией исполнителя.** У агента нет памяти о вчерашних решениях, нет чувства стыда за сломанный тест и нет причин не подогнать проверку под результат.
+## 1.1. The cross-cutting requirement stated by one reviewer and supported by the rest
 
-Значит процесс должен быть таким, чтобы подгонка была **механически невозможна**. Такой процесс уже существует — в [VecDHT](https://github.com/mak777uh/VecDHT): гипотеза → карточка эксперимента с порогом, зафиксированным **до** прогона → решение ADR. Ниже он переносится на FLOWGUARD.
+> **Every product claim must carry an externally anchored denominator that the paying party cannot change silently.**
 
-## 2.1. Контур лаборатории (портируется как есть)
+This is the best thing said across two rounds. Let us break it down into four applications:
+
+| Claim | Denominator | Who anchors it |
+|---|---|---|
+| "there is no bypass" | the set of `discovered` paths and the coverage ratio `covered/discovered` | machine + independent manual enumeration (M1) |
+| "the finding is confirmed" | `C/T/N` on fresh VMs, K runs, the oracle's FP ceiling | the verifier, not the agent |
+| "the target is the one in the attestation" | hash of the deployed artifact **from an external source**, not from the bundle | blockchain / OCI registry / node |
+| "X% of money flow is covered" | `Σvalue(covered) / Σvalue(all paths)` | observed traffic, not a declaration |
+
+Without a denominator, any "PROVEN" of ours is `covered/discovered` without `discovered`. **This is exactly T3 (vacuous PROVEN), translated from a risk into an architectural rule.**
+
+## 1.2. Three rulings we will have to accept
+
+**Ruling 1. Closure completeness is not provable — only measurable.**
+5/5 reviews: `unknown_paths = ∅` proves the absence of the unknown *inside the analyzer's model*. Therefore `PROVEN` without an explicit detector and a measured recall is a false claim. Already fixed in [master v2 §1.2–1.3](FLOWGUARD-MASTER-v2.md): the verdict became `PROVEN(R)` with a coverage scalar. **But this is not a solution, it is an honest formulation** — recall has to be measured (M1), and it will almost certainly be 0.6–0.8 rather than 1.0.
+
+**Ruling 2. Legacy in its current form does not pass its own death criterion.**
+All five estimated the median number of findings at ≈1 against our threshold of `<2`. Plus a separate remark that removes the criterion itself: **zero findings output is a success for a guarantee and a "death" by the metric.** The metric was serving two different products.
+Consequence: **we narrow the scope to an isolated ledger core** and change the metric to `closure_complete` + SKU conversion. Detail — [SPEC-v0.2 §3.1–3.4](SPEC-v0.2-LEGACY.md).
+
+**Ruling 3. The question is not whether we can issue a guarantee, but who needs one.**
+One reviewer's formulation: if no **external consumer** — insurer, auditor, bank, counterparty — changes a decision in writing given the bundle, then offline verifiability solves a non-existent problem, and pricing off `value_at_risk` loses its basis. Our own escrow does not count as a consumer: that is circular validation.
+This is measurement **M8** and probably the main filter: without it the product is a tool, not a guarantee.
+
+## 1.3. Where the reviews diverged, and how it was decided
+
+| Question | Split | Decision |
+|---|---|---|
+| Narrow the scope (a) / change the metric (b) / remove the criterion (c) | (a) 2, (b) 3 | **Hybrid: (a) as the scope, (b) as the metric.** The core is an isolated ledger; the metric is `closure_complete` on the core; `G25` (findings yield) is demoted to a SKU-1 metric |
+| Minutes per finding | 20, 25, 35, 38, 45 | **plan 35–40**, the target of 15 is unreachable for a signer (all five agreed) |
+| "Do not build" condition | 5 different ones | **a set of three, all accepted**: (i) ≥6/10 customers do not exclude DBA/superuser from the threat model; (ii) a reproducible false `PROVEN`; (iii) `closure_complete < 50%` across 10 pilots |
+| Who signs the on-chain attestation | 4 options | **product owner (multisig) · custody quorum · security lead · verifier**; for immutable — confirmation that no roles exist instead of custody |
+| Auto-payout ceiling | $500…$25k | **$500 at the start**, a ladder up to $25k by track record; at the start it is the ceiling that protects, not the bond |
+
+---
+
+# 2. How to develop this: method, not talent
+
+The code is written only by AI agents in a harness on a single machine. The main consequence follows from this: **quality is determined by the process, not by the executor's skill.** An agent has no memory of yesterday's decisions, no sense of shame about a broken test, and no reason not to fit the check to the result.
+
+So the process must be such that fitting is **mechanically impossible**. Such a process already exists — in [VecDHT](https://github.com/mak777uh/VecDHT): hypothesis → experiment card with a threshold fixed **before** the run → ADR decision. Below it is carried over to FLOWGUARD.
+
+## 2.1. The laboratory loop (ported as is)
 
 ```
-H-XXXX  гипотеза: что именно проверяем, одним предложением
-E-XXXX  карточка эксперимента: метод, корпус, порог, критерий провала — ДО прогона
-R-XXXX  результат: цифры, лог, вердикт (supports | refutes | inconclusive)
-ADR-XXXX решение: одна правка спеки, вытекающая из R-XXXX
+H-XXXX  hypothesis: what exactly we are testing, in one sentence
+E-XXXX  experiment card: method, corpus, threshold, failure criterion — BEFORE the run
+R-XXXX  result: numbers, log, verdict (supports | refutes | inconclusive)
+ADR-XXXX decision: one spec edit following from R-XXXX
 ```
 
-Пять правил, которые делают контур непреодолимым для халтуры:
+Five rules that make the loop insurmountable for sloppy work:
 
-1. **Порог нельзя придумать после результата.** Изменённый порог — новый эксперимент, старый остаётся с вердиктом.
-2. **Отрицательный результат остаётся в `lab/` навсегда** с вердиктом `refutes`. Записи append-only.
-3. **Оракул (тест) прогоняется и на версии до фикса**, и его вывод коммитится: предсказание проверяется числом, а не памятью.
-4. **Факт годится для вердикта, только если он идентичен на двух прогонах неизменённого дерева.**
-5. **Спеку правит только измеренный факт**, отдельным коммитом, вместе с читаемым зеркалом.
+1. **The threshold cannot be invented after the result.** A changed threshold is a new experiment; the old one remains with its verdict.
+2. **A negative result stays in `lab/` forever** with the verdict `refutes`. Records are append-only.
+3. **The oracle (test) is also run on the version before the fix**, and its output is committed: a prediction is checked by a number, not by memory.
+4. **A fact qualifies for a verdict only if it is identical across two runs of an unchanged tree.**
+5. **Only a measured fact edits the spec**, in a separate commit, together with a human-readable mirror.
 
-Последнее правило — ответ на вопрос «как связаны исследования и спека». У нас сейчас связи нет: `[Г]`-числа живут в тексте и никто не запрещает их менять. Вводится: **у каждого числа из спеки есть `E-id`. Число без `E-id` — не число, а мнение, и в коммерческий материал не идёт.**
+The last rule answers the question "how are research and the spec connected". Right now there is no connection: `[HYPOTHESIS]` numbers live in the text and nobody forbids changing them. What is introduced: **every number in the spec has an `E-id`. A number without an `E-id` is not a number but an opinion, and it does not go into commercial material.**
 
-## 2.2. Что переносится в FLOWGUARD напрямую
+## 2.2. What carries over to FLOWGUARD directly
 
-| Элемент VecDHT | Во FLOWGUARD | Зачем |
+| VecDHT element | In FLOWGUARD | Why |
 |---|---|---|
-| `lab/hypotheses/H-*.md` | `lab/hypotheses/` | гипотезы: recall детектора, K и флак, минуты на ревью, доля валидируемых целей |
-| `lab/experiments/E-*.md` | `lab/experiments/` | карточки M1–M9 из [мастера §7](FLOWGUARD-MASTER-v2.md) переезжают сюда как E-карточки |
-| `lab/adr/ADR-*.md` | `lab/adr/` | по одному решению: «K≥5», «потолок $50k», «ядро вместо потока» |
-| `docs/METRICS.md` | `docs/METRICS.md` | каждое число + `E-id` + команда пересъёмки |
-| `docs/STATUS-v1.md` | `docs/STATUS-v0.1.md` | пять условий v0.1 и честный список «не сделано» |
-| `AGENTS.md` | `AGENTS.md` | контракт для агентов-исполнителей (§2.4) |
-| `lab/check-*.sh` | `lab/check-*.sh` | дешёвые стражи: зеркало спеки, чистота текста, инвентарь, кросс-проверка векторов |
-| генерация счётчиков | `lab/inventory.py` | числа в README генерируются, не печатаются руками |
-| из [«-»](https://github.com/mak777uh/-) | run manifests + отчёты | манифест прогона как первоклассный артефакт: без манифеста прогон не считается состоявшимся |
+| `lab/hypotheses/H-*.md` | `lab/hypotheses/` | hypotheses: detector recall, K and flakiness, minutes per review, share of validatable targets |
+| `lab/experiments/E-*.md` | `lab/experiments/` | the M1–M9 cards from [master §7](FLOWGUARD-MASTER-v2.md) move here as E-cards |
+| `lab/adr/ADR-*.md` | `lab/adr/` | one decision each: "K≥5", "a $50k ceiling", "core instead of flow" |
+| `docs/METRICS.md` | `docs/METRICS.md` | every number + `E-id` + the re-measurement command |
+| `docs/STATUS-v1.md` | `docs/STATUS-v0.1.md` | the five v0.1 conditions and an honest "not done" list |
+| `AGENTS.md` | `AGENTS.md` | the contract for executing agents (§2.4) |
+| `lab/check-*.sh` | `lab/check-*.sh` | cheap guards: spec mirror, text cleanliness, inventory, cross-check of vectors |
+| counter generation | `lab/inventory.py` | numbers in the README are generated, not typed by hand |
+| from ["-"](https://github.com/mak777uh/-) | run manifests + reports | the run manifest as a first-class artifact: without a manifest a run does not count as having happened |
 
-## 2.3. Условия выпуска v0.1 (заменяют «дорожную карту»)
+## 2.3. Release conditions for v0.1 (they replace the "roadmap")
 
-Пять условий, каждое проверяется снаружи:
+Five conditions, each verified from the outside:
 
-| # | Условие | Чем измеряется |
+| # | Condition | Measured by |
 |---|---|---|
-| **C1** | Контракт оракула и бандл реализованы, `verify` работает офлайн | `fg verify` на эталонном бандле, сеть выключена |
-| **C2** | Три инварианта escrow доказаны или опровергнуты на эталонном контракте | `fg check` + Foundry/Halmos |
-| **C3** | Десять атак дают `BLOCKED`, и на сломанной версии — не дают | мутационный тест набора атак |
-| **C4** | Байт-в-байт воспроизводимость: `attest` + `replay` дважды | сравнение хешей |
-| **C5** | Rеестр утверждений v2 закрыт: у каждого `[Г]` есть `E-id` или метка «не измерено» | `lab/check-claims.py` |
+| **C1** | The oracle contract and the bundle are implemented, `verify` works offline | `fg verify` on the reference bundle, network off |
+| **C2** | The three escrow invariants are proved or refuted on the reference contract | `fg check` + Foundry/Halmos |
+| **C3** | Ten attacks yield `BLOCKED`, and on the broken version they do not | mutation test of the attack set |
+| **C4** | Byte-for-byte reproducibility: `attest` + `replay` twice | hash comparison |
+| **C5** | Claims register v2 is closed: every `[HYPOTHESIS]` has an `E-id` or a "not measured" label | `lab/check-claims.py` |
 
-Пока не выполнены все пять — версия не существует, независимо от того, что работает.
+Until all five are met, the version does not exist, regardless of what works.
 
-## 2.4. Контракт для агентов-исполнителей (`AGENTS.md`)
+## 2.4. Contract for executing agents (`AGENTS.md`)
 
-Правила, которые не дают агенту «сделать вид»:
+Rules that prevent an agent from "pretending":
 
-1. **Нельзя менять порог, критерий приёмки, спеку или тест, чтобы пройти.** Такое изменение — только через `ADR` с `E-id`.
-2. **Тесты пишет другой агент**, чем реализацию, и по спеке, не по коду. Агент-тестировщик не видит реализацию.
-3. **Каждое утверждение в PR несёт ссылку**: `E-id` (измерено), `H-id` (гипотеза) или `ADR-id` (решено). PR без ссылки принимается только как документ или баг-фикс.
-4. **Запрещено `--no-verify`, `#[ignore]`, `skip`, `xfail`, ослабление assert.** Наличие такого в диффе — автоматический reject, а не замечание.
-5. **Нельзя писать в `tests/`, `spec/`, `lab/` и в скрипты проверки** — только в `src/`. Эти пути read-only для агента, реализующего фичу.
-6. **«Не проверено здесь» ≠ «прошло».** Если гейт не прогонялся в окружении — статус `not_checked`, и это пишется.
+1. **You may not change the threshold, the acceptance criterion, the spec or the test in order to pass.** Such a change only through an `ADR` with an `E-id`.
+2. **Tests are written by a different agent** from the implementation, and from the spec, not from the code. The testing agent does not see the implementation.
+3. **Every claim in a PR carries a reference**: `E-id` (measured), `H-id` (hypothesis) or `ADR-id` (decided). A PR without a reference is accepted only as a document or a bug fix.
+4. **`--no-verify`, `#[ignore]`, `skip`, `xfail`, weakening an assert are forbidden.** Their presence in a diff is an automatic reject, not a remark.
+5. **You may not write to `tests/`, `spec/`, `lab/` or the check scripts** — only to `src/`. These paths are read-only for the agent implementing a feature.
+6. **"Not checked here" ≠ "passed".** If a gate was not run in the environment, the status is `not_checked`, and that is written down.
 
-Правило 2 — главное. Оно превращает «агент написал тест, который проходит» в «агент написал тест по спеке, реализации не видел».
+Rule 2 is the main one. It turns "an agent wrote a test that passes" into "an agent wrote a test from the spec, having not seen the implementation".
 
-## 2.5. Дыра, которую надо назвать вслух
+## 2.5. The hole that must be named out loud
 
-В [VecDHT](https://github.com/mak777uh/VecDHT) честно записано: «формальный контур (Verus, Kani, Lean) доказывает утверждения о моделях, и соответствие модель↔код не проверяется исполняемым инструментом». У нас будет **та же дыра**, и она опаснее, чем кажется: Verus докажет свойство о том Rust-коде, который написан, а не о том, который описан в спеке.
+In [VecDHT](https://github.com/mak777uh/VecDHT) it is honestly recorded: "the formal loop (Verus, Kani, Lean) proves statements about models, and the model↔code correspondence is not checked by an executable tool". We will have **the same hole**, and it is more dangerous than it seems: Verus will prove a property about the Rust code that is written, not about the one described in the spec.
 
-Три меры, которые её сужают (и ни одна не закрывает):
-- **translation validation**: экстракция модели из кода (Charon/Aeneas) и доказательство о ней — то есть доказываем о том, что реально скомпилировано;
-- **property-тесты из спеки**: те же предикаты прогоняются как исполняемые на фаззинге, независимо от доказательства;
-- **`assumptions.json` с `what_breaks_if_false`** — каждое допущение несёт цену своей ложности.
+Three measures that narrow it (and none closes it):
+- **translation validation**: extracting the model from the code (Charon/Aeneas) and proving about it — that is, we prove about what is actually compiled;
+- **property tests from the spec**: the same predicates are run as executable ones under fuzzing, independently of the proof;
+- **`assumptions.json` with `what_breaks_if_false`** — every assumption carries the price of its being false.
 
-Честная формулировка для акта: «доказано о модели, извлечённой из кода версии X, при допущениях A». Не «доказано».
+The honest formulation for the attestation: "proved about the model extracted from the code of version X, under assumptions A". Not "proved".
 
-## 2.6. Что из этого следует для сроков
+## 2.6. What follows from this for timelines
 
-Если код пишут агенты, узкое место — не написание, а **проверка**. Оценки:
+If agents write the code, the bottleneck is not writing but **verification**. Estimates:
 
-| Этап | Написание агентом | Проверка и приёмка | Итого `[Г]` |
+| Stage | Written by an agent | Verification and acceptance | Total `[HYPOTHESIS]` |
 |---|---|---|---|
-| v0.1 on-chain escrow | 2–3 недели | 2–3 недели | **5–6 недель** |
-| legacy динамика | 3–4 недели | 4–5 недель | **8–9 недель** |
-| доказательство медиатора | 1 неделя | 3 недели | **4 недели** |
+| v0.1 on-chain escrow | 2–3 weeks | 2–3 weeks | **5–6 weeks** |
+| legacy dynamics | 3–4 weeks | 4–5 weeks | **8–9 weeks** |
+| mediator proof | 1 week | 3 weeks | **4 weeks** |
 
-То есть агенты ускоряют первую колонку в разы, а вторая почти не сжимается: приёмку делает человек и инструменты. **Планировать по правой колонке.**
-
----
-
-# 3. Трезвая картина: что есть на самом деле
-
-Без утешений, по состоянию на сейчас.
-
-**Что действительно есть.**
-1. Формулировка продукта, которая проверяема: «в объявленном замыкании мимо точки контроля нельзя», с обязательным скаляром покрытия и относительным детектором.
-2. Различение доказанного / измеренного / гипотетического, доведённое до отдельного раздела в каждом акте.
-3. Формат бандла, который можно реализовать и проверить офлайн — это инженерная работа на 4–6 недель, а не мечта.
-4. Процесс разработки (лабораторный контур), который делает подгонку механически невозможной.
-5. Понимание, где именно продукт ломается: полнота путей, доверенный контур выпуска, вакуумный PROVEN, отсутствие внешнего потребителя акта.
-
-**Чего нет и не будет скоро.**
-1. **`PROVEN` в сильном смысле** — недоказуем для произвольной системы. Максимум — `ENFORCED_TESTED(R)` с измеренным recall.
-2. **Медианы ≥2 находок** на legacy-цели — все пять ревью дали ≈1. Поэтому legacy сужается до ядра.
-3. **Внешнего потребителя акта** — не проверяли ни разу. Пока его нет, продаётся инструмент, а не гарантия.
-4. **Recall детектора** — не измерен. Пока не измерен, `PROVEN(R)` печатать нельзя.
-5. **Юридической гарантии** — нет ни страховки, ни актуарных данных, ни договорной базы.
-
-**Что это значит по-честному.** Продукт в текущем виде — это **инструмент построения проверяемого утверждения о границе контроля**, с честно ограниченной областью. Не «безопасность», не «гарантия от уязвимостей», не «мы проверили всё». Тот, кто прочитает мастер-документ и решит, что мы продаём защиту от взлома, будет разочарован — и это нормально, потому что разочарование наступает при чтении, а не после инцидента.
-
-**Единственное, что делает продукт ценным и чего нет у конкурентов:** акт, который **можно проверить, не веря нам**, и который **нельзя выдать за большее, чем он есть** — потому что denominator напечатан в заголовке.
+That is, agents speed up the first column several times over, while the second barely compresses: acceptance is done by people and tools. **Plan by the right-hand column.**
 
 ---
 
-# 4. Круг 3: вопросы
+# 3. The sober picture: what actually exists
 
-Метод тот же: бей по ID, три вердикта, не пересказывай. Первые два круга закрыли продуктовую модель и технические утверждения. Третий — про разработку, метод и то, кому это продаётся.
+Without consolation, as of now.
 
-**A. Разработка агентами.** Перечисли **три** механизма, которыми ИИ-агент в харнессе может обойти правила §2.4 (не заметив этого) и провести ложный результат. Для каждого: как это будет видно в диффе и какой автоматический страж это ловит. Не «галлюцинации» — конкретные обходы.
+**What actually exists.**
+1. A product formulation that is checkable: "within the declared closure you cannot get past the control point", with a mandatory coverage scalar and a relative detector.
+2. The distinction between proved / measured / hypothetical, carried through to a separate section in every attestation.
+3. A bundle format that can be implemented and verified offline — that is 4–6 weeks of engineering work, not a dream.
+4. A development process (the laboratory loop) that makes fitting mechanically impossible.
+5. An understanding of exactly where the product breaks: path completeness, the trusted release loop, vacuous PROVEN, the absence of an external consumer for the attestation.
 
-**B. Слабое место метода.** В лабораторном контуре есть дыра «модель↔код». Найди **вторую** дыру того же класса — место, где проверка формально проходит, а гарантии нет. Для каждой: чем её сузить.
+**What does not exist and will not soon.**
+1. **`PROVEN` in the strong sense** — unprovable for an arbitrary system. The maximum is `ENFORCED_TESTED(R)` with a measured recall.
+2. **A median of ≥2 findings** on a legacy target — all five reviews gave ≈1. That is why legacy is narrowed to the core.
+3. **An external consumer of the attestation** — never tested once. While there is none, what is sold is a tool, not a guarantee.
+4. **Detector recall** — not measured. While it is not measured, `PROVEN(R)` must not be printed.
+5. **A legal guarantee** — there is neither insurance, nor actuarial data, nor a contractual basis.
 
-**C. Denominator.** Выбери **один** denominator из §1.1, который труднее всего подделать платящей стороне, и **один**, который легче всего. Для лёгкого: как его заякорить внешне.
+**What this means, honestly.** The product in its current form is **a tool for constructing a verifiable claim about a control boundary**, with an honestly limited scope. Not "security", not "a guarantee against vulnerabilities", not "we checked everything". Anyone who reads the master document and decides that we are selling protection against compromise will be disappointed — and that is fine, because the disappointment comes while reading, not after an incident.
 
-**D. Порог выпуска.** Пять условий §2.3 проверяемы, но не ранжированы. Расставь их по порядку «что провалится первым с наибольшей вероятностью» и назови для первого порог провала в числах.
+**The one thing that makes the product valuable and that competitors do not have:** an attestation that **can be checked without believing us**, and that **cannot be passed off as more than it is** — because the denominator is printed in the header.
 
-**E. Одно «не строить»** — про разработку, а не про продукт: наблюдаемое условие, при котором команда из ИИ-агентов **не сможет** довести это до v0.1 за разумное время.
+---
 
-**F. Один вопрос, которого нет.** Сформулируй вопрос, который мы обязаны были задать в этом документе, и ответь на него.
+# 4. Round 3: questions
 
-**Правила:** ≤200 слов на пункт · без «зависит от контекста» · «не знаю» разрешено · не предлагай новых архитектур · не пересказывай документ.
+The method is the same: hit by ID, three verdicts, do not paraphrase. The first two rounds closed the product model and the technical claims. The third is about development, method, and who this is sold to.
+
+**A. Development by agents.** List **three** mechanisms by which an AI agent in a harness can circumvent the rules of §2.4 (without noticing it) and push through a false result. For each: how it would show up in the diff and which automatic guard catches it. Not "hallucinations" — concrete workarounds.
+
+**B. The method's weak point.** The laboratory loop has a "model↔code" hole. Find a **second** hole of the same class — a place where the check formally passes but there is no guarantee. For each: how to narrow it.
+
+**C. Denominator.** Choose **one** denominator from §1.1 that is hardest for the paying party to fake, and **one** that is easiest. For the easy one: how to anchor it externally.
+
+**D. Release threshold.** The five conditions of §2.3 are checkable but not ranked. Order them by "what is most likely to fail first" and name, for the first one, a failure threshold in numbers.
+
+**E. One "do not build"** — about development, not about the product: an observable condition under which a team of AI agents **will not be able** to bring this to v0.1 in a reasonable time.
+
+**F. One question that is missing.** Formulate a question we should have asked in this document, and answer it.
+
+**Rules:** ≤200 words per item · no "it depends on the context" · "I don't know" is allowed · do not propose new architectures · do not retell the document.

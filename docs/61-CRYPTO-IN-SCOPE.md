@@ -1,41 +1,41 @@
-# 61. Крипта в скоупе с первого дня: что это меняет
+# 61. Crypto in scope from day one: what this changes
 
-> Решение: домен on-chain берём в работу сразу, а не в v2. Это не «добавить строчку в roadmap» — это меняет четыре вещи в ядре и одну в порядке пилота.
-> Ниже: что обязательно, что стоит, и в каком порядке.
+> Decision: we take the on-chain domain into work immediately, not in v2. This is not "adding a line to the roadmap" — it changes four things in the core and one in the order of the pilot.
+> Below: what is mandatory, what is worth doing, and in what order.
 
 ---
 
-## 1. Что становится обязательным (а не «потом»)
+## 1. What becomes mandatory (and not "later")
 
-| Было (крипта в v2) | Стало (крипта в v0.1) |
+| Was (crypto in v2) | Became (crypto in v0.1) |
 |---|---|
-| шесть портов — «неделя когда-нибудь» | **шесть портов и по два бэкенда на каждый — входной билет** |
-| формат аттестации под git+образ+БД | **домен-агностичный формат: `subject` описывает вид цели** |
-| грид R0–R5 для legacy | **грид двойной, с первого дня** |
-| 7 атак | **10 атак: 7 общих + 3 специфичных для чейна** |
-| prover = Verus | **два бэкенда: Verus (Rust) и Solidity-стек** |
-| финальность не обсуждалась | **finality/reorg — новое требование ядра** |
+| six ports — "a week, someday" | **six ports and two backends for each — the entry ticket** |
+| attestation format for git+image+DB | **domain-agnostic format: `subject` describes the kind of target** |
+| R0–R5 grid for legacy | **the grid is doubled, from day one** |
+| 7 attacks | **10 attacks: 7 common + 3 chain-specific** |
+| prover = Verus | **two backends: Verus (Rust) and the Solidity stack** |
+| finality was not discussed | **finality/reorg — a new core requirement** |
 
 ---
 
-## 2. Шесть портов, теперь по два бэкенда
+## 2. Six ports, now with two backends each
 
-| Порт | Legacy | On-chain | Почему нельзя позже |
+| Port | Legacy | On-chain | Why it cannot wait |
 |---|---|---|---|
-| `StateProvider` | Postgres | контракт через RPC (pinned block) | `resource` в политике должен быть адресуем без допущения «это таблица» |
-| `EnforcementPoint` | in-process, DB-триггер | **guard-контракт / `require` в entrypoints** | доказательство пишется под конкретную точку; переписать = переписать доказательство |
-| `ObservationChannel` | eBPF, WAL, IdP | **события чейна (logs)** | у каналов разная семантика доверия, смешать потом нельзя |
-| `Clock` | системные часы | **номер блока + timestamp** | все `exp`/дедлайны в `Permit` сломаются |
-| `Domain` | `org_id` | **`chain_id` + адрес контракта** | без этого `Permit` с тестнета пройдёт на mainnet |
-| `Prover` | Verus | **Certora / Halmos / Kontrol** | формат отчёта об обязанностях должен быть один |
+| `StateProvider` | Postgres | contract via RPC (pinned block) | `resource` in the policy must be addressable without the assumption "this is a table" |
+| `EnforcementPoint` | in-process, DB trigger | **guard contract / `require` in entrypoints** | the proof is written for a specific point; rewriting it = rewriting the proof |
+| `ObservationChannel` | eBPF, WAL, IdP | **chain events (logs)** | the channels have different trust semantics; they cannot be merged later |
+| `Clock` | system clock | **block number + timestamp** | all `exp`/deadlines in `Permit` will break |
+| `Domain` | `org_id` | **`chain_id` + contract address** | without it a testnet `Permit` will pass on mainnet |
+| `Prover` | Verus | **Certora / Halmos / Kontrol** | the obligation report format must be one |
 
-Реализовать `ObservationChannel` для чейна — самое дешёвое из всего списка: события уже иммутабельны, с меткой времени и воспроизводимы любой третьей стороной. Фактически это **лучший witness, который у нас может быть**.
+Implementing `ObservationChannel` for a chain is the cheapest item on the whole list: events are already immutable, timestamped and reproducible by any third party. In effect it is **the best witness we can have**.
 
 ---
 
-## 3. Формат аттестации: домен-агностичный с v0.1
+## 3. Attestation format: domain-agnostic from v0.1
 
-Это единственное, что нельзя «добавить потом» без ломающего изменения. `subject` описывается как дискриминированный союз:
+This is the only thing that cannot be "added later" without a breaking change. `subject` is described as a discriminated union:
 
 ```json
 {"kind": "git",   "commit": "9f3a1c", "lockfiles": "...", "toolchain": "..."}
@@ -45,115 +45,115 @@
 {"kind": "iac",   "repo": "...", "path": "terraform/"}
 ```
 
-Правило: **любое поле, зависящее от домена, живёт внутри `subject`, а не в корне бандла.** Иначе через полгода бандл крипто-клиента не пройдёт `verify` старой версией.
+Rule: **any domain-dependent field lives inside `subject`, not at the root of the bundle.** Otherwise, six months later, a crypto client's bundle will fail `verify` under an old version.
 
 ---
 
-## 4. Новое требование: финальность
+## 4. New requirement: finality
 
-В legacy запись в БД необратима. **В чейне событие может исчезнуть** — реорг. Этого понятия в спеке не было, и без него возможна аттестация на событии, которого больше нет.
+In legacy a database write is irreversible. **In a chain an event can disappear** — a reorg. This notion was absent from the spec, and without it one can attest to an event that no longer exists.
 
-Требования:
+Requirements:
 
-1. **`block` и `finality` обязательны** в каждом наблюдении.
-2. **Правило финальности** задаётся политикой домена: для Ethereum — N подтверждений; для L2 — финальность секвенсера + споры.
-3. **Ре-валидация**: если блок, на который ссылается бандл, оказался в реорге — статус **`INVALID`**, не `INCONCLUSIVE`. Это подделка состояния, а не нехватка данных.
-4. **`Clock` возвращает `(timestamp, height)`**, и решение валидно только для версии состояния на этом height (аналог I7 из legacy).
+1. **`block` and `finality` are mandatory** in every observation.
+2. **The finality rule** is set by the domain policy: for Ethereum — N confirmations; for L2 — sequencer finality + disputes.
+3. **Re-validation**: if the block a bundle references turned out to be in a reorg — status **`INVALID`**, not `INCONCLUSIVE`. This is a fabrication of state, not a shortage of data.
+4. **`Clock` returns `(timestamp, height)`**, and the decision is valid only for the version of state at that height (analogous to I7 from legacy).
 
-Проверка: отдельный тест — «аттестация на блоке K, затем реорг, затем `verify` обязан вернуть `INVALID`».
+Check: a separate test — "attestation at block K, then a reorg, then `verify` must return `INVALID`".
 
 ---
 
-## 5. Десять атак вместо семи
+## 5. Ten attacks instead of seven
 
-Семь общих остаются (batch→keeper, админка→admin-роль, партнёрский вход→внешний контракт, прямой доступ→публичный вызов, restore→upgrade authority, CI→деплой, логи→индексаторы). Три новых:
+The seven common ones remain (batch→keeper, admin panel→admin role, partner entry→external contract, direct access→public call, restore→upgrade authority, CI→deploy, logs→indexers). Three new ones:
 
-| # | Атака | Чем ловится | Провал |
+| # | Attack | How it is caught | Failure |
 |---|---|---|---|
-| 8 | **Эскалация роли**: вызов привилегированной функции не тем адресом | перечисление `onlyOwner`/`onlyRole` + тест вызова | вызов прошёл |
-| 9 | **Переиспользование подписи** между цепями/контрактами | `chain_id` + `address` в подписи | подпись с тестнета принята на mainnet |
-| 10 | **Подмена bytecode** по адресу (upgrade/selfdestruct) | сверка `bytecode_hash` с актом + timelock-проверка | развёрнутый код ≠ доказанному |
+| 8 | **Role escalation**: a privileged function called from the wrong address | enumeration of `onlyOwner`/`onlyRole` + a call test | the call went through |
+| 9 | **Signature reuse** across chains/contracts | `chain_id` + `address` in the signature | a testnet signature accepted on mainnet |
+| 10 | **Bytecode substitution** at an address (upgrade/selfdestruct) | cross-checking `bytecode_hash` against the act + timelock check | deployed code ≠ proven code |
 
-**Отдельно:** keeper/automation — это `batch/cron`-путь; approve/allowance — это «оставленный кред». Оба уже в Z, но формулируются на языке чейна.
+**Separately:** keeper/automation is the `batch/cron` path; approve/allowance is "a credential left behind". Both are already in Z, but are formulated in the language of the chain.
 
 ---
 
-## 6. Prover: второй бэкенд
+## 6. Prover: the second backend
 
-| Инструмент | Что даёт | Когда берём |
+| Tool | What it gives | When we take it |
 |---|---|---|
-| **Foundry** (`forge`, `anvil`, invariant-тесты) | быстрые property-тесты на форке | Day 1, дешёвая проверка |
-| **Halmos** | символьное исполнение EVM | Day 2–3, ловит то, что не покрыли тесты |
-| **Echidna** | property-фаззинг | средний срок |
-| **Certora (CVL)** | дедуктивная верификация правил | премиум, для гарантии |
-| **Kontrol (KEVM)** | формальная семантика EVM | если нужен уровень выше Certora |
+| **Foundry** (`forge`, `anvil`, invariant tests) | fast property tests on a fork | Day 1, a cheap check |
+| **Halmos** | symbolic execution of the EVM | Day 2–3, catches what the tests did not cover |
+| **Echidna** | property fuzzing | medium term |
+| **Certora (CVL)** | deductive verification of rules | premium, for a guarantee |
+| **Kontrol (KEVM)** | formal semantics of the EVM | if a level above Certora is needed |
 
-Оценка `[оценка]`: **3–5 инвариантов на контракт 300–800 строк = 6–12 человеко-дней**, то есть сопоставимо с Rust (24 дня на 500 строк), но дешевле — потому что контракты меньше, а тулчейн зрелее.
+Estimate `[estimate]`: **3–5 invariants per a 300–800 line contract = 6–12 person-days**, that is, comparable to Rust (24 days for 500 lines), but cheaper — because contracts are smaller and the toolchain is more mature.
 
 ---
 
-## 7. Грид R0–R5 сразу двойной
+## 7. The R0–R5 grid is doubled from the start
 
 | R | Legacy | On-chain |
 |---|---|---|
-| R0 | отзыв кредов | пауза контракта, лимит на keeper, отзыв approve |
-| R1 | патч | фикс + upgrade через timelock |
-| R2 | single writer | guard-контракт перед деньгами |
-| R3 | медиатор | инварианты `require` на всех entrypoints |
-| R4 | `Permit` + триггер | capability-роли, снятие `onlyOwner` с движения средств |
-| R5 | Verus + гарантия | Certora/Halmos на инварианты + перечисление привилегированных путей + акт |
+| R0 | credential revocation | contract pause, keeper limit, approve revocation |
+| R1 | patch | fix + upgrade through a timelock |
+| R2 | single writer | guard contract in front of the money |
+| R3 | mediator | `require` invariants on all entrypoints |
+| R4 | `Permit` + trigger | capability roles, removing `onlyOwner` from fund movement |
+| R5 | Verus + guarantee | Certora/Halmos on invariants + enumeration of privileged paths + the act |
 
-**Ключевое различие, которое надо писать в отчёте:** в legacy «прямой доступ» мы **запрещаем**; в чейне публичный вызов **запретить нельзя**. Значит политика обязана быть полной по всем entrypoints — и это доказывается, а не администрируется.
+**The key difference to put in the report:** in legacy we **forbid** "direct access"; in a chain a public call **cannot be forbidden**. So the policy must be complete over all entrypoints — and that is proven, not administered.
 
 ---
 
-## 8. Что это делает с порядком пилота (важнее всего)
+## 8. What this does to the order of the pilot (the most important part)
 
-Если крипта в скоупе — **технический пилот надо делать на контракте, а не на банке**. Сравнение:
+If crypto is in scope — **the technical pilot should be done on a contract, not on a bank**. Comparison:
 
-| | Legacy-банк | Смарт-контракт |
+| | Legacy bank | Smart contract |
 |---|---|---|
-| Тестовая среда | поднять stateful-приложение (дни) | `anvil` + fork (минуты) |
-| Witness | eBPF+WAL+IdP, 12 чел.-дней | события чейна, **0 дней** |
-| NDA и закупка | 6–12 недель | публичный репо, **0** |
-| Подписант границы | product + infra owner | **его нет — чейн и есть инфра** |
-| Воспроизводимость | pinned образы | pinned block, бесплатно |
-| Доказательство | 24 дня на 500 строк | 6–12 дней на контракт |
-| Юридический риск | низкий | **высокий при инциденте** |
+| Test environment | stand up a stateful application (days) | `anvil` + fork (minutes) |
+| Witness | eBPF+WAL+IdP, 12 person-days | chain events, **0 days** |
+| NDA and procurement | 6–12 weeks | public repo, **0** |
+| Boundary signatory | product + infra owner | **there is none — the chain is the infrastructure** |
+| Reproducibility | pinned images | pinned block, free of charge |
+| Proof | 24 days for 500 lines | 6–12 days for a contract |
+| Legal risk | low | **high in case of an incident** |
 
-**Вывод: крипта — технический плацдарм, legacy — коммерческий.** Крипта позволяет проверить механизм за две-три недели без NDA; банк приносит чек и аудиторский экосистемный вес, но вход дорогой.
+**Conclusion: crypto is the technical beachhead, legacy is the commercial one.** Crypto lets you validate the mechanism in two or three weeks without an NDA; a bank brings a check and auditor ecosystem weight, but the entry is expensive.
 
-**Честное предупреждение:** коммерчески крипта **более конкурентна** — Certora, Trail of Bits, OpenZeppelin, Spearbit уже там, покупатель искушённее, а «гарантия» не имеет страхового веса. Технически проще, продавать сложнее.
+**An honest warning:** commercially crypto is **more competitive** — Certora, Trail of Bits, OpenZeppelin, Spearbit are already there, the buyer is more sophisticated, and a "guarantee" carries no insurance weight. Technically simpler, harder to sell.
 
 ---
 
-## 9. Рекомендация: две дорожки на одном ядре
+## 9. Recommendation: two tracks on one core
 
 ```
-ядро (домен-агностичное, 6 портов, формат с subject.kind)
-   ├── дорожка A: крипта   — технический пилот, 3 недели, без NDA
-   └── дорожка B: legacy   — коммерческий пилот, 45 дней, с банком
+core (domain-agnostic, 6 ports, format with subject.kind)
+   ├── track A: crypto   — technical pilot, 3 weeks, without NDA
+   └── track B: legacy   — commercial pilot, 45 days, with a bank
 ```
 
-Правило: **дорожка A не блокирует B и наоборот.** Общими остаются: формат бандла, верификатор, политика, грид, акт. Различаются только бэкенды портов.
+Rule: **track A does not block B and vice versa.** What remains shared: the bundle format, the verifier, the policy, the grid, the act. Only the port backends differ.
 
 ---
 
-## 10. Первые две недели (обновлённый план)
+## 10. The first two weeks (updated plan)
 
-| Дни | Что | Зачем |
+| Days | What | Why |
 |---|---|---|
-| 1–2 | формат бандла с `subject.kind` и `finality` | без этого всё остальное придётся переделывать |
-| 3–5 | `ObservationChannel` для чейна: RPC → logs → подписанный batch с block/height | самый дешёвый и самый сильный witness |
-| 6–8 | `flowguard scan` на публичном контракте: entrypoints, роли, keeper, upgrade-прокси | инвентаризация без NDA |
-| 9–11 | policy DSL → SMT для инвариантов контракта; 3 инварианта | проверка политики |
-| 12–13 | Foundry + Halmos: 3 атаки (эскалация роли, replay между цепями, подмена bytecode) | обязаны провалиться |
-| 14 | бандл + `verify` + `replay` на pinned block | полный цикл на крипте |
+| 1–2 | the bundle format with `subject.kind` and `finality` | without it everything else will have to be redone |
+| 3–5 | `ObservationChannel` for a chain: RPC → logs → a signed batch with block/height | the cheapest and the strongest witness |
+| 6–8 | `flowguard scan` on a public contract: entrypoints, roles, keeper, upgrade proxy | inventory without an NDA |
+| 9–11 | policy DSL → SMT for contract invariants; 3 invariants | policy validation |
+| 12–13 | Foundry + Halmos: 3 attacks (role escalation, replay between chains, bytecode substitution) | they must fail |
+| 14 | bundle + `verify` + `replay` on a pinned block | the full cycle on crypto |
 
-**Критерий успеха двух недель:** `flowguard verify` проверяет бандл по публичному контракту, и все три on-chain атаки дают `BLOCKED`. Это доказывает механизм раньше, чем появится первый банк.
+**Success criterion for the two weeks:** `flowguard verify` checks a bundle against a public contract, and all three on-chain attacks yield `BLOCKED`. This proves the mechanism before the first bank appears.
 
 ---
 
-## 11. Одной строкой
+## 11. In one line
 
-**Крипта в скоупе с дня 1 — это не «+домен», а «+обязательные порты, домен-агностичный формат, финальность, второй prover и три новые атаки».** Зато она даёт бесплатный witness, бесплатную тестовую среду и пилот без NDA — и поэтому технически её надо делать первой, а коммерчески — продавать второй.
+**Crypto in scope from day 1 is not a "+domain" but a "+mandatory ports, a domain-agnostic format, finality, a second prover and three new attacks".** In exchange it gives a free witness, a free test environment and a pilot without an NDA — and that is why, technically, it must be done first, and commercially, sold second.

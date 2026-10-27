@@ -1,82 +1,82 @@
-# 52. OSS-версия: как выглядит софт, который может запустить каждый
+# 52. The OSS version: what software that anyone can run looks like
 
-> Задача: сделать так, чтобы человек за 5 минут получил результат на своём ноутбуке, а не разворачивал bare-metal с KVM. Это меняет разрез системы: динамика (микроVM, witness, атаки) — опциональна, а инвентаризация, политика, доказательство и **проверка чужой гарантии** — работают везде.
-> Рабочее имя — `flowguard` (плейсхолдер).
+> Goal: make it so that a person gets a result on their laptop in 5 minutes, instead of deploying bare-metal with KVM. This changes how the system is sliced: dynamics (microVM, witness, attacks) is optional, while inventory, policy, proof and **verification of someone else's guarantee** work everywhere.
+> Working name — `flowguard` (placeholder).
 
 ---
 
-## 1. Что именно открывается
+## 1. What exactly is opened
 
-Ключевое решение: открыт не только код, но и **формат гарантии**. Иначе гарантия не проверяема третьей стороной, а непроверяемая гарантия — это PDF с логотипом.
+Key decision: not only the code is open, but also the **guarantee format**. Otherwise the guarantee is not verifiable by a third party, and an unverifiable guarantee is a PDF with a logo.
 
-| Открыто навсегда (Apache-2.0 / CC-BY для спеки) | Коммерческое |
+| Open forever (Apache-2.0 / CC-BY for the spec) | Commercial |
 |---|---|
-| Спецификация формата аттестации | Подпись как **юридический акт** (наша ответственность, страховка) |
-| **Верификатор и replay** — `flowguard verify` / `replay` | Библиотека оракулов сверх трёх классов |
-| Policy DSL + SMT-проверка | Managed-прогоны, SLA, поддержка |
-| Референсный медиатор + Verus-доказательство | Приёмка аудитором, отношения с регулятором |
-| Харнесс (оркестратор, witness, executor) — self-host | Ответственность по договору (E&O) |
-| 7 атак и eval harness | Приёмочные корпуса и клиентские интеграции |
+| Specification of the attestation format | Signature as a **legal act** (our liability, insurance) |
+| **Verifier and replay** — `flowguard verify` / `replay` | Oracle library beyond the three classes |
+| Policy DSL + SMT checking | Managed runs, SLA, support |
+| Reference mediator + Verus proof | Acceptance by an auditor, relations with the regulator |
+| Harness (orchestrator, witness, executor) — self-host | Liability under contract (E&O) |
+| 7 attacks and eval harness | Acceptance corpora and client integrations |
 
-**Почему так, а не «всё закрыто».** Ценность гарантии — не в коде, а в подписи и ответственности. Код, который нельзя проверить, обесценивает подпись. Открытый верификатор — единственный способ сделать гарантию проверяемой, а значит продаваемой. Ровно так работают `cosign`/Sigstore и SLSA: формат и проверка открыты, доверие продаётся отдельно.
+**Why this way and not "everything closed".** The value of a guarantee is not in the code but in the signature and the liability. Code that cannot be checked devalues the signature. An open verifier is the only way to make the guarantee verifiable, and therefore sellable. This is exactly how `cosign`/Sigstore and SLSA work: the format and the verification are open, trust is sold separately.
 
-Главный OSS-артефакт — **`flowguard verify`**: любой может проверить чужую гарантию офлайн, не доверяя её издателю. Это то, что делает проект стандартом, а не ещё одним сканером.
+The main OSS artifact is **`flowguard verify`**: anyone can verify someone else's guarantee offline without trusting its issuer. This is what makes the project a standard rather than yet another scanner.
 
 ---
 
-## 2. Первые пять минут
+## 2. The first five minutes
 
 ```console
-$ brew install flowguard          # или cargo install, или docker run
+$ brew install flowguard          # or cargo install, or docker run
 $ flowguard demo
-  ↓ клонирую examples/hello-bank (500 строк, денежный поток)
-  ↓ инвентаризация: 14 writer'ов, 3 креды БД с write-доступом
-  ↓ политика: 1 противоречие → контрпример ниже
+  ↓ cloning examples/hello-bank (500 lines, money flow)
+  ↓ inventory: 14 writers, 3 DB credentials with write access
+  ↓ policy: 1 contradiction → counterexample below
   ↓ ...
 
   ⚠ policy contradiction (policy.yml:12)
      allow transfer when subject.tenant == object.tenant
-     allow transfer when subject.role == "admin"       ← admin из другого тенанта
+     allow transfer when subject.role == "admin"       ← admin from another tenant
      counterexample: tenant=acme, role=admin, object.tenant=globex
 
-  ✓ Z-черновик: flowguard.declaration.yml (14 путей, 2 вне гарантии)
-  ✓ SMT: 42 правила проверено, 1 контрпример
-  ✗ динамика недоступна: нет KVM (ноутбук). 7 атак не запускались.
+  ✓ Z-draft: flowguard.declaration.yml (14 paths, 2 outside the guarantee)
+  ✓ SMT: 42 rules checked, 1 counterexample
+  ✗ dynamics unavailable: no KVM (laptop). 7 attacks were not run.
 
-  Дальше: поправьте политику и запустите `flowguard check`
-         полный прогон: `flowguard run --dynamic` на Linux-хосте с KVM
+  Next: fix the policy and run `flowguard check`
+         full run: `flowguard run --dynamic` on a Linux host with KVM
 
 $ flowguard verify ./examples/sample-attestation
-  ✓ manifest hashes ok (консистентны)
-  ✓ 4 подписи валидны (product_owner, infra_owner, security_lead, verifier)
-  ✓ 7/7 атак BLOCKED (по записанным результатам)
-  ✓ proof: obligations 23/23, assumptions 2 (в whitelist), sorry 0
-  ✓ replay: bundle воспроизведён, хеши совпали
-  ✓ гарантия действительна до 2027-10-27
+  ✓ manifest hashes ok (consistent)
+  ✓ 4 signatures valid (product_owner, infra_owner, security_lead, verifier)
+  ✓ 7/7 attacks BLOCKED (per the recorded results)
+  ✓ proof: obligations 23/23, assumptions 2 (in whitelist), sorry 0
+  ✓ replay: bundle reproduced, hashes matched
+  ✓ guarantee valid until 2027-10-27
 ```
 
-Это и есть «вау»: человек за пять минут видит **проверку чужой гарантии** и **найденное противоречие в политике** — без VM, без клиента, без инфраструктуры.
+This is the "wow": in five minutes a person sees **verification of someone else's guarantee** and **a contradiction found in the policy** — without a VM, without a client, without infrastructure.
 
 ---
 
-## 3. Четыре режима: где что работает
+## 3. Four modes: what works where
 
-| Режим | Нужно | Что даёт | macOS | Windows | Linux |
+| Mode | Requires | What it gives | macOS | Windows | Linux |
 |---|---|---|---|---|---|
-| **audit** | ничего | инвентаризация (статически), политика + SMT, черновик Z, план | ✅ | ✅ | ✅ |
-| **dynamic** | Linux + KVM | witness, 7 атак, `PROVEN` | ❌ | ⚠️ WSL2 ненадёжно | ✅ |
-| **attest** | dynamic + подписи | подписанная аттестация | ❌ | ❌ | ✅ |
-| **verify / replay** | ничего | проверка любой чужой гарантии офлайн | ✅ | ✅ | ✅ |
+| **audit** | nothing | inventory (static), policy + SMT, Z-draft, plan | ✅ | ✅ | ✅ |
+| **dynamic** | Linux + KVM | witness, 7 attacks, `PROVEN` | ❌ | ⚠️ WSL2 unreliable | ✅ |
+| **attest** | dynamic + signatures | signed attestation | ❌ | ❌ | ✅ |
+| **verify / replay** | nothing | verification of any third-party guarantee offline | ✅ | ✅ | ✅ |
 
-Отсюда — правильный порядок ценности для OSS: **verify > audit > dynamic**. Большинство звёзд на GitHub принесут первые два, и они не требуют ничего.
+Hence the correct order of value for OSS: **verify > audit > dynamic**. The first two will bring most of the GitHub stars, and they require nothing.
 
-Для тех, у кого нет железа: `flowguard run --dynamic --remote <runner>` — прогон уходит на KVM-раннер по ssh, локально остаётся только CLI.
+For those without hardware: `flowguard run --dynamic --remote <runner>` — the run goes to a KVM runner over ssh, only the CLI stays local.
 
 ---
 
-## 4. Форматы: два файла, которые всё определяют
+## 4. Formats: the two files that determine everything
 
-### `flowguard.yml` — что защищаем
+### `flowguard.yml` — what we protect
 
 ```yaml
 flow: payment.transfer
@@ -102,127 +102,127 @@ dynamic:
   witnesses: [tap, db_digest, identity]
 ```
 
-### Бандл аттестации — из чего состоит гарантия
+### The attestation bundle — what the guarantee consists of
 
 ```
 attestation-042/
-├── manifest.json              # sha256 всего остального, JCS-канон
-├── declaration.json           # Z: 8 полей, реестр путей, 4 подписи
-├── policy.smt2                # политика в SMT-LIB
-├── inventory.json             # writer'ы, креды, входы + чем найдены
+├── manifest.json              # sha256 of everything else, JCS canonical
+├── declaration.json           # Z: 8 fields, path registry, 4 signatures
+├── policy.smt2                # policy in SMT-LIB
+├── inventory.json             # writers, credentials, entry points + what found them
 ├── witness/
-│   ├── tap.jsonl.zst          # запросы/ответы с nonce
-│   ├── db-digest.json         # состояние до/после, хеш-цепь
+│   ├── tap.jsonl.zst          # requests/responses with nonce
+│   ├── db-digest.json         # state before/after, hash chain
 │   └── identity.json          # token → principal
-├── attacks/                   # 7 файлов, каждый: BLOCKED + доказательство
+├── attacks/                   # 7 files, each: BLOCKED + proof
 │   ├── 01-direct-write.json
 │   └── ...
 ├── proof/
 │   └── mediator.verus.json    # obligations, assumptions ledger, TCB
-├── replay.sh                  # одна команда воспроизведения
-└── signature.sig              # Ed25519, кто подписал
+├── replay.sh                  # one reproduction command
+└── signature.sig              # Ed25519, who signed
 ```
 
-**Бандл — это zip/tar с детерминированной упаковкой.** `flowguard replay bundle.tar.zst` поднимает окружение по опубликованным digest'ам, прогоняет заново, сравнивает хеши. Расхождение — либо баг детерминизма, либо подделка; оба случая — стоп.
+**The bundle is a zip/tar with deterministic packaging.** `flowguard replay bundle.tar.zst` brings up the environment from the published digests, runs it again, compares hashes. A mismatch is either a determinism bug or a forgery; both cases are a stop.
 
 ---
 
-## 5. CLI: двенадцать команд
+## 5. CLI: twelve commands
 
-| Команда | Что делает | Нужен KVM |
+| Command | What it does | Needs KVM |
 |---|---|---|
-| `flowguard init` | создаёт `flowguard.yml` с черновиком | нет |
-| `flowguard scan` | инвентаризация writer'ов, кредов, входов | нет (static) / да (runtime) |
-| `flowguard plan` | черновик Z + черновик политики | нет |
-| `flowguard check` | SMT: противоречия, неявные allow, циклы; контрпримеры | нет |
-| `flowguard mediate init --stack java` | скелет медиатора + `Permit` + PL/pgSQL-триггер | нет |
-| `flowguard attack` | 7 атак, каждая должна дать `BLOCKED` | да |
-| `flowguard prove` | Verus/Dafny на медиаторе, assumptions ledger | нет (нужен тулчейн) |
-| `flowguard attest` | сборка бандла + подписи | да |
-| `flowguard verify <bundle>` | **проверка чужой гарантии** | нет |
-| `flowguard replay <bundle>` | воспроизведение с нуля | да |
-| `flowguard diff a b` | что изменилось между двумя аттестациями | нет |
-| `flowguard badge` | SVG-бейдж для README: `Z-042 · verified 2026-10-27` | нет |
+| `flowguard init` | creates `flowguard.yml` with a draft | no |
+| `flowguard scan` | inventory of writers, credentials, entry points | no (static) / yes (runtime) |
+| `flowguard plan` | Z-draft + policy draft | no |
+| `flowguard check` | SMT: contradictions, implicit allows, cycles; counterexamples | no |
+| `flowguard mediate init --stack java` | skeleton of the mediator + `Permit` + PL/pgSQL trigger | no |
+| `flowguard attack` | 7 attacks, each must yield `BLOCKED` | yes |
+| `flowguard prove` | Verus/Dafny on the mediator, assumptions ledger | no (toolchain required) |
+| `flowguard attest` | bundle assembly + signatures | yes |
+| `flowguard verify <bundle>` | **verification of someone else's guarantee** | no |
+| `flowguard replay <bundle>` | reproduction from scratch | yes |
+| `flowguard diff a b` | what changed between two attestations | no |
+| `flowguard badge` | SVG badge for the README: `Z-042 · verified 2026-10-27` | no |
 
-`diff` и `badge` — маленькие, но именно они делают проект виральным: `flowguard diff` показывает в пулл-реквесте, что изменение кода не расширило границу потока, а `badge` ставится в README клиента.
+`diff` and `badge` are small, but they are exactly what makes the project viral: `flowguard diff` shows in a pull request that a code change did not widen the flow boundary, and the `badge` is placed in the client's README.
 
 ---
 
-## 6. Из чего собран бинарь
+## 6. What the binary is assembled from
 
-Для OSS важна простота установки, поэтому — один статический бинарь, без демона.
+For OSS, ease of installation matters, so — a single static binary, without a daemon.
 
 ```
-flowguard (один бинарь, Rust)
-├── ядро: inventory, policy→SMT, evidence, verify, replay, diff
-├── плагины (подпроцессы, gRPC): 
-│    ├── flowguard-witness   (Rust+Aya, eBPF, только Linux)
-│    ├── flowguard-exec      (Go, в микроVM)
-│    └── flowguard-prover    (обёртка над verus/dafny)
-└── бэкенды:
+flowguard (one binary, Rust)
+├── core: inventory, policy→SMT, evidence, verify, replay, diff
+├── plugins (subprocesses, gRPC):
+│    ├── flowguard-witness   (Rust+Aya, eBPF, Linux only)
+│    ├── flowguard-exec      (Go, in a microVM)
+│    └── flowguard-prover    (wrapper over verus/dafny)
+└── backends:
      ├── sandbox: firecracker | gvisor | none
      ├── witness: ebpf | pgaudit | log-replay
      └── prover:  verus | dafny | none
 ```
 
-**Принцип: без плагинов работает половина.** `audit` и `verify` не требуют ничего, кроме бинаря. Плагины вызываются по подпроцессу с типизированным контрактом — значит сторонний witness или свой prover можно подключить, не форкая ядро.
+**Principle: without plugins, half of it works.** `audit` and `verify` require nothing but the binary. Plugins are invoked as subprocesses with a typed contract — which means a third-party witness or your own prover can be plugged in without forking the core.
 
-`--sandbox none` — режим «нет KVM»: свидетельства собираются из логов и `pgaudit`, без микроVM. Честно помечается: `sandbox: none ⇒ dynamic guarantees unavailable`, и в аттестацию это поле попадает.
+`--sandbox none` — the "no KVM" mode: evidence is collected from logs and `pgaudit`, without a microVM. It is labeled honestly: `sandbox: none ⇒ dynamic guarantees unavailable`, and this field lands in the attestation.
 
 ---
 
-## 7. GitHub-жизнь
+## 7. GitHub life
 
-| Что | Как это выглядит |
+| What | How it looks |
 |---|---|
-| `examples/hello-bank` | 500 строк, денежный поток, 3 уязвимости; `docker compose up` и всё работает |
-| `examples/multi-tenant-saas` | политика тенантов, BOLA, показать 4 политики |
-| GitHub Action | `uses: flowguard/verify-action@v1` — проверяет бандл в PR, падает на расхождении хеша |
-| Action для dynamic | self-hosted KVM-раннер; в README явно «нужно железо» |
-| Docs | `flowguard.dev`: Getting started (5 мин), Формат аттестации (спека), 4 политики, FAQ про «чем это не сканер» |
-| Бейдж | `![flowguard](https://img.shields.io/.../Z-042/verified)` |
+| `examples/hello-bank` | 500 lines, money flow, 3 vulnerabilities; `docker compose up` and everything works |
+| `examples/multi-tenant-saas` | tenant policy, BOLA, show 4 policies |
+| GitHub Action | `uses: flowguard/verify-action@v1` — verifies the bundle in a PR, fails on a hash mismatch |
+| Action for dynamic | self-hosted KVM runner; the README explicitly says "hardware required" |
+| Docs | `flowguard.dev`: Getting started (5 min), Attestation format (spec), 4 policies, FAQ about "how this is not a scanner" |
+| Badge | `![flowguard](https://img.shields.io/.../Z-042/verified)` |
 
-Три примера — минимум: один показывает поток и атаки, второй — политику и контрпример, третий — **verify чужой аттестации** (чтобы было видно, что это независимая проверка, а не самопроверка).
-
----
-
-## 8. Лицензия и управление
-
-- **Код:** Apache-2.0 (патентная защита важна для инфраструктурного софта).
-- **Спека формата:** CC-BY-4.0 — чтобы её могли реализовать другие, включая конкурентов. Это не потеря: чем больше независимых реализаций, тем ценнее наша подпись.
-- **Управление:** BDFL на старте, публичный RFC-процесс для изменений формата. Ломающее изменение формата — новая мажорная версия, старые бандлы проверяются вечно (верификатор поддерживает все версии).
-- **Никакой «open core с отравленными крючками»**: если в README сказано «проверяемо независимо», то верификатор не должен требовать наш сервер. Иначе репутация проекта умрёт за неделю.
+Three examples is the minimum: one shows the flow and the attacks, the second — the policy and the counterexample, the third — **verify of someone else's attestation** (so that it is visible that this is independent verification, not self-verification).
 
 ---
 
-## 9. Дорожная карта OSS
+## 8. License and governance
 
-| Версия | Что | Зачем |
+- **Code:** Apache-2.0 (patent protection matters for infrastructure software).
+- **Format spec:** CC-BY-4.0 — so that others, including competitors, can implement it. This is not a loss: the more independent implementations, the more valuable our signature.
+- **Governance:** BDFL at the start, a public RFC process for format changes. A breaking format change is a new major version, old bundles are verified forever (the verifier supports all versions).
+- **No "open core with poisoned hooks"**: if the README says "independently verifiable", then the verifier must not require our server. Otherwise the project's reputation will die within a week.
+
+---
+
+## 9. OSS roadmap
+
+| Version | What | Why |
 |---|---|---|
-| **v0.1** (4 нед) | `init/scan/plan/check` + `verify` + формат бандла + hello-bank | уже полезно на ноутбуке: находит противоречия в политике |
-| **v0.2** (6 нед) | медиатор + `Permit` + PL/pgSQL-триггер + `attack` (Linux) | физически блокирует обход |
-| **v0.3** (4 нед) | `prove` (Verus) + assumptions ledger | появляется доказательство |
-| **v0.4** (3 нед) | `attest`, `replay`, `diff`, `badge`, GitHub Action | превращается в стандарт |
-| **v1.0** | 3 политики, 2 стека, стабильный формат | можно ссылаться в контракте |
+| **v0.1** (4 weeks) | `init/scan/plan/check` + `verify` + bundle format + hello-bank | already useful on a laptop: finds contradictions in the policy |
+| **v0.2** (6 weeks) | mediator + `Permit` + PL/pgSQL trigger + `attack` (Linux) | physically blocks bypass |
+| **v0.3** (4 weeks) | `prove` (Verus) + assumptions ledger | a proof appears |
+| **v0.4** (3 weeks) | `attest`, `replay`, `diff`, `badge`, GitHub Action | turns into a standard |
+| **v1.0** | 3 policies, 2 stacks, stable format | can be referenced in a contract |
 
-**v0.1 — самая важная.** Если через четыре недели человек на маке не может за пять минут найти противоречие в своей политике и проверить чужую аттестацию — проект не взлетит, сколько бы микроVM внутри ни было.
+**v0.1 is the most important.** If in four weeks a person on a Mac cannot find a contradiction in their policy in five minutes and verify someone else's attestation, the project will not take off, no matter how many microVMs are inside.
 
 ---
 
-## 10. Честные риски OSS-модели
+## 10. Honest risks of the OSS model
 
-| Риск | Что делаем |
+| Risk | What we do |
 |---|---|
-| Гигант забирает формат | это и цель: если GitHub/облако реализует наш формат, наша подпись становится стандартом |
-| OSS-версия обесценивает продажу | наоборот: продаётся ответственность и приёмка, а не софт. Но маржа консалтинга остаётся — это надо принять |
-| `dynamic` не запускается у большинства | так и задумано: `audit`+`verify` бесплатны и viral, `dynamic` — на железе или у нас |
-| Формат меняется и ломает бандлы | вечный верификатор всех версий, RFC-процесс, никогда не удалять поддержку |
-| «Ещё один security-сканер» в восприятии | позиционирование в README первой строкой: **«не находит баги — доказывает, что мимо контроля нельзя пройти»** |
+| A giant takes the format | that is the goal too: if GitHub/cloud implements our format, our signature becomes the standard |
+| The OSS version devalues the sale | on the contrary: what is sold is liability and acceptance, not software. But the consulting margin remains — this has to be accepted |
+| `dynamic` does not run for most | that is by design: `audit`+`verify` are free and viral, `dynamic` — on hardware or with us |
+| The format changes and breaks bundles | an eternal verifier of all versions, RFC process, never remove support |
+| "Yet another security scanner" in perception | positioning in the README, first line: **"it does not find bugs — it proves that the control cannot be bypassed"** |
 
 ---
 
-## 11. Одной строкой
+## 11. In one line
 
-**Один статический бинарь, четыре режима (audit / dynamic / attest / verify), два файла (`flowguard.yml`, бандл аттестации), двенадцать команд, пример на 500 строк, Apache-2.0, формат открыт, подпись — коммерческая.** На ноутбуке работает `audit` и `verify`; на Linux с KVM — `dynamic` и `attest`; `verify` не требует ничего и поэтому может стать стандартом.
+**One static binary, four modes (audit / dynamic / attest / verify), two files (`flowguard.yml`, attestation bundle), twelve commands, a 500-line example, Apache-2.0, the format open, the signature commercial.** On a laptop, `audit` and `verify` work; on Linux with KVM — `dynamic` and `attest`; `verify` requires nothing and therefore can become a standard.
 
-Главная проверка замысла: **если человек не может проверить нашу гарантию без нас — это не гарантия, а маркетинг.** OSS-версия существует ровно для того, чтобы это было возможно.
+The main test of the design: **if a person cannot verify our guarantee without us, it is not a guarantee but marketing.** The OSS version exists precisely to make that possible.

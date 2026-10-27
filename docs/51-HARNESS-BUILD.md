@@ -1,166 +1,166 @@
-# 51. Харнесс: конкретная сборка (ОС, языки, обвязка, воркфлоу)
+# 51. Harness: the concrete build (OS, languages, wiring, workflow)
 
-> Ответ на вопрос «из чего это сделано»: какие ОС, какие языки на каждый компонент, как связаны, как собираются образы, как выглядит рабочий цикл. Без «можно использовать» — с выбором и обоснованием.
+> An answer to the question "what is this made of": which OSes, which languages for each component, how they are connected, how the images are built, what the working cycle looks like. No "you could use" — a choice with justification.
 
 ---
 
-## 1. Операционные системы: четыре разных роли, не путать
+## 1. Operating systems: four different roles, do not confuse them
 
-В системе четыре вида машин, и у каждого своя ОС. Смешивание — источник половины проблем.
+There are four kinds of machines in the system, and each has its own OS. Mixing them is the source of half the problems.
 
-| Роль | Что это | ОС | Почему |
+| Role | What it is | OS | Why |
 |---|---|---|---|
-| **Host** | железо, на котором крутятся микроVM | **Debian 12 (bookworm) minimal**, ядро 6.1+ с BTF, KVM | нет лишних сервисов, стабильные пакеты, eBPF с BTF из коробки. Ubuntu 24.04 допустим, но тянет snapd и больше поверхности |
-| **Guest (agent VM)** | где живёт агент и его инструменты | **Debian 12 slim rootfs**, собранный `mkosi`, ядро `vmlinux` от Firecracker | <200 МБ, нет init-системы-балласта, старт <150 мс |
-| **Guest (target VM)** | где разворачивается **приложение клиента** | **тот же образ, что у клиента в проде** (pinned digest) | иначе PoC не воспроизведётся — это требование I2 |
-| **Witness** | сбор eBPF/DB/IdP-свидетельств | **host, вне обеих VM** | если witness внутри VM агента — он не свидетель |
+| **Host** | the hardware the microVMs run on | **Debian 12 (bookworm) minimal**, kernel 6.1+ with BTF, KVM | no superfluous services, stable packages, eBPF with BTF out of the box. Ubuntu 24.04 is acceptable, but it pulls in snapd and more surface |
+| **Guest (agent VM)** | where the agent and its tools live | **Debian 12 slim rootfs** built by `mkosi`, `vmlinux` kernel from Firecracker | <200 MB, no init-system ballast, start <150 ms |
+| **Guest (target VM)** | where the **client's application** is deployed | **the same image the client runs in prod** (pinned digest) | otherwise the PoC will not reproduce — this is requirement I2 |
+| **Witness** | collection of eBPF/DB/IdP evidence | **host, outside both VMs** | if the witness is inside the agent's VM, it is not a witness |
 
-### Windows: только как цель, не как харнесс
+### Windows: target only, not a harness
 
-**v1 — Linux-only цели.** Windows не поддерживается ни как host, ни как guest для агента.
+**v1 — Linux-only targets.** Windows is supported neither as a host nor as a guest for the agent.
 
-Причина техническая, а не идеологическая: весь witness-слой построен на **eBPF** и `pgaudit`. На Windows эквивалент — **ETW + Windows Event Log + Sysmon**, другой формат, другой сборщик, другая модель доверия (нет BTF, нет `bpf()`-хуков, нельзя гарантировать «вне VM агента» так же дёшево). Это отдельный witness-движок и отдельный продукт-трек.
+The reason is technical, not ideological: the entire witness layer is built on **eBPF** and `pgaudit`. On Windows the equivalent is **ETW + Windows Event Log + Sysmon**, a different format, a different collector, a different trust model (no BTF, no `bpf()` hooks, and "outside the agent's VM" cannot be guaranteed as cheaply). That is a separate witness engine and a separate product track.
 
-Windows появляется в v2 как **цель** (enterprise legacy: .NET, MSSQL, AD), при этом харнесс остаётся на Linux, а Windows-цель поднимается на **отдельном Windows-хосте** с ETW-коллектором. Firecracker Windows не запускает (нет EFI/TPM-пути в разумном виде) — значит нужен Hyper-V/WHPX или отдельное железо. Это меняет экономику, поэтому — не в v1.
+Windows appears in v2 as a **target** (enterprise legacy: .NET, MSSQL, AD), while the harness stays on Linux and the Windows target is brought up on a **separate Windows host** with an ETW collector. Firecracker does not run Windows (there is no EFI/TPM path in any reasonable form) — so you need Hyper-V/WHPX or separate hardware. That changes the economics, which is why it is not in v1.
 
-**Правило:** если клиент на Windows — в v1 продаём только диагностику (`HYPOTHESIS`), гарантию не продаём. Это попадает в публичный перечень отказа.
+**Rule:** if the client is on Windows, in v1 we sell diagnostics only (`HYPOTHESIS`), we do not sell a guarantee. This goes into the public list of exclusions.
 
 ---
 
-## 2. Языки: по компонентам, с обоснованием
+## 2. Languages: by component, with justification
 
-| Компонент | Язык | Почему именно он |
+| Component | Language | Why exactly this one |
 |---|---|---|
-| **`flowctl`** — CLI клиента и оператора | **Rust** | один статический бинарь, работает на любой машине клиента без зависимостей; `clap` + `serde` |
-| **`flow-orch`** — оркестратор (control plane) | **Go** | Temporal SDK зрелый, конкурентность на горутинах, статическая сборка в scratch-образ |
-| **`flow-exec`** — tool server **внутри** agent-VM | **Go** | статический бинарь без libc, кладётся в минимальный rootfs; типизированный gRPC-контракт |
-| **Planner** (LLM-цикл) | **Python 3.12** | экосистема LLM-клиентов, быстрая итерация; живёт **вне** VM, не имеет доступа к цели |
-| **`flow-witness`** — сбор eBPF | **Rust + Aya** | eBPF на Rust без libbpf-боли, безопасная работа с кольцевым буфером, один бинарь |
-| **`flow-verify`** — верификатор + агрегатор вердиктов | **Rust** | детерминизм, криптография (`ed25519-dalek`, `sha2`), невозможность случайно «интерпретировать» |
-| **Медиатор (референс, proof-трек)** | **Rust + Verus** | память бесплатно, контракты доказуемы, индустрия принимает; Verus работает на стабильном Rust |
-| **Медиатор (библиотека под клиента)** | **Java / TypeScript / Python** — по стеку клиента | нельзя тащить Rust в Spring Boot; здесь `Permit` = приватный конструктор + линтер + DB-триггер |
-| **DB-триггер** | **PL/pgSQL** | последняя линия: отклоняет запись без подписи `Permit`; проверка Ed25519 через `pgcrypto`+расширение |
-| **Policy DSL → SMT** | **Python + `z3-solver`** | z3py — единственный зрелый путь; DSL парсится в SMT-LIB, контрпримеры отдаются как текст |
-| **Доказательство** | **Verus** (Rust), **Dafny** (алгоритмы), **Lean 4** (инварианты политики) | по классу задачи; Verus для кода, Lean для модели |
-| **Gate UI** | **TypeScript + React** | четыре экрана, diff-вид; ничего экзотического |
-| **Eval harness стенда** | **Python** (`pytest`) | тесты, которые гоняют весь DAG на корпусе |
+| **`flowctl`** — the client's and the operator's CLI | **Rust** | a single static binary that runs on any client machine without dependencies; `clap` + `serde` |
+| **`flow-orch`** — the orchestrator (control plane) | **Go** | the Temporal SDK is mature, concurrency on goroutines, static build into a scratch image |
+| **`flow-exec`** — the tool server **inside** the agent VM | **Go** | a static binary without libc, fits into a minimal rootfs; a typed gRPC contract |
+| **Planner** (LLM loop) | **Python 3.12** | the LLM-client ecosystem, fast iteration; it lives **outside** the VM and has no access to the target |
+| **`flow-witness`** — eBPF collection | **Rust + Aya** | eBPF in Rust without the libbpf pain, safe ring-buffer handling, a single binary |
+| **`flow-verify`** — verifier + verdict aggregator | **Rust** | determinism, cryptography (`ed25519-dalek`, `sha2`), no possibility of accidentally "interpreting" |
+| **Mediator (reference, proof track)** | **Rust + Verus** | memory for free, provable contracts, industry acceptance; Verus runs on stable Rust |
+| **Mediator (library for the client)** | **Java / TypeScript / Python** — per the client's stack | you cannot drag Rust into Spring Boot; here `Permit` = private constructor + linter + DB trigger |
+| **DB trigger** | **PL/pgSQL** | the last line: rejects a write without a `Permit` signature; Ed25519 verification via `pgcrypto`+extension |
+| **Policy DSL → SMT** | **Python + `z3-solver`** | z3py is the only mature path; the DSL is parsed into SMT-LIB, counterexamples are returned as text |
+| **Proof** | **Verus** (Rust), **Dafny** (algorithms), **Lean 4** (policy invariants) | per task class; Verus for code, Lean for the model |
+| **Gate UI** | **TypeScript + React** | four screens, a diff view; nothing exotic |
+| **Stand eval harness** | **Python** (`pytest`) | tests that run the whole DAG over the corpus |
 
-**Почему не «всё на Python»:** детерминизм и подпись. Компоненты, чьи выходы попадают в акт (`flow-verify`, медиатор, witness), должны быть в языке с предсказуемой семантикой и без динамических сюрпризов. Python оставлен там, где важна скорость разработки, а не гарантии.
+**Why not "everything in Python":** determinism and signing. The components whose outputs go into the act (`flow-verify`, the mediator, the witness) must be in a language with predictable semantics and no dynamic surprises. Python is kept where development speed matters, not guarantees.
 
-**Почему не «всё на Rust»:** скорость команды. `flow-orch` на Go пишется втрое быстрее и его не нужно доказывать.
+**Why not "everything in Rust":** team speed. `flow-orch` in Go is written three times faster and does not need to be proved.
 
 ---
 
-## 3. Структура монорепо
+## 3. Monorepo structure
 
 ```
 flowguarantee/
 ├── cmd/
 │   ├── flowctl/            # Rust CLI
 │   ├── flow-orch/          # Go
-│   ├── flow-exec/          # Go (в VM)
+│   ├── flow-exec/          # Go (in VM)
 │   ├── flow-witness/       # Rust + Aya (eBPF)
 │   └── flow-verify/        # Rust
 ├── crates/
-│   ├── permit/             # Ed25519-токен: структура, подпись, проверка
-│   ├── evidence/           # CAS, JCS-канонизация, hash-chain
-│   └── oracle/             # контракт оракула + 3 класса
+│   ├── permit/             # Ed25519 token: structure, signature, verification
+│   ├── evidence/           # CAS, JCS canonicalization, hash-chain
+│   └── oracle/             # oracle contract + 3 classes
 ├── mediator/
-│   ├── reference/          # Rust + Verus, доказанный
-│   └── adapters/           # java/ ts/ py/ — brownfield-версии
+│   ├── reference/          # Rust + Verus, proven
+│   └── adapters/           # java/ ts/ py/ — brownfield versions
 ├── policy/
-│   ├── dsl/                # парсер YAML
-│   ├── smt/                # z3py-мост, генерация контрпримеров
-│   └── library/            # 5 типовых политик
+│   ├── dsl/                # YAML parser
+│   ├── smt/                # z3py bridge, counterexample generation
+│   └── library/            # 5 typical policies
 ├── proof/
-│   ├── verus/              # контракты медиатора
-│   ├── dafny/              # алгоритмы (лимиты, состояния)
-│   └── lean/               # инварианты политики
+│   ├── verus/              # mediator contracts
+│   ├── dafny/              # algorithms (limits, states)
+│   └── lean/               # policy invariants
 ├── images/
 │   ├── mkosi/              # guest rootfs (agent, target base)
-│   └── host/               # ansible/cloud-init для bare-metal
-├── attacks/                # 7 исполняемых скриптов red-team
-├── evals/                  # eval harness, корпуса, негативные контроли
-├── examples/hello-bank/    # 500 строк: мутация баланса (Day 1)
-└── docs/spec/              # эта спека
+│   └── host/               # ansible/cloud-init for bare-metal
+├── attacks/                # 7 executable red-team scripts
+├── evals/                  # eval harness, corpora, negative controls
+├── examples/hello-bank/    # 500 lines: balance mutation (Day 1)
+└── docs/spec/              # this spec
 ```
 
 ---
 
-## 4. Образы и воспроизводимость
+## 4. Images and reproducibility
 
-| Что | Как | Почему |
+| What | How | Why |
 |---|---|---|
-| Guest rootfs | **`mkosi`** → `.ext4` + `vmlinuz` | декларативно, повторяемо, без Docker-демона на host |
-| Target-окружение | **клиентский образ как есть**, pinned digest | иначе PoC не воспроизведётся у клиента (I2) |
-| Host | **Ansible + cloud-init** на голое железо | KVM, hugepages, `nftables`, `bpftrace` — всё явно |
-| Тулчейн сборки | **Nix flake** (`rust-toolchain`, Go, Python, z3, Verus) | версия компилятора входит в хеш доказательства |
-| Артефакты | **cosign** + digest в манифесте прогона | подпись образов, без неё оркестратор не стартует |
+| Guest rootfs | **`mkosi`** → `.ext4` + `vmlinuz` | declarative, repeatable, no Docker daemon on the host |
+| Target environment | **the client's image as is**, pinned digest | otherwise the PoC will not reproduce at the client's (I2) |
+| Host | **Ansible + cloud-init** on bare metal | KVM, hugepages, `nftables`, `bpftrace` — everything explicit |
+| Build toolchain | **Nix flake** (`rust-toolchain`, Go, Python, z3, Verus) | the compiler version is part of the proof hash |
+| Artifacts | **cosign** + digest in the run manifest | image signing; without it the orchestrator does not start |
 
-**Правило:** `digest(rootfs)` + `digest(toolchain)` + `digest(policy)` = часть `signed_hash` вердикта. Без этого «воспроизводимо» — слово.
+**Rule:** `digest(rootfs)` + `digest(toolchain)` + `digest(policy)` = part of the verdict's `signed_hash`. Without that, "reproducible" is just a word.
 
 ---
 
-## 5. Runtime-обвязка: как компоненты говорят друг с другом
+## 5. Runtime wiring: how the components talk to each other
 
 ```
-flowctl ──gRPC──▶ flow-orch ──Temporal──▶ шаги DAG
+flowctl ──gRPC──▶ flow-orch ──Temporal──▶ DAG steps
                      │
-                     ├──▶ flow-exec (в agent-VM) ──tool RPC──▶ инструменты (semgrep, nmap-нет, curl)
+                     ├──▶ flow-exec (in agent-VM) ──tool RPC──▶ tools (semgrep, no-nmap, curl)
                      ├──▶ flow-witness (host, eBPF) ──signed batch──▶ evidence
                      ├──▶ flow-verify ──▶ verdict, signed
-                     └──▶ z3py (policy check) ──▶ unsat/контрпример
+                     └──▶ z3py (policy check) ──▶ unsat/counterexample
 ```
 
-| Связь | Механизм | Почему |
+| Connection | Mechanism | Why |
 |---|---|---|
-| Клиент ↔ оркестратор | **gRPC**, mTLS | типизированный контракт, легко версионировать |
-| Оркестратор ↔ шаги | **Temporal** | durable, идемпотентность, ретраи без двойных эффектов |
-| Оркестратор ↔ VM | **Firecracker API** (vsock) | нет сети между control plane и VM — только vsock |
-| VM ↔ инструменты | **`flow-exec` + allowlist** | агент не имеет shell; только объявленные tool-call'ы |
-| Свидетельства | **S3 Object Lock (MinIO) + Rekor** | WORM + внешняя метка времени |
-| Метаданные | **PostgreSQL** | прогоны, вердикты, реестры, подписи |
-| Очередь witness→evidence | **NATS JetStream** | лёгкий, at-least-once, без Kafka-балласта |
+| Client ↔ orchestrator | **gRPC**, mTLS | typed contract, easy to version |
+| Orchestrator ↔ steps | **Temporal** | durable, idempotency, retries without double effects |
+| Orchestrator ↔ VM | **Firecracker API** (vsock) | no network between the control plane and the VM — only vsock |
+| VM ↔ tools | **`flow-exec` + allowlist** | the agent has no shell; only declared tool-calls |
+| Evidence | **S3 Object Lock (MinIO) + Rekor** | WORM + external timestamp |
+| Metadata | **PostgreSQL** | runs, verdicts, registries, signatures |
+| witness→evidence queue | **NATS JetStream** | lightweight, at-least-once, without Kafka ballast |
 
-### Две разные «политики» — не путать
+### Two different "policies" — do not confuse them
 
-Это классическая ошибка, которая ломает архитектуру:
+This is the classic mistake that breaks the architecture:
 
 | | Harness policy | Client authz policy |
 |---|---|---|
-| Что решает | что **агенту** разрешено делать | что **субъекту** разрешено делать с объектом |
-| Чем | **OPA/Rego** или Cedar, на уровне tool-call | собственный DSL → **Z3**, компилируется в медиатор |
-| Где | `flow-exec` перед вызовом инструмента | медиатор, в процессе приложения клиента |
-| Доказывается | нет, тестируется | да, SMT + Verus |
+| What it decides | what the **agent** is allowed to do | what the **subject** is allowed to do with an object |
+| By what | **OPA/Rego** or Cedar, at the tool-call level | its own DSL → **Z3**, compiled into the mediator |
+| Where | `flow-exec` before the tool call | the mediator, in the client application's process |
+| Is it proved | no, it is tested | yes, SMT + Verus |
 
-Смешивать нельзя: Rego не доказывается, а SMT не умеет решать «можно ли агенту запустить nmap».
+They must not be mixed: Rego is not provable, and SMT cannot decide "may the agent run nmap".
 
-### Сетевая модель
+### Network model
 
-- У agent-VM **нет** сетевого интерфейса по умолчанию; только vsock к `flow-exec`.
-- Egress — через **Envoy** с allowlist, отдельный маршрут до target-VM.
-- Target-VM в изолированном netns; host `nftables` запрещает всё, кроме объявленного.
-- **Никаких облачных metadata-эндпоинтов** (169.254.169.254) — отдельное правило drop.
+- An agent VM has **no** network interface by default; only vsock to `flow-exec`.
+- Egress — through **Envoy** with an allowlist, a separate route to the target VM.
+- The target VM is in an isolated netns; host `nftables` forbids everything except what is declared.
+- **No cloud metadata endpoints** (169.254.169.254) — a separate drop rule.
 
 ---
 
-## 6. Dev workflow: как это пилится
+## 6. Dev workflow: how this gets built
 
-| Шаг | Инструмент | Гейт |
+| Step | Tool | Gate |
 |---|---|---|
-| Сборка | `just build` поверх Nix flake | компиляция + `clippy -D warnings` + `gofmt -l` |
-| Юнит | `cargo test`, `go test`, `pytest` | покрытие ≥70% на `permit`/`evidence`/`oracle` |
-| Интеграция | `just vm-test` — поднимает Firecracker, гоняет `flow-exec` | старт VM <1 с, tool RPC работает |
-| E2E | `just e2e` — весь DAG на `examples/hello-bank` | 7/7 атак `BLOCKED`, 0 ложных `PROVEN` |
-| Доказательство | `just verify` — Verus/Dafny в CI | 0 `sorry`, `assume` только из whitelist |
-| **Воспроизводимость** | `just attest-replay` | **вчерашний акт собирается байт-в-байт** — релизный гейт |
-| Релиз | `just release` | cosign, SBOM, digest в манифест |
+| Build | `just build` on top of the Nix flake | compilation + `clippy -D warnings` + `gofmt -l` |
+| Unit | `cargo test`, `go test`, `pytest` | coverage ≥70% on `permit`/`evidence`/`oracle` |
+| Integration | `just vm-test` — brings up Firecracker, runs `flow-exec` | VM start <1 s, tool RPC works |
+| E2E | `just e2e` — the whole DAG on `examples/hello-bank` | 7/7 attacks `BLOCKED`, 0 false `PROVEN` |
+| Proof | `just verify` — Verus/Dafny in CI | 0 `sorry`, `assume` only from the whitelist |
+| **Reproducibility** | `just attest-replay` | **yesterday's act rebuilds byte-for-byte** — the release gate |
+| Release | `just release` | cosign, SBOM, digest into the manifest |
 
-**Релиз блокируется одним тестом:** `attest-replay`. Если он красный — не выпускаем ничего, потому что недетерминированный стенд не может выдавать гарантии.
+**The release is blocked by a single test:** `attest-replay`. If it is red, we ship nothing, because a non-deterministic stand cannot issue guarantees.
 
 ---
 
-## 7. Runtime workflow: жизненный цикл прогона
+## 7. Runtime workflow: the life cycle of a run
 
 ```
 IDLE ──compile──▶ PLANNED ──inventory──▶ DRAFT_Z ──G1──▶ Z_SIGNED
@@ -179,47 +179,47 @@ IDLE ──compile──▶ PLANNED ──inventory──▶ DRAFT_Z ──G1─
                                             │
                         ┌───────────────────┴───────────────────┐
                         ▼                                       ▼
-                  RE_ATTEST (15 мин)                      DEGRADED (граница изменилась)
+                  RE_ATTEST (15 min)                      DEGRADED (boundary changed)
                         │                                       │
                         └──────────▶ ATTESTED ◀─── re-declare ──┘
 ```
 
-Состояния хранятся в Temporal; переход в `DEGRADED` — автоматический при любом `Δ ≠ 0` в инвентаризации или в хеше M.
+The states are stored in Temporal; the transition to `DEGRADED` is automatic on any `Δ ≠ 0` in the inventory or in the M hash.
 
 ---
 
-## 8. Что реально нужно написать для Day 1
+## 8. What actually has to be written for Day 1
 
-Пять бинарей, не двенадцать. Остальное — конфигурация и скрипты.
+Five binaries, not twelve. The rest is configuration and scripts.
 
-| Бинарь | Строк (оценка) | Язык | Можно упростить до |
+| Binary | Lines (estimate) | Language | Can be simplified to |
 |---|---|---|---|
-| `flow-exec` | 800–1200 | Go | один tool: `http_call` с allowlist |
-| `flow-witness` | 600–1000 | Rust+Aya | только tap; DB-дайджест — SQL-скриптом |
-| `flow-verify` | 500–800 | Rust | подпись + агрегатор C/T/N |
-| `mediator/reference` | 300–500 | Rust+Verus | одна политика: ownership |
+| `flow-exec` | 800–1200 | Go | one tool: `http_call` with an allowlist |
+| `flow-witness` | 600–1000 | Rust+Aya | tap only; the DB digest by an SQL script |
+| `flow-verify` | 500–800 | Rust | signing + the C/T/N aggregator |
+| `mediator/reference` | 300–500 | Rust+Verus | one policy: ownership |
 | `flowctl` | 400–600 | Rust | `attest`, `replay`, `sign` |
 
-Плюс не-код: `mkosi`-образ (1 день), 7 атак-скриптов (2 дня), PL/pgSQL-триггер (полдня), z3py-мост (1 день).
+Plus non-code: the `mkosi` image (1 day), 7 attack scripts (2 days), the PL/pgSQL trigger (half a day), the z3py bridge (1 day).
 
-**Итого ~3000–4000 строк кода** до первого полного прогона. Это две-три недели одного сильного инженера, а не полгода.
+**A total of ~3000–4000 lines of code** before the first full run. That is two to three weeks for one strong engineer, not half a year.
 
 ---
 
-## 9. Почему именно так, если спросят «а можно иначе»
+## 9. Why exactly this way, if someone asks "could it be done differently"
 
-| Альтернатива | Почему нет |
+| Alternative | Why not |
 |---|---|
-| Docker вместо Firecracker | общий kernel с клиентским кодом = нет изоляции; C5 нарушен |
-| Kubernetes сразу | для одной машины и одного клиента это чистые накладные расходы; K8s — когда появятся 10 клиентов |
-| Один агент в стиле «чат с shell» | нет allowlist, нет детерминизма, нет акта |
-| Python для верификатора | подпись и хеш должны быть в предсказуемом рантайме |
-| Всё доказать целиком | доказательство ограничено медиатором (сотни строк); остальное измеряется |
-| Windows в v1 | другой witness-слой (ETW), другая экономика; отдельный трек |
-| Свой proof assistant | Verus/Dafny/Lean уже есть и дешевле |
+| Docker instead of Firecracker | a shared kernel with client code = no isolation; C5 violated |
+| Kubernetes right away | for one machine and one client this is pure overhead; K8s is for when there are 10 clients |
+| A single agent in the "chat with a shell" style | no allowlist, no determinism, no act |
+| Python for the verifier | signing and hashing must be in a predictable runtime |
+| Prove everything end to end | the proof is limited to the mediator (hundreds of lines); the rest is measured |
+| Windows in v1 | a different witness layer (ETW), different economics; a separate track |
+| Our own proof assistant | Verus/Dafny/Lean already exist and are cheaper |
 
 ---
 
-## 10. Одной строкой
+## 10. In one line
 
-**Host:** Debian 12 + KVM на голом железе. **Guest:** Debian 12 slim через `mkosi`, Firecracker. **Языки:** Rust для всего, что попадает в подпись (`verify`, медиатор, witness, CLI), Go для оркестратора и in-VM executor'а, Python для LLM-планировщика и SMT-моста, PL/pgSQL для последней линии в БД. **Обвязка:** gRPC между сервисами, vsock к VM, Temporal для DAG, NATS для свидетельств, S3+Postgres для хранения, Envoy для egress, OPA для прав агента и Z3 для прав субъекта. **Windows:** только как цель, только v2. **Гейт релиза:** вчерашний акт собирается байт-в-байт.
+**Host:** Debian 12 + KVM on bare metal. **Guest:** Debian 12 slim via `mkosi`, Firecracker. **Languages:** Rust for everything that goes into the signature (`verify`, the mediator, the witness, the CLI), Go for the orchestrator and the in-VM executor, Python for the LLM planner and the SMT bridge, PL/pgSQL for the last line in the DB. **Wiring:** gRPC between services, vsock to the VM, Temporal for the DAG, NATS for evidence, S3+Postgres for storage, Envoy for egress, OPA for the agent's rights and Z3 for the subject's rights. **Windows:** as a target only, v2 only. **Release gate:** yesterday's act rebuilds byte-for-byte.

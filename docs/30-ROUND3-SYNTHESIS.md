@@ -1,31 +1,31 @@
-# 30. Третий круг: свод пяти ответов и итоговые артефакты
+# 30. Third round: synthesis of five answers and final artifacts
 
-> Вход: пять независимых ответов на `11-ROUND3-QUESTIONS.md`. В отличие от второго круга, здесь свод идёт **по совместимости артефактов**, а не по голосам: два контракта, которые нельзя реализовать вместе, — сигнал дырки в спецификации, а не «2 против 3».
-> Результат ниже — то, что можно отдать в реализацию. Всё, что осталось гипотезой, помечено.
+> Input: five independent answers to `11-ROUND3-QUESTIONS.md`. Unlike the second round, the synthesis here proceeds **by artifact compatibility**, not by votes: two contracts that cannot be implemented together are a signal of a hole in the specification, not a "2 against 3".
+> The result below is what can be handed to implementation. Everything that remains a hypothesis is marked.
 
 ---
 
-## 1. Классы: 3/2, и решает не голос, а конфликт с инвариантом
+## 1. Classes: 3/2, and what decides is not the vote but the conflict with an invariant
 
-| Класс | Голоса | Итог |
+| Class | Votes | Outcome |
 |---|---|---|
 | SQL injection | **5/5** | **v1** |
 | IDOR / BOLA | **5/5** | **v1** |
 | path traversal | **3/5** (№2, №3, №5) | **v1** |
-| SSRF | 2/5 (№1, №4) | roadmap, первый кандидат |
-| десериализация, XSS, секреты, CVE, TOCTOU, бизнес-логика | 0/5 | вне v1 |
+| SSRF | 2/5 (№1, №4) | roadmap, first candidate |
+| deserialization, XSS, secrets, CVE, TOCTOU, business logic | 0/5 | outside v1 |
 
-Формально проходит path traversal (3/2). Но голос тут слабый аргумент, поэтому проверяю технически: оракул SSRF требует, чтобы приложение **само сделало исходящий запрос** к внутреннему canary-listener. Это прямо конфликтует с C5/C6 (deny-all egress, никакого живого трафика в v1) и означает, что для SSRF нужно либо ослаблять сетевую политику, либо поднимать отдельный маршрут — то есть платить за класс инфраструктурным риском, а не за находку.
+Formally, path traversal passes (3/2). But a vote is a weak argument here, so I check it technically: the SSRF oracle requires the application to **itself make an outbound request** to an internal canary-listener. This directly conflicts with C5/C6 (deny-all egress, no live traffic in v1) and means that for SSRF one must either weaken the network policy or stand up a separate route — that is, pay for the class with infrastructure risk rather than for the finding.
 
-**Решение: SQLi + IDOR/BOLA + path traversal.** Не по большинству, а потому что третий класс не ломает инвариант изоляции. SSRF — первый на расширение, когда появится контролируемый внутренний сегмент.
+**Decision: SQLi + IDOR/BOLA + path traversal.** Not by majority, but because the third class does not break the isolation invariant. SSRF is first in line for expansion once a controlled internal segment exists.
 
 ---
 
-## 2. Контракт оракула: пять версий сошлись, кроме словаря статусов
+## 2. Oracle contract: five versions converged, except on the status vocabulary
 
-Пять контрактов различались формой, но не семантикой. Совместимы четыре из пяти (№1, №3, №5 — почти дословно; №2 и №4 ложатся отображением). Несовместимость одна — **четыре разных словаря статусов**:
+The five contracts differed in form but not in semantics. Four of the five are compatible (№1, №3, №5 — almost verbatim; №2 and №4 map onto it). There is one incompatibility — **four different status vocabularies**:
 
-| Источник | Статусы |
+| Source | Statuses |
 |---|---|
 | №1 | `PROVEN` / `NOT_PROVEN` / `INVALID` |
 | №2 | `PASS` / `FAIL` / `INCONCLUSIVE` |
@@ -33,25 +33,25 @@
 | №4 | `PROVEN` / `HYPOTHESIS` / `REJECT` |
 | №5 | `PROVEN` / `NOT_PROVEN` / `INDETERMINATE` |
 
-Это не разногласие, а признак, что в спецификации были склеены **две разные сущности**. Развожу:
+This is not a disagreement but a sign that **two different entities** had been glued together in the specification. I separate them:
 
-- **вердикт оракула** — бинарный по природе: предикат выполнен или нет, доказательств достаточно или нет, свидетельство цело или бито;
-- **статус кандидата** в пайплайне — `HYPOTHESIS` (ещё не гоняли), `IN_REVIEW`, `DISPUTED`, `RETRACTED`.
+- **the oracle verdict** — binary by nature: the predicate holds or it does not, the evidence is sufficient or it is not, the witness is intact or it is corrupted;
+- **the candidate status** in the pipeline — `HYPOTHESIS` (not yet run), `IN_REVIEW`, `DISPUTED`, `RETRACTED`.
 
-`HYPOTHESIS` у №4 попал в вердикт оракула по ошибке: это состояние кандидата до оракула, а не его исход. Оракул не может вернуть «гипотезу» — он либо проверил, либо нет.
+In №4, `HYPOTHESIS` ended up in the oracle verdict by mistake: it is the state of a candidate before the oracle, not its outcome. The oracle cannot return a "hypothesis" — it either checked or it did not.
 
-### 2.1. Принятый вердикт — четыре значения
+### 2.1. The adopted verdict — four values
 
-| Значение | Что означает | Что делать |
+| Value | What it means | What to do |
 |---|---|---|
-| `PROVEN` | все предикаты выполнены: `!C ∧ T ∧ !N`, witness цел, fingerprint совпал | в находки, в биллинг, на подпись |
-| `NOT_PROVEN` | предикат не выполнен или C/N дали эффект | в Lane A как данные о покрытии, не биллить |
-| `INCONCLUSIVE` | доказательств недостаточно: witness неполон, прогон флакнул, fingerprint не сошёлся | повтор в бюджете; после — в Lane A |
-| `INVALID` | свидетельство бито: nonce не сошёлся, подпись неверна, привязка к запуску нарушена | инцидент, не ретрай; считать попыткой обмана |
+| `PROVEN` | all predicates hold: `!C ∧ T ∧ !N`, the witness is intact, the fingerprint matched | into findings, into billing, to signing |
+| `NOT_PROVEN` | the predicate does not hold, or C/N produced an effect | into Lane A as coverage data, do not bill |
+| `INCONCLUSIVE` | evidence is insufficient: the witness is incomplete, the run flaked, the fingerprint did not match | retry within budget; afterwards — into Lane A |
+| `INVALID` | the witness is corrupted: the nonce did not match, the signature is wrong, the binding to the run is broken | an incident, not a retry; treat as an attempted deception |
 
-`INVALID` — отдельно от `INCONCLUSIVE` (это был `INVALID` у №1 против `INCONCLUSIVE` у №2/№3). Разные явления: одно про нехватку данных, другое про подделку. №2 верно заметил, что `PASS` не даёт права выставить счёт — это уже шаг биллинга, а не оракула.
+`INVALID` is separate from `INCONCLUSIVE` (this was `INVALID` in №1 versus `INCONCLUSIVE` in №2/№3). They are different phenomena: one is about a lack of data, the other about forgery. №2 correctly noted that `PASS` does not entitle anyone to issue an invoice — that is already a billing step, not an oracle one.
 
-### 2.2. Итоговый контракт
+### 2.2. The final contract
 
 ```python
 ORACLE_CONTRACT = "1.0"
@@ -60,19 +60,19 @@ ORACLE_CONTRACT = "1.0"
 class OracleInput:
     task_id: str
     oracle_id: str            # "authz.object_id"
-    oracle_version: str       # semver, обязательна
+    oracle_version: str       # semver, mandatory
     target_fingerprint: str   # sha256(commit + lockfiles + build_args + runtime)
     candidate: Candidate      # trigger + expected_effect + negative_mutations[>=1]
-    controls: Controls        # refs на прогоны C, T, N (не содержимое!)
-    negative_scope: list[str] # что заведомо не покрыто
+    controls: Controls        # refs to runs C, T, N (not the content!)
+    negative_scope: list[str] # what is deliberately not covered
 
 @dataclass(frozen=True)
 class Witness:
     witness_id: str
-    nonce: str                # verifier-owned, одноразовый
+    nonce: str                # verifier-owned, single-use
     observations: list[Observation]  # tap / db_digest / identity / fs_overlay
     merkle_root: str
-    signer_id: str            # ключ вне VM агента
+    signer_id: str            # key outside the agent's VM
     signature: str
 
 @dataclass(frozen=True)
@@ -81,10 +81,10 @@ class Verdict:
     reason_code: str
     c: bool; t: bool; n: bool
     evidence_digest: str
-    oracle_digest: str        # хеш кода оракула + зависимостей
+    oracle_digest: str        # hash of the oracle code + dependencies
     input_digest: str
     negative_scope: list[str]
-    expires_at: str           # метаданные, НЕ входит в хеш
+    expires_at: str           # metadata, NOT part of the hash
     signature: str
 
 def evaluate_oracle(inp: OracleInput, w: Witness) -> Verdict: ...
@@ -96,287 +96,287 @@ def evaluate_oracle(inp: OracleInput, w: Witness) -> Verdict: ...
 # }))
 ```
 
-**Правила (совпали у всех пяти, кроме формы записи):**
+**Rules (all five agreed, apart from the form of notation):**
 
-1. `PROVEN` только при `!c ∧ t ∧ !n` **и** целом witness (`nonce` совпал, подпись валидна, привязка к текущему запуску).
-2. Оракул исполняется **вне VM агента**; ключ подписи агенту недоступен.
-3. Агент поставляет только кандидата и ссылки на прогоны. **Утверждений об эффекте не поставляет** — иначе оракул проверяет рассказ, а не факт.
-4. Канонизация — **RFC 8785 (JCS)**; хеш — **SHA-256**; подпись — **Ed25519**.
-5. **Временные метки в подписываемый хеш не входят** (иначе невоспроизводимость). `expires_at` живёт рядом, подписан отдельно.
-6. Версии неизменяемы: изменение семантики предиката → MAJOR, все ранее выданные вердикты перепроверяются. Изменение полей witness → MINOR. Косметика → PATCH.
-7. Один и тот же вход даёт **побайтово** одинаковый вердикт. 20 повторных прогонов — идентичны.
+1. `PROVEN` only when `!c ∧ t ∧ !n` **and** an intact witness (`nonce` matched, the signature is valid, binding to the current run).
+2. The oracle executes **outside the agent's VM**; the signing key is not available to the agent.
+3. The agent supplies only the candidate and references to the runs. **It does not supply assertions about the effect** — otherwise the oracle would be checking a story, not a fact.
+4. Canonicalization — **RFC 8785 (JCS)**; hash — **SHA-256**; signature — **Ed25519**.
+5. **Timestamps are not part of the signed hash** (otherwise non-reproducibility). `expires_at` lives alongside, signed separately.
+6. Versions are immutable: a change in predicate semantics → MAJOR, and all previously issued verdicts are re-checked. A change to witness fields → MINOR. Cosmetics → PATCH.
+7. The same input yields a **byte-for-byte** identical verdict. 20 repeated runs — identical.
 
-Стоимость сборки этого контракта в реализацию: 1–2 дня (тест-векторы + схема). Это самая дешёвая часть всего проекта.
+The cost of building this contract into the implementation: 1–2 days (test vectors + schema). This is the cheapest part of the whole project.
 
 ---
 
-## 3. Библиотека оракулов: стоимость сошлась на 4–8 днях
+## 3. Oracle library: the cost converged at 4–8 days
 
-| | №1 | №2 | №3 | №4 | №5 | Итог |
+| | №1 | №2 | №3 | №4 | №5 | Outcome |
 |---|---|---|---|---|---|---|
-| Дней на оракул | 8 | 2–5 | 3 | 4 | 8 | **план 4, худший 8** |
-| Окупаемость | ~6 находок | — | — | ~10 находок | 20–40 находок | **не считается в находках** |
+| Days per oracle | 8 | 2–5 | 3 | 4 | 8 | **plan 4, worst 8** |
+| Payback | ~6 findings | — | — | ~10 findings | 20–40 findings | **not counted in findings** |
 
-Разброс окупаемости (6 / 10 / 20–40) — не разногласие, а следствие того, что все считали её через неизвестную величину (стоимость ручного ревью). №3 единственный, кто это заметил и предложил правильную метрику: **суммарная экономия времени относительно ручного процесса**, а не число находок.
+The spread in payback (6 / 10 / 20–40) is not a disagreement but a consequence of everyone computing it through an unknown quantity (the cost of manual review). №3 is the only one who noticed this and proposed the correct metric: **total time saved relative to the manual process**, not the number of findings.
 
-**Принято:** библиотека из трёх оракулов = **12–24 инженерных дня** (3 × 4–8). Это P0-инвестиция и она дешёвая: две-три недели одного инженера.
+**Adopted:** a library of three oracles = **12–24 engineering days** (3 × 4–8). This is a P0 investment, and a cheap one: two to three weeks of a single engineer.
 
-### 3.1. Мутационный набор: 5 обязательных + 2 дополнительных
+### 3.1. Mutation set: 5 mandatory + 2 additional
 
-Пересечение пяти наборов (у №1 — 7, у №2 — 5+доп, у №3 — 7, у №4 — 7, у №5 — 6):
+Intersection of the five sets (№1 — 7, №2 — 5+additional, №3 — 7, №4 — 7, №5 — 6):
 
-**Обязательные (названы у ≥3):**
-1. **Удаление триггера** — вход заменён безопасным, эффект должен исчезнуть.
-2. **Удаление эффекта** — триггер есть, эффект подавлен → `NOT_PROVEN`.
-3. **Семантическая мутация** — вход изменён так, чтобы уязвимое условие нарушилось → `NOT_PROVEN`.
-4. **Подмена witness** — данные от другого запуска/репозитория, подпись не пересчитана → `INVALID`.
-5. **Повтор nonce** — старое свидетельство в новой проверке → `INVALID`.
+**Mandatory (named by ≥3):**
+1. **Trigger removal** — the input is replaced with a safe one, the effect must disappear.
+2. **Effect removal** — the trigger is present, the effect is suppressed → `NOT_PROVEN`.
+3. **Semantic mutation** — the input is changed so that the vulnerable condition is broken → `NOT_PROVEN`.
+4. **Witness substitution** — data from a different run/repository, the signature not recomputed → `INVALID`.
+5. **Nonce replay** — an old witness in a new check → `INVALID`.
 
-**Дополнительные:** подмена `oracle_version`/`oracle_digest`, drift fingerprint (другая версия зависимости), подмена субъекта/объекта для BOLA, флакующий эффект (два прогона дают разные C/T/N).
+**Additional:** substitution of `oracle_version`/`oracle_digest`, fingerprint drift (a different version of a dependency), subject/object substitution for BOLA, a flaky effect (two runs give different C/T/N).
 
-**Критерий приёмки оракула в библиотеку** (самый строгий из пяти, №1, в числовой форме):
-- **0** ложных `PROVEN`;
-- **≥90%** истинных `PROVEN` на корпусе ≥20 уязвимых + ≥20 исправленных кейсов;
-- **≥95%** мутантов убито;
-- **20 из 20** повторных прогонов дают идентичный вердикт.
+**Criterion for accepting an oracle into the library** (the strictest of the five, №1, in numerical form):
+- **0** false `PROVEN`;
+- **≥90%** true `PROVEN` on a corpus of ≥20 vulnerable + ≥20 fixed cases;
+- **≥95%** of mutants killed;
+- **20 of 20** repeated runs give an identical verdict.
 
-CI прогоняет набор на каждый bump `oracle_version`, merge блокируется при любом расхождении.
+CI runs the set on every `oracle_version` bump, and a merge is blocked on any discrepancy.
 
 ---
 
-## 4. Witness-плоскость: 12 дней, три канала
+## 4. Witness plane: 12 days, three channels
 
-Пять таблиц, пересечение:
+Five tables, intersection:
 
-| Канал | Голоса | Стоимость | Итог |
+| Channel | Votes | Cost | Outcome |
 |---|---|---|---|
-| сетевой tap вне VM | 5/5 | 2–5 дн | **обязателен** |
-| DB-дайджест / WAL вне VM | 5/5 | 2–7 дн | **обязателен** |
-| независимая идентичность принципала (IdP-stub вне VM) | 3/5 | 2–3 дн | **обязателен** |
-| overlay-diff ФС | 2/5 | 1–4 дн | бэклог (не нужен для BOLA) |
-| граф процессов / syscall | 2/5 | 2–3 дн | бэклог |
-| verifier-owned nonce sink | 2/5 | 1 дн | входит в verifier |
+| network tap outside the VM | 5/5 | 2–5 d | **mandatory** |
+| DB digest / WAL outside the VM | 5/5 | 2–7 d | **mandatory** |
+| independent principal identity (IdP-stub outside the VM) | 3/5 | 2–3 d | **mandatory** |
+| filesystem overlay-diff | 2/5 | 1–4 d | backlog (not needed for BOLA) |
+| process graph / syscall | 2/5 | 2–3 d | backlog |
+| verifier-owned nonce sink | 2/5 | 1 d | part of the verifier |
 
-**Итого 9–16 дней, план 12.** Все пять дали разброс, но сходятся на порядке: 9 (№5), 12 (№1), 8–14 (№3), 16 (№4). Складывать оценки нельзя (это отметили №2 и №3) — каналы делят инфраструктуру.
+**Total 9–16 days, plan 12.** All five gave a spread but converge on the order: 9 (№5), 12 (№1), 8–14 (№3), 16 (№4). The estimates cannot be added up (№2 and №3 noted this) — the channels share infrastructure.
 
-**Почему именно идентичность, а не overlay-diff:** класс — BOLA. Эффект здесь «A прочитал объект B», а это утверждение про **принадлежность**, а не про файлы. Без независимого канала идентичности нельзя доказать, что за запросом стоял именно A, а объект принадлежал именно B. Overlay-diff доказывает доступ к файлу — для другого класса.
+**Why identity and not overlay-diff:** the class is BOLA. The effect here is "A read object B", and that is a statement about **ownership**, not about files. Without an independent identity channel one cannot prove that the request came from A specifically and that the object belonged to B specifically. Overlay-diff proves access to a file — that is for a different class.
 
-### 4.1. Приёмочный тест witness-плоскости: два теста, а не один
+### 4.1. Acceptance test for the witness plane: two tests, not one
 
-№2 поймал важное: **nonce ловит повтор, но не доказывает независимость наблюдателя.** Значит тестов два.
+№2 caught something important: **a nonce catches replay but does not prove observer independence.** So there are two tests.
 
-**Тест A — целостность свидетельства (nonce/replay).**
-- *Дано:* агент контролирует VM, но не ключи подписи и не журнал witness; nonce в witness-плоскости.
-- *Когда:* агент предъявляет старое свидетельство с новым nonce, подменяет объект, пишет nonce в свой лог.
-- *Тогда:* verifier возвращает `INVALID`, регистрирует `reason_code`.
-- *Провал:* любой поддельный/повторный/чужой witness получил `PROVEN`.
+**Test A — witness integrity (nonce/replay).**
+- *Given:* the agent controls the VM but not the signing keys or the witness log; the nonce lives in the witness plane.
+- *When:* the agent presents an old witness with a new nonce, substitutes the object, writes the nonce into its own log.
+- *Then:* the verifier returns `INVALID` and records a `reason_code`.
+- *Failure:* any forged/replayed/foreign witness received `PROVEN`.
 
-**Тест B — независимость наблюдателя.**
-- *Дано:* агент имеет все права root внутри VM.
-- *Когда:* агент пытается изменить конфигурацию witness-плоскости, подменить её бинарь, отключить канал.
-- *Тогда:* канал живёт на хосте/вне сети VM, изменение фиксируется как инцидент, прогон помечается `INVALID`.
-- *Провал:* агент может отключить или изменить witness и всё равно получить `PROVEN`.
+**Test B — observer independence.**
+- *Given:* the agent has full root rights inside the VM.
+- *When:* the agent attempts to change the configuration of the witness plane, substitute its binary, disable a channel.
+- *Then:* the channel lives on the host/outside the VM network, the change is recorded as an incident, and the run is marked `INVALID`.
+- *Failure:* the agent can disable or alter the witness and still obtain `PROVEN`.
 
-Отдельно фиксируется остаточная граница (№3): **witness не защищает, если скомпрометирован сам стенд или система идентификации.** Это в негативный скоуп.
+Separately, a residual boundary is recorded (№3): **the witness does not protect if the testbed itself or the identity system is compromised.** This goes into the negative scope.
 
 ---
 
-## 5. Карточка ревью: 7 элементов + подпись
+## 5. Review card: 7 elements + signature
 
-Пересечение пяти наборов:
+Intersection of the five sets:
 
-| # | Элемент | Голоса | Что ловит |
+| # | Element | Votes | What it catches |
 |---|---|---|---|
-| 1 | fingerprint + `oracle_id`/`version` | 5/5 | перенос доказательства на другую версию |
-| 2 | C/T/N: результаты и хеши прогонов | 5/5 | отсутствие причинности |
-| 3 | witness: каналы, nonce, хеши | 5/5 | подделку наблюдения |
-| 4 | негативный скоуп | 5/5 | overclaim |
-| 5 | replay kit + одна команда | 5/5 | непроверяемость |
-| 6 | предложенный R0/R1 + результат ре-теста | 3/5 | фикс, которого нет |
-| 7 | утверждение + модель доступа/предусловия | 3/5 | подпись не того утверждения |
+| 1 | fingerprint + `oracle_id`/`version` | 5/5 | carrying evidence over to a different version |
+| 2 | C/T/N: results and hashes of the runs | 5/5 | absence of causality |
+| 3 | witness: channels, nonce, hashes | 5/5 | forgery of an observation |
+| 4 | negative scope | 5/5 | overclaim |
+| 5 | replay kit + a single command | 5/5 | unverifiability |
+| 6 | the proposed R0/R1 + re-test result | 3/5 | a fix that does not exist |
+| 7 | the claim + access model/preconditions | 3/5 | a signature on the wrong claim |
 
-**Восьмой блок — не контент, а метаданные подписи:** имя и квалификация assessor'а, проверка конфликта интересов, срок действия вердикта, путь оспаривания. Добавлено по №4 — единственному, кто подумал о том, **кто** подписал и что делать, когда клиент не согласен.
+**The eighth block is not content but signing metadata:** the assessor's name and qualifications, a conflict-of-interest check, the verdict's validity period, the path for contesting it. Added on №4's initiative — the only one who thought about **who** signed and what to do when the client disagrees.
 
-### 5.1. Что не входит в карточку (3/5 против остальных)
+### 5.1. What does not go on the card (3/5 against the rest)
 
-**Нельзя ужимать** (пересечение): **негативные контроли C/N** · **происхождение witness** · **негативный скоуп**. Три разных класса ошибок, объединять их в одну «оценку» нельзя.
+**Must not be compressed** (intersection): **negative controls C/N** · **provenance of the witness** · **negative scope**. Three different classes of error; they cannot be merged into a single "score".
 
-**Не входит на карточку** (уникальный и правильный пункт №1): **рассуждения агента**. Убедительный нарратив смещает assessor'а — проскочит правдоподобная ложная находка. Карточка содержит свидетельства, не рассказ. Это правило проектирования UI, а не пожелание.
+**Does not go on the card** (a unique and correct point from №1): **the agent's reasoning**. A persuasive narrative biases the assessor — a plausible false finding will slip through. The card contains evidence, not a story. This is a UI design rule, not a wish.
 
-Плюс №1: **список других находок и гипотез** на карточку не попадает — иначе подписывается не то, что смотрели.
+Also from №1: **a list of other findings and hypotheses** does not go on the card — otherwise what gets signed is not what was reviewed.
 
-### 5.2. 15 минут — цель продукта, а не факт
+### 5.2. 15 minutes is a product goal, not a fact
 
-№2 и №3 независимо отметили: 15 минут — целевое требование, его надо проверить серией слепых оценок. **Принято как гипотеза с датой проверки**, а не как константа в плане. Если реально 35 минут — экономика режима A рассыпается (см. §7), и это меняет продукт, а не только UI.
+№2 and №3 independently noted: 15 minutes is a target requirement and must be verified by a series of blind assessments. **Accepted as a hypothesis with a verification date**, not as a constant in the plan. If it is in fact 35 minutes, the economics of mode A fall apart (see §7), and that changes the product, not just the UI.
 
 ---
 
-## 6. TAM: числа не сошлись, поэтому берём минимум
+## 6. TAM: the numbers did not converge, so we take the minimum
 
-| Сегмент | №1 | №3 | №4 | №5 | Медиана | **План** |
+| Segment | №1 | №3 | №4 | №5 | Median | **Plan** |
 |---|---|---|---|---|---|---|
 | open-source | 25% | 40% | 30% | 55% | 35% | **25%** |
-| продукт 50–500 чел. | 15% | 25% | 45% | 35% | 30% | **15%** |
+| product 50–500 people | 15% | 25% | 45% | 35% | 30% | **15%** |
 | enterprise legacy | 3% | 10% | 15% | 12% | 11% | **3%** |
 
-№2 числа не дал вообще и предложил эксперимент — методологически верно.
+№2 gave no number at all and proposed an experiment — methodologically correct.
 
-Разброс 3–15% по enterprise и 25–55% по OSS означает, что данных нет ни у кого. **Правило для чисел без основания: берём минимум**, потому что ошибка в меньшую сторону дешевле (не построили лишнего). План: **25 / 15 / 3 %.
+The spread of 3–15% for enterprise and 25–55% for OSS means that nobody has the data. **Rule for numbers without a basis: take the minimum**, because erring downward is cheaper (we did not build something unnecessary). Plan: **25 / 15 / 3 %.
 
-**Что это значит коммерчески.** При 4 находках и цене $7,5–12k эффективный TAM сжимается в ~6 раз. Это не деталь: если доля проходящих фильтр 15%, то для выручки €3M/год нужно в ~6 раз больше ангажементов, чем показывал номинальный TAM. Проверяется аудитом preflight на выборках по 50 репозиториев — 3–5 дней работы, и это дешевле, чем любая ошибка в ценообразовании.
+**What this means commercially.** At 4 findings and a price of $7.5–12k, the effective TAM compresses by ~6 times. This is not a detail: if the share passing the filter is 15%, then €3M/year in revenue requires ~6 times more engagements than the nominal TAM suggested. This is verified by a preflight audit on samples of 50 repositories — 3–5 days of work, and that is cheaper than any error in pricing.
 
 ---
 
-## 7. 30-дневный тест: планы не сходятся с собственными сметами
+## 7. The 30-day test: the plans do not add up to their own estimates
 
-Это главная находка свода, и её надо принять до реализации, а не после.
+This is the main finding of the synthesis, and it has to be accepted before implementation, not after.
 
-| | Оракулы | Witness | Verifier | Итого до старта прогонов | Влезает в 30 дней? |
+| | Oracles | Witness | Verifier | Total before runs start | Fits in 30 days? |
 |---|---|---|---|---|---|
-| №1 | 3×8 = 24 | 12 | 3 | **39** | нет |
-| №2 | 3×(2–5) = 6–15 | 10–22 | 2–4 | **18–41** (в плане отведено 11) | нет |
-| №3 | 3×3 = 9 | 8–14 | — | **17–23** (в плане 7) | нет |
-| №4 | — | 16 | — | не расписан | — |
-| №5 | 3×8 = 24 | 9 | — | **33** (в 30 дней с прогонами) | нет |
+| №1 | 3×8 = 24 | 12 | 3 | **39** | no |
+| №2 | 3×(2–5) = 6–15 | 10–22 | 2–4 | **18–41** (11 allotted in the plan) | no |
+| №3 | 3×3 = 9 | 8–14 | — | **17–23** (7 in the plan) | no |
+| №4 | — | 16 | — | not broken down | — |
+| №5 | 3×8 = 24 | 9 | — | **33** (in 30 days including runs) | no |
 
-**Пять из пяти не сходятся.** Три ответа прямо противоречат сами себе: план отводит на сборку меньше дней, чем их же оценки.
+**Five out of five do not add up.** Three answers directly contradict themselves: the plan allots fewer days to the build than their own estimates.
 
-Значит одно из двух: либо 30-дневный тест не включает witness и проверяет только «работают ли оракулы» (то есть **пропускает главный риск** — невозможность подделки), либо срок не 30 дней.
+So it is one of two things: either the 30-day test does not include the witness and checks only "whether the oracles work" (that is, **skips the main risk** — the impossibility of forgery), or the deadline is not 30 days.
 
-### 7.1. Принятая двухфазная схема
+### 7.1. The adopted two-phase scheme
 
-**Фаза 1 (30 дней) — один класс, конец в конец, с доказательством независимости.**
+**Phase 1 (30 days) — one class, end to end, with proof of independence.**
 
-| Дни | Что | Ресурс |
+| Days | What | Resource |
 |---|---|---|
-| 1–5 | корпус: **12 репозиториев** (6 с подтверждёнными уязвимостями + 6 контрольных), фиксация commit и ground truth | 3 ч-дня |
-| 6–13 | **один** оракул IDOR/BOLA + verifier-процесс | 8 ч-дней |
-| 14–25 | witness-плоскость: tap + DB-дайджест + идентичность | 12 ч-дней |
-| 26–28 | слепые прогоны + оба приёмочных теста (A и B) | 2 ч-дня |
-| 29–30 | независимая перепроверка каждого `PROVEN`, публикация | 2 ч-дня |
+| 1–5 | corpus: **12 repositories** (6 with confirmed vulnerabilities + 6 control), fixing the commit and ground truth | 3 person-days |
+| 6–13 | **one** IDOR/BOLA oracle + verifier process | 8 person-days |
+| 14–25 | witness plane: tap + DB digest + identity | 12 person-days |
+| 26–28 | blind runs + both acceptance tests (A and B) | 2 person-days |
+| 29–30 | independent re-check of every `PROVEN`, publication | 2 person-days |
 
-Итого **27 человеко-дней**, влезает.
+Total **27 person-days**; it fits.
 
-**Пороги фазы 1:**
-- медиана `PROVEN` на репозиторий **≥2**;
+**Phase 1 thresholds:**
+- median `PROVEN` per repository **≥2**;
 - `repro rate` **≥90%**;
-- **0 ложных `PROVEN`** на контрольных репозиториях (любой — немедленный провал);
-- оба теста witness-плоскости пройдены;
+- **0 false `PROVEN`** on the control repositories (any one — immediate failure);
+- both witness plane tests passed;
 - `HYPOTHESIS/PROVEN ≤ 10`.
 
-**Фаза 2 (недели 5–10) — три класса, плотность находок.**
-Догоняем оракулы SQLi и path traversal (8–16 дней), затем корпус 20 репозиториев и порог **медиана ≥4 `PROVEN`**.
+**Phase 2 (weeks 5–10) — three classes, finding density.**
+We catch up the SQLi and path traversal oracles (8–16 days), then a corpus of 20 repositories and a threshold of **median ≥4 `PROVEN`**.
 
-**Почему так:** фаза 1 проверяет гипотезу «можно ли вообще произвести неподделываемое доказательство» — то есть главный риск. Фаза 2 проверяет гипотезу «достаточно ли находок для экономики» — второй риск. Смешивать их в один 30-дневный забег нельзя: провал по плотности находок ничего не скажет о достоверности, а провал по достоверности сделает бессмысленным любой результат по плотности.
+**Why this way:** phase 1 tests the hypothesis "is it possible at all to produce unforgeable evidence" — that is, the main risk. Phase 2 tests the hypothesis "are there enough findings for the economics" — the second risk. They cannot be mixed into one 30-day sprint: a failure on finding density says nothing about trustworthiness, while a failure on trustworthiness makes any density result meaningless.
 
 ---
 
-## 8. Условие «не строить»: 5/5 дали, и они согласуются
+## 8. The "do not build" condition: 5/5 provided one, and they agree
 
-| | Формулировка |
+| | Formulation |
 |---|---|
-| №1 | медиана `<1 PROVEN` после ручной проверки на 10+ валидируемых репо |
-| №2 | ни один класс не даёт воспроизводимых `PROVEN` с независимым witness в бюджете |
-| №3 | `PROVEN` достигается только ручным вмешательством или ослаблением критериев |
-| №4 | медиана `<1` при `repro <80%` на 10 репо |
-| №5 | медиана `<2` при работающих оракулах и witness на 20 репо |
+| №1 | median `<1 PROVEN` after manual review on 10+ validatable repos |
+| №2 | no class yields reproducible `PROVEN` with an independent witness within budget |
+| №3 | `PROVEN` is achieved only by manual intervention or by weakening the criteria |
+| №4 | median `<1` with `repro <80%` on 10 repos |
+| №5 | median `<2` with working oracles and witness on 20 repos |
 
-**Сведённое условие (принято):**
+**Consolidated condition (adopted):**
 
-> Если на корпусе репозиториев, прошедших контракт валидируемости, при **работающей** witness-плоскости и пройденных приёмочных тестах медиана подтверждённых `PROVEN` **меньше 2**, — продукт в заявленном виде не строится.
+> If, on a corpus of repositories that passed the validatability contract, with a **working** witness plane and passed acceptance tests, the median of confirmed `PROVEN` is **less than 2**, then the product as claimed is not built.
 
-Уточнения №3 принимаются отдельно и важнее числа: если порог достигается только за счёт ручного вмешательства в каждый результат или ослабления критериев доказательства, **гипотеза автоматизируемого продукта не подтверждена независимо от медианы**.
+№3's qualifications are accepted separately and matter more than the number: if the threshold is reached only through manual intervention in every result or through weakening the proof criteria, **the hypothesis of an automatable product is not confirmed regardless of the median**.
 
 ---
 
-## 9. Что осталось решённым не до конца
+## 9. What remains not fully settled
 
-| # | Что | Почему | Как закрыть |
+| # | What | Why | How to close |
 |---|---|---|---|
-| 1 | Доля проходящих контракт валидируемости (25/15/3) | данных нет ни у кого | preflight-аудит на выборках по 50 репо, 3–5 дней |
-| 2 | Реальная длительность ревью (15 мин?) | только цель, не измерение | серия слепых оценок на 30 находках |
-| 3 | Окупаемость human-sealed оракула | зависит от неизвестной стоимости ревью | после п.2 |
-| 4 | Нужен ли overlay-diff/граф процессов | для BOLA не нужен, для других классов — вероятно | в фазе 2 при добавлении path traversal |
+| 1 | The share passing the validatability contract (25/15/3) | nobody has the data | preflight audit on samples of 50 repos, 3–5 days |
+| 2 | The real duration of a review (15 min?) | a goal only, not a measurement | a series of blind assessments on 30 findings |
+| 3 | Payback of the human-sealed oracle | depends on the unknown cost of review | after item 2 |
+| 4 | Whether overlay-diff/process graph is needed | not needed for BOLA, probably needed for other classes | in phase 2, when path traversal is added |
 
 ---
 
-## 10. Итог: что можно отдавать в реализацию
+## 10. Summary: what can be handed to implementation
 
-| Артефакт | Статус | Готовность |
+| Artifact | Status | Readiness |
 |---|---|---|
-| Контракт оракула + 4-значный вердикт | **готов** | вставлять в код, 1–2 дня на схему и тест-векторы |
-| Три класса: SQLi, IDOR/BOLA, path traversal | **зафиксировано** | с обоснованием отказа от SSRF |
-| Мутационный набор (5 + 4) и критерий приёмки | **готов** | в CI |
-| Witness-набор: tap + DB-дайджест + идентичность, 12 дней | **готов** | в реализацию |
-| Два приёмочных теста witness-плоскости | **готов** | в CI |
-| Карточка ревью: 7 элементов + блок подписи | **готов** | в UI-спеку |
-| Контракт валидируемости репозитория | **готов** | публиковать как входные требования |
-| Позитивная аттестация покрытия | **готов** | в шаблон отчёта |
-| Двухфазный эксперимент с порогами | **готов** | запускать |
-| TAM 25/15/3 | **гипотеза** | preflight-аудит |
-| 15 минут на ревью | **гипотеза** | слепые оценки |
+| Oracle contract + 4-value verdict | **ready** | paste into code, 1–2 days for the schema and test vectors |
+| Three classes: SQLi, IDOR/BOLA, path traversal | **fixed** | with the rationale for declining SSRF |
+| Mutation set (5 + 4) and the acceptance criterion | **ready** | into CI |
+| Witness set: tap + DB digest + identity, 12 days | **ready** | into implementation |
+| Two witness plane acceptance tests | **ready** | into CI |
+| Review card: 7 elements + signature block | **ready** | into the UI spec |
+| Repository validatability contract | **ready** | publish as input requirements |
+| Positive coverage attestation | **ready** | into the report template |
+| Two-phase experiment with thresholds | **ready** | launch it |
+| TAM 25/15/3 | **hypothesis** | preflight audit |
+| 15 minutes per review | **hypothesis** | blind assessments |
 
-**Следующий шаг — не вопрос, а код:** фаза 1, дни 1–5, корпус из 12 репозиториев с зафиксированным ground truth. Всё остальное уже специфицировано настолько, что разработку можно начинать, не возвращаясь к моделям.
+**The next step is not a question but code:** phase 1, days 1–5, a corpus of 12 repositories with ground truth fixed. Everything else is already specified to the point that development can begin without going back to the models.
 
 ---
 
-# 11. Шестой ответ: подтвердил шесть решений и сломал один срок
+# 11. The sixth answer: confirmed six decisions and broke one deadline
 
-## 11.1. Что подтвердилось (6/6)
+## 11.1. What was confirmed (6/6)
 
-| Решение | Голоса после №6 |
+| Decision | Votes after №6 |
 |---|---|
-| SQLi + IDOR/BOLA + path traversal | **4/6** (SSRF 2/6) — выбор устойчив |
-| Мутационный набор C/N/witness/fingerprint | 6/6, совпадает по составу |
-| Карточка: fingerprint → C/T/N → witness → replay → фикс → негативный скоуп | 6/6 |
-| Медиана ≥4 `PROVEN` как порог фазы 2 | 5/6 |
-| Любой ложный `PROVEN` на чистом контроле = провал | 6/6 |
-| TAM: 25% OSS, 15% mid-market | **совпало с планировочным полом** |
-| Условие «не строить» | 6/6; принятое `<2` строже предложенного `<1` — оставляем `<2` |
-| Witness: tap + DB-дайджест + идентичность | 6/6 по составу |
+| SQLi + IDOR/BOLA + path traversal | **4/6** (SSRF 2/6) — the choice is stable |
+| Mutation set C/N/witness/fingerprint | 6/6, identical in composition |
+| Card: fingerprint → C/T/N → witness → replay → fix → negative scope | 6/6 |
+| Median ≥4 `PROVEN` as the phase 2 threshold | 5/6 |
+| Any false `PROVEN` on a clean control = failure | 6/6 |
+| TAM: 25% OSS, 15% mid-market | **matched the planning floor** |
+| The "do not build" condition | 6/6; the adopted `<2` is stricter than the proposed `<1` — we keep `<2` |
+| Witness: tap + DB digest + identity | 6/6 in composition |
 
-## 11.2. Одно содержательное усиление: оракул не выдаёт окончательный вердикт
+## 11.2. One substantive strengthening: the oracle does not issue the final verdict
 
-№6 предложил статус **`PROVEN_CANDIDATE`** вместо `PROVEN`: оракул подтверждает кандидата, а окончательный вердикт выдаёт отдельный детерминированный агрегатор, который сводит C/T/N. Это лучше принятого контракта по одной причине: **оракул перестаёт быть составным судьёй**.
+№6 proposed the status **`PROVEN_CANDIDATE`** instead of `PROVEN`: the oracle confirms the candidate, and the final verdict is issued by a separate deterministic aggregator that combines C/T/N. This is better than the adopted contract for one reason: **the oracle ceases to be a composite judge**.
 
-В нашем варианте оракул получал тройку C/T/N и возвращал `Verdict{c,t,n}` — то есть сам решал композицию. В варианте №6 агент подаёт **три отдельные претензии**, по одной на контроль, и каждая судится изолированно; композицию собирает агрегатор, который ничего не исполняет и не интерпретирует, только применяет `!C ∧ T ∧ !N`.
+In our version the oracle received the C/T/N triple and returned `Verdict{c,t,n}` — that is, it decided the composition itself. In №6's version the agent submits **three separate claims**, one per control, and each is judged in isolation; the composition is assembled by an aggregator that executes and interprets nothing, and only applies `!C ∧ T ∧ !N`.
 
-Почему это важно: если оракул судит тройку целиком, агент может подобрать такие C и N, что композиция «сложится» при неверном T. Три изолированных суждения + тупой агрегатор этот зазор убирают. **Принято как уточнение контракта**, не ломающее совместимость:
+Why this matters: if the oracle judges the triple as a whole, the agent can pick C and N such that the composition "comes together" with a wrong T. Three isolated judgments + a dumb aggregator remove that gap. **Adopted as a refinement of the contract** that does not break compatibility:
 
 ```
-агент → 3 претензии (по одной на C, T, N) → 3 изолированных вердикта → агрегатор → PROVEN
+agent → 3 claims (one per C, T, N) → 3 isolated verdicts → aggregator → PROVEN
 ```
 
-`PROVEN_CANDIDATE` = вердикт оракула по одному контролю; `PROVEN` = результат агрегатора. Это добавляет ещё один барьер между агентом и подписью — то есть усиливает I1.
+`PROVEN_CANDIDATE` = the oracle's verdict on a single control; `PROVEN` = the aggregator's result. This adds one more barrier between the agent and the signature — that is, it strengthens I1.
 
-## 11.3. Что сломалось: цена witness
+## 11.3. What broke: the cost of the witness
 
-| Источник | Три канала | Комментарий |
+| Source | Three channels | Comment |
 |---|---|---|
-| №5 | 9 дней | tap 3 + DB 2 + overlay 1 + proc 2 + nonce 1 |
-| №1 | 12 дней | tap 4 + DB 5 + identity 3 |
-| №3 | 8–14 дней | tap 2–4 + identity 2–3 + DB 2–4 + run log 2–3 |
-| №4 | 16 дней | tap 5 + DB 7 + overlay 4 |
-| **№6** | **30 дней** | **tap 10 + DB 12 + identity 8** (плюс build 4, nonce 5) |
+| №5 | 9 days | tap 3 + DB 2 + overlay 1 + proc 2 + nonce 1 |
+| №1 | 12 days | tap 4 + DB 5 + identity 3 |
+| №3 | 8–14 days | tap 2–4 + identity 2–3 + DB 2–4 + run log 2–3 |
+| №4 | 16 days | tap 5 + DB 7 + overlay 4 |
+| **№6** | **30 days** | **tap 10 + DB 12 + identity 8** (plus build 4, nonce 5) |
 
-Разброс 9–30 дней на **одни и те же три канала**. И здесь работает правило, обратное правилу для TAM:
+A spread of 9–30 days for **the same three channels**. And here the rule opposite to the TAM rule applies:
 
-> **Для TAM берём минимум** (ошибка в меньшую сторону дешевле — не построим лишнего). **Для стоимости берём максимум** (ошибка в меньшую сторону дороже — сорвём срок).
+> **For TAM we take the minimum** (erring downward is cheaper — we will not build something unnecessary). **For cost we take the maximum** (erring downward is more expensive — we will miss the deadline).
 
-Планировочное значение witness: **16–30 дней, план 20**. Цифра №6 подкреплена разбивкой по каналам (10 / 12 / 8), и это единственный ответ, где видно, из чего складывается день — остальные дали итог без фактуры.
+Planning value for the witness: **16–30 days, plan 20**. №6's figure is backed by a per-channel breakdown (10 / 12 / 8), and it is the only answer where it is visible what a day is made of — the others gave a total without supporting detail.
 
-**Следствие: фаза 1 больше не влезает в 30 дней.**
+**Consequence: phase 1 no longer fits in 30 days.**
 
 ```
-было:  5 (корпус) + 8 (оракул) + 12 (witness) + 4 (прогоны) + 2 (перепроверка) = 31 день
-стало: 5 (корпус) + 8 (оракул) + 20 (witness) + 4 (прогоны) + 2 (перепроверка) = 39 дней
-       + verifier-процесс и агрегатор (3–4 дня)                                     = 42–43 дня
+before: 5 (corpus) + 8 (oracle) + 12 (witness) + 4 (runs) + 2 (re-check) = 31 days
+after:  5 (corpus) + 8 (oracle) + 20 (witness) + 4 (runs) + 2 (re-check) = 39 days
+       + verifier process and aggregator (3–4 days)                                 = 42–43 days
 ```
 
-**Решение — сдвигаем срок, а не тест.** Тридцать дней были произвольным числом, выбранным для дисциплины. Арифметика даёт **6 недель**. Резать witness ради красивого срока нельзя: без DB-дайджеста нельзя доказать принадлежность объекта B, то есть теряется сам класс BOLA, и тест начинает проверять не то. Честный ответ: фаза 1 — **45 дней**, и это записывается в план как решение, а не как срыв.
+**The decision is to move the deadline, not the test.** Thirty days was an arbitrary number chosen for discipline. The arithmetic gives **6 weeks**. Cutting the witness for the sake of a handsome deadline is not allowed: without the DB digest one cannot prove the ownership of object B, that is, the BOLA class itself is lost and the test starts checking the wrong thing. The honest answer: phase 1 is **45 days**, and that is recorded in the plan as a decision, not as a slip.
 
-## 11.4. Что не изменилось
+## 11.4. What did not change
 
-- Три класса, карточка, мутанты, пороги, TAM-пол, kill condition — без изменений.
-- Контракт §2 остаётся в силе, дополняется агрегатором из §11.2.
-- Фаза 2 (три класса, медиана ≥4) не затронута: её срок считался без witness (он уже построен в фазе 1).
+- Three classes, the card, the mutants, the thresholds, the TAM floor, the kill condition — unchanged.
+- The contract in §2 remains in force and is supplemented by the aggregator from §11.2.
+- Phase 2 (three classes, median ≥4) is unaffected: its timeline was computed without the witness (it is already built in phase 1).

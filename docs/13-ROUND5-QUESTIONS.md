@@ -1,144 +1,144 @@
-# 13. Пятый круг: последний перед полной спекой
+# 13. Fifth round: the last one before the full spec
 
-> Задача круга — закрыть то, без чего подробную спеку нельзя написать. Не философия, не «а что если», а конкретные артефакты: схемы, числа, правила, границы.
-> После ответов пишется **полная спека**, и дальше — циклы критики. Поэтому в блоке 6 отдельно спрашивается «что здесь скорее всего неверно» — спека будет проектироваться под опровержение, а не под защиту.
-
----
-
-# ЧАСТЬ 1. ПРОМПТ (копировать целиком, не менять между прогонами)
-
-## Роль и правила
-
-Ты — инженер, который доводит конструкцию до состояния «можно писать код и договор». От тебя нужны **артефакты, схемы и числа**, а не рассуждения.
-
-1. Ответ = готовый артефакт (схема, список, таблица, правило). Обоснование — одна строка, не абзац.
-2. **Не более 150 слов** на ответ, кроме мест, где явно требуется схема или таблица.
-3. Решения, перечисленные в «Уже решено», не пересматриваются. Предлагать новые архитектуры запрещено.
-4. Запрещено «зависит от контекста» без условия в одну строку.
-5. Не знаешь — `не знаю` + чем бы проверил и за сколько дней.
-6. Числа — `[оценка]`. Схемы — в JSON/YAML/псевдокоде, а не словами.
-
-## Уже решено (не пересматривать)
-
-**Продукт.** Гарантия на защищаемый поток: для потока F и политики P выделен медиатор M, доказано, что M реализует P, и проверено, что в замыкании Z нет пути в обход. Вне Z гарантия не действует.
-
-**Legacy-трек.** 12 элементов Z · 8 полей акта · 4 подписи (product owner, infra owner, security lead, verifier) · перевыпуск за 3 рабочих дня · медиатор + `Permit` как подписанный Ed25519-токен + PL/pgSQL-триггер как физическая гарантия · гибридное размещение (in-process для BOLA, single-writer для денег) · 5 политик (35 ч-дней макс) · 7 путей обхода · witness 12 ч-дней · доказательство медиатора 24 ч-дня · пилот 45 дней / 24 ч-дня.
-
-**Крипта — в скоупе с первого дня.** Шесть домен-агностичных портов (`StateProvider`, `EnforcementPoint`, `ObservationChannel`, `Clock`, `Domain`, `Prover`), `subject.kind` в формате бандла, обязательная финальность (`block` + `finality`, реорг → `INVALID`), 10 атак вместо 7, двойной грид R0–R5.
-
-**Экономика.** SKU: базовый анализ $2–5k (95% автоматизации) → патчи $5–10k → миграция $25–45k → гарантия $48k + $12k/год; ре-аттестация 15 мин.
-
-**OSS.** Ядро открыто навсегда (формат, верификатор, replay, policy DSL, референсный медиатор, атаки); закрыт сервис поверх, а не форк.
-
-**Критерий смерти.** Медиана `PROVEN` < 2 при работающей witness-плоскости → продукт не строить.
+> The task of this round is to close what is missing before a detailed spec can be written. Not philosophy, not "what if", but concrete artefacts: schemas, numbers, rules, boundaries.
+> After the answers the **full spec** is written, and then come the critique cycles. That is why block 6 separately asks "what here is most likely wrong" — the spec will be designed for refutation, not for defence.
 
 ---
 
-## БЛОК 1 — Крипта: первая цель и инварианты (4)
+# PART 1. PROMPT (copy in full, do not change between runs)
 
-**1.1.** Выбери **один** класс контракта для первой цели из: vault · streaming-платежи · escrow · токен · стейкинг · DEX-пул · мультисиг. Критерий: доказуемость инвариантов × объём денег на потоке × размер кода (≤800 строк) × наличие публичного репо. Формат: `класс | почему | что теряем, отложив остальные`. `[выбор]`
+## Role and rules
 
-**1.2.** Для выбранного класса — **три инварианта**, формально (предикат над состоянием и вызовами), которые (а) реально ловят потерю денег, (б) доказуемы за ≤12 ч-дней. Формат: `ID | инвариант в одну строку | какой класс атаки ловит | почему доказуем`. `[3 инварианта]`
+You are an engineer who brings the design to the state where "code and contract can be written". What is required from you is **artefacts, schemas and numbers**, not reasoning.
 
-**1.3.** Метод перечисления **привилегированных путей** on-chain: перечисли минимальный набор проверок, дающих полный список того, что может двинуть средства (роли, ownership, upgrade-прокси, `delegatecall`, `selfdestruct`, keeper, внешние вызовы). Для каждой — как обнаруживается автоматически. Формат: таблица `путь | как найти | инструмент | что пропускает`. `[таблица]`
+1. Answer = a finished artefact (schema, list, table, rule). Justification — one line, not a paragraph.
+2. **No more than 150 words** per answer, except where a schema or table is explicitly required.
+3. Decisions listed under "Already decided" are not revisited. Proposing new architectures is forbidden.
+4. "Depends on context" is forbidden without a one-line condition.
+5. If you do not know — `I don't know` + how you would check and in how many days.
+6. Numbers — `[estimate]`. Schemas — in JSON/YAML/pseudocode, not in words.
 
-**1.4.** Правило финальности: для Ethereum L1, для L2 и для случая «реорг случился между прогоном и подписью» — сколько подтверждений считать финальными и что именно делает `verify`. Формат: 4 строки правил + одна строка «что попадает в бандл». `[правила]`
+## Already decided (not to be revisited)
 
----
+**Product.** A guarantee on the protected flow: for flow F and policy P a mediator M is designated, it is proved that M implements P, and it is verified that within the closure Z there is no bypass path. Outside Z the guarantee does not hold.
 
-## БЛОК 2 — Крипта: акт и подписи (2)
+**Legacy track.** 12 elements of Z · 8 fields of the act · 4 signatures (product owner, infra owner, security lead, verifier) · reissue within 3 business days · mediator + `Permit` as a signed Ed25519 token + PL/pgSQL trigger as the physical guarantee · hybrid placement (in-process for BOLA, single-writer for money) · 5 policies (35 person-days max) · 7 bypass paths · witness 12 person-days · mediator proof 24 person-days · pilot 45 days / 24 person-days.
 
-**2.1.** В legacy акт подписывают product owner и infra owner. На чейне инфраструктурного владельца нет. Кто подписывает акт вместо них: мультисиг-подписанты, аудитор, мы, разработчик контракта? Формат: список подписантов с предметом ответственности каждого. `[список]`
+**Crypto is in scope from day one.** Six domain-agnostic ports (`StateProvider`, `EnforcementPoint`, `ObservationChannel`, `Clock`, `Domain`, `Prover`), `subject.kind` in the bundle format, mandatory finality (`block` + `finality`, reorg → `INVALID`), 10 attacks instead of 7, a double grid R0–R5.
 
-**2.2.** Аналог «отзыва write-кредов» на чейне: `renounceOwnership`, `transferOwnership` в мультисиг, timelock, порог подписей. Дай **минимальный набор действий**, после которых можно утверждать «привилегированного пути вне M нет». Формат: 5 строк, каждое — что делаем и что этим закрываем. `[5 строк]`
+**Economics.** SKU: base analysis $2–5k (95% automation) → patches $5–10k → migration $25–45k → guarantee $48k + $12k/year; re-attestation 15 min.
 
----
+**OSS.** The core is open for good (format, verifier, replay, policy DSL, reference mediator, attacks); what is closed is the service on top, not a fork.
 
-## БЛОК 3 — Автовыплаты без людей (3)
-
-**3.1.** Условие автоматического освобождения эскроу. Что именно проверяется машинно, чтобы выплата не требовала человека? Формат: предикат в 5 строк + что происходит при `INVALID` и `INCONCLUSIVE`. `[предикат]`
-
-**3.2.** Диспут без арбитра: механика. Кто платит за ошибку оракула, сколько длится окно, что происходит с уже выплаченным. Формат: 5 строк + таблица `кто | что теряет | при каком исходе`. `[механика]`
-
-**3.3.** Числа: потолок автовыплаты, размер бонда исполнителя, длина диспут-окна, комиссия сервиса. Формат: 4 числа с `[оценка]` и одна строка обоснования на каждое. `[4 числа]`
-
----
-
-## БЛОК 4 — Форматы (2)
-
-**4.1.** Полная грамматика `flowguard.yml`: все поля, какие обязательны, какие по умолчанию, какие запрещены. Формат: YAML-схема с комментариями по обязательности. `[схема]`
-
-**4.2.** Схема бандла аттестации: перечисли файлы и для каждого — обязательные поля. Формат: дерево + таблица `файл | обязательные поля | кто подписывает`. `[схема]`
+**Death criterion.** Median `PROVEN` < 2 with a working witness plane → do not build the product.
 
 ---
 
-## БЛОК 5 — Границы сервиса (3)
+## BLOCK 1 — Crypto: the first target and invariants (4)
 
-**5.1.** Пять случаев, которые **ломают** автоматизацию базового анализа (монорепо, полиглот, нет IaC, нет тестов, сгенерированный код, сервис без БД…). Для каждого: как обнаруживается до продажи и что делаем. Формат: таблица `случай | детектор | решение (отказ / ручной режим / надбавка)`. `[таблица]`
+**1.1.** Choose **one** contract class as the first target from: vault · streaming payments · escrow · token · staking · DEX pool · multisig. Criterion: provability of invariants × volume of money on the flow × code size (≤800 lines) × availability of a public repo. Format: `class | why | what we lose by deferring the rest`. `[choice]`
 
-**5.2.** Защита от абьюза бесплатного/дешёвого анализа: кто платит за compute, как ограничить поток, что мешает загружать чужие репозитории. Формат: 5 правил, каждое в одну строку. `[5 правил]`
+**1.2.** For the chosen class — **three invariants**, formally (a predicate over state and calls) that (a) actually catch the loss of money, (b) are provable within ≤12 person-days. Format: `ID | invariant in one line | which attack class it catches | why it is provable`. `[3 invariants]`
 
-**5.3.** Как доказать право на анализ: клиент загружает репозиторий или адрес контракта. Что является доказательством владения для (а) приватного репо, (б) публичного репо без прав, (в) контракта на чейне. Формат: 3 строки. `[3 строки]`
+**1.3.** A method for enumerating **privileged paths** on-chain: list the minimal set of checks that yields a complete list of what can move funds (roles, ownership, upgrade proxy, `delegatecall`, `selfdestruct`, keeper, external calls). For each — how it is detected automatically. Format: table `path | how to find | tool | what it misses`. `[table]`
 
----
-
-## БЛОК 6 — Устойчивость к критике (2)
-
-**6.1.** Три **самых сильных** возражения покупателя против этой конструкции, и ответ на каждое в 2 строки. Возражения формулируй жёстко, как это сделал бы скептический CTO. Формат: 3 пары `возражение | ответ`. `[3 пары]`
-
-**6.2.** Что в описанной конструкции **скорее всего неверно** и сломается в реальности? Дай свой список из 3 пунктов: механизм отказа, на каком горизонте, чем это будет видно. Не «риски вообще», а конкретно. Формат: 3 пункта × 3 строки. `[3 пункта]`
+**1.4.** Finality rule: for Ethereum L1, for L2 and for the case "a reorg happened between the run and the signature" — how many confirmations count as final and what exactly `verify` does. Format: 4 rule lines + one line "what goes into the bundle". `[rules]`
 
 ---
 
-# ЧАСТЬ 2. КАК СВОДИТЬ (моделям не показывать)
+## BLOCK 2 — Crypto: the act and signatures (2)
 
-## 2.1. Что считается сильным ответом
+**2.1.** In legacy the act is signed by the product owner and the infra owner. On-chain there is no infrastructure owner. Who signs the act instead of them: the multisig signers, the auditor, us, the contract developer? Format: a list of signers with the subject of responsibility of each. `[list]`
 
-| Вопрос | Сильный | Не засчитывается |
+**2.2.** The on-chain analogue of "revoking write credentials": `renounceOwnership`, `transferOwnership` to the multisig, timelock, signature threshold. Give the **minimal set of actions** after which it can be asserted that "there is no privileged path outside M". Format: 5 lines, each — what we do and what it closes. `[5 lines]`
+
+---
+
+## BLOCK 3 — Automatic payouts without people (3)
+
+**3.1.** The condition for automatic release of escrow. What exactly is checked by machine so that the payout does not require a human? Format: a predicate in 5 lines + what happens on `INVALID` and `INCONCLUSIVE`. `[predicate]`
+
+**3.2.** Dispute without an arbitrator: the mechanics. Who pays for an oracle error, how long the window lasts, what happens to what has already been paid out. Format: 5 lines + table `who | what they lose | on which outcome`. `[mechanics]`
+
+**3.3.** Numbers: the cap on automatic payout, the size of the executor's bond, the length of the dispute window, the service fee. Format: 4 numbers with `[estimate]` and one line of justification for each. `[4 numbers]`
+
+---
+
+## BLOCK 4 — Formats (2)
+
+**4.1.** The complete grammar of `flowguard.yml`: all fields, which are mandatory, which default, which are forbidden. Format: a YAML schema with comments on obligatoriness. `[schema]`
+
+**4.2.** The schema of the attestation bundle: list the files and, for each, the mandatory fields. Format: a tree + table `file | mandatory fields | who signs`. `[schema]`
+
+---
+
+## BLOCK 5 — Service boundaries (3)
+
+**5.1.** Five cases that **break** the automation of the base analysis (monorepo, polyglot, no IaC, no tests, generated code, a service without a database…). For each: how it is detected before the sale and what we do. Format: table `case | detector | decision (refusal / manual mode / surcharge)`. `[table]`
+
+**5.2.** Protection against abuse of the free/cheap analysis: who pays for compute, how the flow is limited, what prevents uploading someone else's repositories. Format: 5 rules, each on one line. `[5 rules]`
+
+**5.3.** How to prove the right to the analysis: the client uploads a repository or a contract address. What counts as proof of ownership for (a) a private repo, (b) a public repo without rights, (c) a contract on-chain. Format: 3 lines. `[3 lines]`
+
+---
+
+## BLOCK 6 — Resilience to criticism (2)
+
+**6.1.** The three **strongest** buyer objections to this design, and an answer to each in 2 lines. Formulate the objections harshly, the way a sceptical CTO would. Format: 3 pairs `objection | answer`. `[3 pairs]`
+
+**6.2.** What in the described design is **most likely wrong** and will break in reality? Give your own list of 3 items: the failure mechanism, on what horizon, and how it will be visible. Not "risks in general", but concretely. Format: 3 items × 3 lines. `[3 items]`
+
+---
+
+# PART 2. HOW TO CONSOLIDATE (do not show to the models)
+
+## 2.1. What counts as a strong answer
+
+| Question | Strong | Not counted |
 |---|---|---|
-| 1.1 | один класс + что теряем | список из 4 «важных» |
-| 1.2 | предикаты, а не слова | «инвариант сохранения баланса» без формулы |
-| 1.3 | таблица с «что пропускает» | перечисление без границ |
-| 1.4 | 4 правила + содержимое бандла | «дождаться финальности» |
-| 2.1 | подписанты с предметом | «мультисиг» |
-| 3.1 | предикат + поведение на `INVALID` | «если проверка прошла» |
-| 4.1 | схема с обязательностью | список полей |
-| 5.1 | детектор + решение | «бывает сложно» |
-| 6.1 | возражение, от которого неприятно | мягкие возражения |
-| 6.2 | механизм + горизонт + признак | «масштабирование будет сложным» |
+| 1.1 | one class + what we lose | a list of 4 "important" |
+| 1.2 | predicates, not words | "balance conservation invariant" without a formula |
+| 1.3 | a table with "what it misses" | an enumeration without boundaries |
+| 1.4 | 4 rules + bundle contents | "wait for finality" |
+| 2.1 | signers with a subject | "multisig" |
+| 3.1 | predicate + behaviour on `INVALID` | "if the check passed" |
+| 4.1 | a schema with obligatoriness | a list of fields |
+| 5.1 | detector + decision | "it can be difficult" |
+| 6.1 | an objection that is unpleasant | soft objections |
+| 6.2 | mechanism + horizon + signal | "scaling will be difficult" |
 
-## 2.2. Правила свода
+## 2.2. Rules of consolidation
 
-- **Блок 6 имеет приоритет над остальными.** Если у ≥3 моделей совпадёт один пункт из 6.2 — он становится разделом «известные слабости» в спеке, а не сноской.
-- **Блок 4 принимается по совместимости**, не по голосам: две схемы, которые не склеиваются, означают, что формат недоспецифицирован. Собираем один.
-- **Блок 1 и 2 — вето-зона для крипты**: если ≥3 модели выберут один класс контракта — он фиксируется. Если разойдутся 2/2 — берём тот, у которого меньше кода и проще роли.
-- **Числа из 3.3 — по минимуму потолка и максимуму бонда** (консерватизм в сторону меньшего риска для нас).
-- Ответ, который переспорит «уже решено», не засчитывается по этому вопросу.
+- **Block 6 takes precedence over the others.** If one item from 6.2 coincides across ≥3 models, it becomes a "known weaknesses" section in the spec, not a footnote.
+- **Block 4 is accepted by compatibility**, not by votes: two schemas that do not fit together mean the format is underspecified. We assemble one.
+- **Blocks 1 and 2 are a veto zone for crypto**: if ≥3 models choose the same contract class, it is fixed. If they split 2/2, we take the one with less code and simpler roles.
+- **Numbers from 3.3 — the minimum cap and the maximum bond** (conservatism towards less risk for us).
+- An answer that argues against "already decided" does not count for that question.
 
-## 2.3. Красные флаги
+## 2.3. Red flags
 
-1. 1.2 даёт инвариант без предиката → не годится для доказательства.
-2. 1.3 без колонки «что пропускает» → метод неполон и это скрыто.
-3. 2.2 предлагает «оставить owner для удобства» → замыкание невозможно, ответ не засчитан.
-4. 3.1 без поведения на `INVALID`/`INCONCLUSIVE` → автовыплата небезопасна по построению.
-5. 5.2 нет ограничения compute → бесплатный анализ съест маржу за неделю.
-6. 6.2 пусто или общие слова → понизить доверие ко всему ответу.
+1. 1.2 gives an invariant without a predicate → unsuitable for proof.
+2. 1.3 without a "what it misses" column → the method is incomplete and that is hidden.
+3. 2.2 proposes "keeping the owner for convenience" → closure is impossible, the answer does not count.
+4. 3.1 without behaviour on `INVALID`/`INCONCLUSIVE` → the automatic payout is unsafe by construction.
+5. 5.2 no compute limit → the free analysis will eat the margin in a week.
+6. 6.2 empty or general words → lower trust in the whole answer.
 
-## 2.4. Что будет после свода
+## 2.4. What comes after consolidation
 
-Пишется **полная спека** из разделов:
+The **full spec** is written, made up of the sections:
 
-1. Продукт и границы (что гарантируем, чего нет).
-2. Модель домена: legacy и on-chain, порты, `subject.kind`.
-3. Форматы: `flowguard.yml`, бандл, вердикты, акт. **Схемы целиком.**
-4. Замыкание Z и артефакт объявления для обоих доменов.
-5. Медиатор, `Permit`, точки принуждения, инварианты.
-6. Свидетельства: каналы, финальность, приёмочные тесты.
-7. Доказательство: обязанности, assumptions ledger, TCB, бэкенды Verus/Certora.
-8. Атаки: 10 сценариев, критерии провала.
-9. Лестница R0–R5 для двух доменов и цены.
-10. Сервис: SKU, автоматизация, границы применимости, антиабьюз.
-11. Экономика, команда, дорожная карта 90 дней.
-12. **Известные слабости** (из блока 6.2) — отдельным разделом, не сноской.
+1. Product and boundaries (what we guarantee, what we do not).
+2. Domain model: legacy and on-chain, ports, `subject.kind`.
+3. Formats: `flowguard.yml`, bundle, verdicts, act. **Schemas in full.**
+4. The closure Z and the declaration artefact for both domains.
+5. Mediator, `Permit`, enforcement points, invariants.
+6. Evidence: channels, finality, acceptance tests.
+7. Proof: obligations, assumptions ledger, TCB, Verus/Certora backends.
+8. Attacks: 10 scenarios, failure criteria.
+9. The R0–R5 ladder for two domains and the prices.
+10. Service: SKU, automation, applicability boundaries, anti-abuse.
+11. Economics, team, 90-day roadmap.
+12. **Known weaknesses** (from block 6.2) — as a separate section, not a footnote.
 
-Спека будет написана **под опровержение**: каждое утверждение пронумеровано, помечено `[доказано]` / `[измерено]` / `[гипотеза]`, и у каждого раздела есть «что сломает это утверждение». Критиковать её нужно именно по этим меткам.
+The spec will be written **for refutation**: every statement is numbered, tagged `[PROVED]` / `[MEASURED]` / `[HYPOTHESIS]`, and every section has "what would break this statement". It must be criticised precisely by these labels.

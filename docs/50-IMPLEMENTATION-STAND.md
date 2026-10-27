@@ -1,57 +1,57 @@
-# 50. Стенд: техническая реализация, минимальное участие людей
+# 50. The Rig: technical implementation, minimal human involvement
 
-> Задача: превратить спеку «поток → замыкание → медиатор → доказательство → акт» в работающую установку, где человек делает только то, что машина не может, а качество не зависит от квалификации оператора.
-> Ключевая мысль в начале, потому что от неё зависит вся экономика.
+> Goal: turn the spec "flow → closure → mediator → proof → act" into a working installation where the human does only what the machine cannot, and quality does not depend on the operator's qualification.
+> The key thought at the start, because the entire economics depends on it.
 
 ---
 
-## 0. Где именно появляется выигрыш от автоматизации
+## 0. Where exactly the gain from automation appears
 
-Наивное ожидание: «автоматизируем — и первый проект станет дешёвым». Это неверно. Первая миграция клиента — это **инженерия**: инвентаризация, медиатор, отзыв кредов, доказательство. Её нельзя автоматизировать до нуля, она так и останется 45 дней / 24 человеко-дня.
+The naive expectation: "we automate it and the first project becomes cheap". That is wrong. A client's first migration is **engineering**: inventory, mediator, credential revocation, proof. It cannot be automated down to zero; it will remain 45 days / 24 person-days.
 
-Выигрыш в другом месте, и он огромный:
+The gain is elsewhere, and it is enormous:
 
-| | Первая аттестация | Ре-аттестация (ежегодная и при изменении) |
+| | First attestation | Re-attestation (annual and on change) |
 |---|---|---|
-| Что делается | инвентаризация, миграция, медиатор, доказательство, red-team | пере-прогон того же стенда на новом коммите |
-| Время | 45 дней | **15 минут** |
-| Люди | 24 человеко-дня | **2 подписи по 10 минут** |
-| Артефакт | Декларация Z v1 | Декларация Z vN с новым хешем |
-| Маржа | 35–45% | **>90%** |
+| What is done | inventory, migration, mediator, proof, red-team | re-run of the same rig on a new commit |
+| Time | 45 days | **15 minutes** |
+| People | 24 person-days | **2 signatures of 10 minutes each** |
+| Artefact | Declaration Z v1 | Declaration Z vN with a new hash |
+| Margin | 35–45% | **>90%** |
 
-**Поэтому стенд проектируется не под первую миграцию, а под то, чтобы ре-аттестация была одной командой.** Это и есть смысл «авто работы»: подписка $12k/год продаётся не за «поддержку», а за то, что клиент нажимает кнопку и получает свежую гарантию к утру.
+**That is why the rig is designed not for the first migration but for making re-attestation a single command.** This is the meaning of "auto work": the $12k/year subscription is sold not for "support" but for the client pressing a button and receiving a fresh guarantee by morning.
 
-Если стенд этого не умеет — это консалтинг, и автоматизация не окупится никогда.
+If the rig cannot do that, it is consulting, and the automation will never pay off.
 
 ---
 
-## 1. Граница автоматизации: четыре гейта
+## 1. The automation boundary: four gates
 
-Всё, что производит **свидетельство**, делает машина. Человек только **ратифицирует**. Авторство — узкое место, ратификация — 10 минут.
+Everything that produces **evidence** is done by the machine. The human only **ratifies**. Authorship is the bottleneck; ratification takes 10 minutes.
 
-| Гейт | Кто | Что делает | Время | Почему не машина |
+| Gate | Who | What they do | Time | Why not a machine |
 |---|---|---|---|---|
-| **G1. Граница** | product owner + infra owner клиента | утверждает черновик реестра путей записи, предложенный стендом | 20 мин | машина не знает, что «этот batch — временный, его уберут в марте» |
-| **G2. Политика** | наш security-инженер + клиент | утверждает черновик P (кому что можно) | 30 мин | политика — бизнес-решение, а не вывод из кода |
-| **G3. Доказательство** | наш lead verifier | принимает proof-пакет: проверяет `assume`/`trusted base`, а не сами леммы | 30 мин | проверка допущений — суждение, леммы проверяет ядро |
-| **G4. Подпись** | 4 подписанта | ставят подпись под актом | 10 мин × 4 | юридический акт |
+| **G1. Boundary** | the client's product owner + infra owner | approves the draft register of write paths proposed by the rig | 20 min | the machine does not know that "this batch is temporary, it will be removed in March" |
+| **G2. Policy** | our security engineer + the client | approves draft P (who may do what) | 30 min | policy is a business decision, not a derivation from code |
+| **G3. Proof** | our lead verifier | accepts the proof package: checks the `assume`/`trusted base`, not the lemmas themselves | 30 min | checking assumptions is a judgement; the kernel checks the lemmas |
+| **G4. Signature** | 4 signatories | sign the act | 10 min × 4 | a legal act |
 
-**Итого человеческого времени: ~2 часа на первую аттестацию, ~40 минут на ре-аттестацию.** Всё остальное — DAG.
+**Total human time: ~2 hours for the first attestation, ~40 minutes for re-attestation.** Everything else is the DAG.
 
-Критично: **на каждом гейте человек видит diff, а не пустое поле.** Стенд генерирует черновик и показывает «вот что я нашёл, вот что предлагаю, вот чего я не знаю». Заполнять с нуля — это то, что съедает 24 человеко-дня.
+Critical: **at every gate the human sees a diff, not an empty field.** The rig generates a draft and shows "here is what I found, here is what I propose, here is what I do not know". Filling in from scratch is what eats 24 person-days.
 
 ---
 
-## 2. Архитектура стенда: 12 компонентов
+## 2. Rig architecture: 12 components
 
 ```
-                        ┌─────────────────────────────────────────┐
-   клиентский репо/стенд │  RUN COMPILER                           │
-   ──────────────────────▶│  канонический манифест, хеши, DAG      │
-                        └──────────────┬──────────────────────────┘
+                          ┌─────────────────────────────────────────┐
+   client repo/rig        │  RUN COMPILER                           │
+   ──────────────────────▶│  canonical manifest, hashes, DAG        │
+                          └──────────────┬──────────────────────────┘
                                        ▼
         ┌──────────────────────────────────────────────────────────────┐
-        │  ORCHESTRATOR (Temporal) — durable DAG, бюджет, ретраи       │
+        │  ORCHESTRATOR (Temporal) — durable DAG, budget, retries      │
         └───┬────────┬────────┬────────┬────────┬────────┬────────────┘
             ▼        ▼        ▼        ▼        ▼        ▼
    ┌──────────┐┌─────────┐┌────────┐┌────────┐┌────────┐┌──────────┐
@@ -69,234 +69,234 @@
                     └────────────┬───────────────┘
                                  ▼
               ┌───────────────────────────────────┐
-              │ 10 GATE UI (4 подписи, diff-вид)  │
-              │ 11 REATTEST CLI (одна команда)    │
-              │ 12 EVAL HARNESS (самопроверка)    │
+              │ 10 GATE UI (4 signatures, diff)   │
+              │ 11 REATTEST CLI (one command)     │
+              │ 12 EVAL HARNESS (self-check)      │
               └───────────────────────────────────┘
 ```
 
-| # | Компонент | Что делает | Автоматизм |
+| # | Component | What it does | Automation |
 |---|---|---|---|
-| 1 | **Inventory** | находит все writer'ы: eBPF по syscalls, `pgaudit`, парсер IaC/OpenAPI, linter сетевых политик, граф вызовов | полный |
-| 2 | **Policy engine** | черновик P из кода + SMT-проверка (Z3): противоречия, неявные allow, циклы делегирования | полный, человек только ратифицирует |
-| 3 | **Mediator builder** | генерирует скелет медиатора + `Permit` + DB-триггер под конкретный стек | черновик, доработка руками |
-| 4 | **Witness plane** | tap на хосте, DB-дайджест, перехват IdP-утверждений | полный |
-| 5 | **Red-team suite** | **фиксированный набор скриптов** (не агент!) — 7 атак, каждая обязана провалиться | полный |
-| 6 | **Proof pipeline** | Verus/Dafny: спека → аннотации → proof-fixing (LLM + человек на G3) | полу-авто |
-| 7 | **Evidence plane** | CAS + WORM + hash-chain, каждый артефакт по sha256 | полный |
-| 8 | **Aggregator** | сводит вердикты C/T/N в `PROVEN`; не исполняет и не интерпретирует | полный |
-| 9 | **Declaration generator** | собирает акт Z из bundle'ов, готовит diff для 4 подписей | полный |
-| 10 | **Gate UI** | 4 экрана, на каждом — diff «предложено / изменено / не проверено» | человек 10–30 мин |
-| 11 | **Re-attest CLI** | `attest --z z-042 --commit abc123` → полный пере-прогон | **одна команда** |
-| 12 | **Eval harness** | самопроверка стенда: мутанты медиатора, канареечные атаки, детерминизм | полный, в CI |
+| 1 | **Inventory** | finds all writers: eBPF over syscalls, `pgaudit`, IaC/OpenAPI parser, network-policy linter, call graph | full |
+| 2 | **Policy engine** | draft P from the code + SMT check (Z3): contradictions, implicit allows, delegation cycles | full, the human only ratifies |
+| 3 | **Mediator builder** | generates the mediator skeleton + `Permit` + DB trigger for the specific stack | draft, finished by hand |
+| 4 | **Witness plane** | tap on the host, DB digest, interception of IdP assertions | full |
+| 5 | **Red-team suite** | a **fixed set of scripts** (not an agent) — 7 attacks, each of which must fail | full |
+| 6 | **Proof pipeline** | Verus/Dafny: spec → annotations → proof-fixing (LLM + a human at G3) | semi-automatic |
+| 7 | **Evidence plane** | CAS + WORM + hash-chain, every artefact by sha256 | full |
+| 8 | **Aggregator** | reduces the C/T/N verdicts into `PROVEN`; does not execute and does not interpret | full |
+| 9 | **Declaration generator** | assembles act Z from the bundles, prepares the diff for the 4 signatures | full |
+| 10 | **Gate UI** | 4 screens, each with a diff "proposed / changed / not checked" | human 10–30 min |
+| 11 | **Re-attest CLI** | `attest --z z-042 --commit abc123` → a full re-run | **one command** |
+| 12 | **Eval harness** | the rig's self-check: mediator mutants, canary attacks, determinism | full, in CI |
 
-**Почему red-team — скрипты, а не агент.** Атака, которая не детерминирована, ничего не доказывает: если агент «попробовал обойти и не смог», это не свидетельство. Семь атак — это семь исполняемых файлов с ожидаемым результатом `BLOCKED`. Агент может *искать* новые атаки, но в акт попадают только те, что воспроизводятся.
+**Why the red-team is scripts and not an agent.** An attack that is not deterministic proves nothing: if an agent "tried to bypass it and could not", that is not evidence. Seven attacks are seven executable files with an expected result of `BLOCKED`. An agent may *search* for new attacks, but only those that reproduce go into the act.
 
 ---
 
-## 3. Стек: конкретные решения
+## 3. Stack: concrete decisions
 
-| Слой | Выбор | Почему именно это |
+| Layer | Choice | Why exactly this |
 |---|---|---|
-| Изоляция | **Firecracker microVM**, bare-metal | решение из круга 2, вложенная виртуализация убивает смысл |
-| Оркестрация | **Temporal** | durable-состояние, идемпотентные шаги, ретраи без двойных эффектов |
-| Inventory | **bpftrace + pgaudit + trivy/config-парсер** | eBPF видит реальные syscalls, pgaudit — реальные записи; IaC-парсер — то, что объявлено |
-| Policy | **Z3** + собственная DSL (YAML → SMT) | SMT даёт бесплатные контрпримеры для неверных политик |
-| Медиатор (proof-трек) | **Rust + Verus** | лучший баланс: память бесплатно, контракты доказуемы, индустрия принимает |
-| Медиатор (brownfield) | **библиотека под стек клиента** (Java/TS/Python) с приватным конструктором + CI-линтер | линейных типов в этих языках нет — эмулируем дисциплиной + линтером |
-| Последняя линия | **Postgres `BEFORE INSERT/UPDATE` trigger**, проверяющий подпись `Permit` | обход на уровне кода невозможен: БД физически отклонит транзакцию |
-| `Permit` | **Ed25519-подписанный токен** + TTL + привязка к `object_id`/`version`/`policy_hash` | позволяет проверять право вне процесса — и в БД, и в sidecar |
-| Witness | **eBPF tap + WAL-дайджест + IdP-assertion capture** | три канала = три разных класса подделки |
-| Proof | **Verus** (Rust), **Dafny** (алгоритмы), **Lean** (инварианты политики) | по классу задачи, не «один инструмент на всё» |
-| Evidence | **S3 Object Lock (WORM) + Rekor** | внешняя метка времени, которую нельзя переписать |
-| Отчёты | **JCS-канонизация, SHA-256, Ed25519, SARIF + PDF** | каноника — чтобы хеш был воспроизводим |
+| Isolation | **Firecracker microVM**, bare-metal | the decision from circle 2; nested virtualisation kills the point |
+| Orchestration | **Temporal** | durable state, idempotent steps, retries without double effects |
+| Inventory | **bpftrace + pgaudit + trivy/config parser** | eBPF sees the real syscalls, pgaudit the real writes; the IaC parser sees what is declared |
+| Policy | **Z3** + our own DSL (YAML → SMT) | SMT gives free counterexamples for incorrect policies |
+| Mediator (proof track) | **Rust + Verus** | the best balance: memory for free, provable contracts, industry acceptance |
+| Mediator (brownfield) | a **library for the client's stack** (Java/TS/Python) with a private constructor + CI linter | these languages have no linear types — we emulate them with discipline + a linter |
+| Last line | **Postgres `BEFORE INSERT/UPDATE` trigger** that verifies the `Permit` signature | bypass at code level is impossible: the DB physically rejects the transaction |
+| `Permit` | an **Ed25519-signed token** + TTL + binding to `object_id`/`version`/`policy_hash` | allows the right to be checked outside the process — both in the DB and in a sidecar |
+| Witness | **eBPF tap + WAL digest + IdP-assertion capture** | three channels = three different classes of forgery |
+| Proof | **Verus** (Rust), **Dafny** (algorithms), **Lean** (policy invariants) | by task class, not "one tool for everything" |
+| Evidence | **S3 Object Lock (WORM) + Rekor** | an external timestamp that cannot be rewritten |
+| Reports | **JCS canonicalisation, SHA-256, Ed25519, SARIF + PDF** | canonicalisation so that the hash is reproducible |
 
 ---
 
-## 4. DAG прогона: 9 шагов, что делает кто
+## 4. Run DAG: 9 steps, who does what
 
-| # | Шаг | Вход | Выход | Кто |
+| # | Step | Input | Output | Who |
 |---|---|---|---|---|
-| 1 | `compile` | репо/стенд | манифест, DAG, бюджет | авто |
-| 2 | `inventory` | манифест | **черновик реестра Z**: все writer'ы, креды, входы | авто |
-| 3 | **G1** | черновик Z | подписанный реестр | **человек: 20 мин** |
-| 4 | `policy` | реестр Z + код | черновик P + SMT-контрпримеры | авто |
-| 5 | **G2** | черновик P | утверждённая политика | **человек: 30 мин** |
-| 6 | `mediate` | P + стек | скелет M, `Permit`, DB-триггер, миграция кредов | авто + доработка |
-| 7 | `witness` | Z | три канала + приёмочные тесты A/B | авто |
-| 8 | `attack` | Z, M | 7 атак, каждая → `BLOCKED` | авто |
-| 9 | `prove` | M | proof-пакет, assumptions ledger, TCB | полу-авто |
-| 10 | **G3** | proof-пакет | принято / возвращено | **человек: 30 мин** |
-| 11 | `declare` | всё | акт Z + bundle'ы | авто |
-| 12 | **G4** | акт | 4 подписи | **человек: 10 мин × 4** |
+| 1 | `compile` | repo/rig | manifest, DAG, budget | auto |
+| 2 | `inventory` | manifest | **draft of register Z**: all writers, credentials, inputs | auto |
+| 3 | **G1** | draft Z | signed register | **human: 20 min** |
+| 4 | `policy` | register Z + code | draft P + SMT counterexamples | auto |
+| 5 | **G2** | draft P | approved policy | **human: 30 min** |
+| 6 | `mediate` | P + stack | skeleton M, `Permit`, DB trigger, credential migration | auto + finishing |
+| 7 | `witness` | Z | three channels + A/B acceptance tests | auto |
+| 8 | `attack` | Z, M | 7 attacks, each → `BLOCKED` | auto |
+| 9 | `prove` | M | proof package, assumptions ledger, TCB | semi-automatic |
+| 10 | **G3** | proof package | accepted / returned | **human: 30 min** |
+| 11 | `declare` | everything | act Z + bundles | auto |
+| 12 | **G4** | act | 4 signatures | **human: 10 min × 4** |
 
-**Ре-аттестация** — это шаги 1, 2, 6, 7, 8, 9, 11 на новом коммите, с G2/G3 в режиме «диff не изменился» (тогда ратификация одним кликом) и G4 автоматической, если хеши совпали с эталоном и ничего не поменялось в Z. Отсюда 15 минут.
+**Re-attestation** is steps 1, 2, 6, 7, 8, 9, 11 on a new commit, with G2/G3 in "the diff has not changed" mode (then ratification is one click) and G4 automatic if the hashes match the reference and nothing in Z has changed. Hence 15 minutes.
 
 ---
 
-## 5. Четыре слепые зоны и как они закрываются технически
+## 5. Four blind spots and how they are closed technically
 
-### 5.1. `Permit` в legacy-коде
+### 5.1. `Permit` in legacy code
 
-Линейных типов в Java/TS/Python нет — компилятор не помешает обойти медиатор. Три уровня защиты, от дешёвого к дорогому:
+Java/TS/Python have no linear types — the compiler will not prevent bypassing the mediator. Three levels of protection, from cheap to expensive:
 
-1. **Приватный конструктор** в библиотеке клиента: `Permit` создаётся только внутри `Mediator`. Обход требует рефлексии — это уже видимый, шумный акт.
-2. **CI-линтер**: запрещает `INSERT/UPDATE` в таблицы леджера, если они не идут через `LedgerRepository.save(..., Permit)`. Это ловит 90% обходов на merge.
-3. **DB-триггер**: `BEFORE UPDATE` проверяет подпись `Permit` в контексте транзакции (`SET LOCAL app.permit = '...'`). Это **физическая** гарантия — последняя линия, и именно она превращает «дисциплину» в «замыкание».
+1. **Private constructor** in the client library: `Permit` is created only inside `Mediator`. A bypass requires reflection — which is already a visible, noisy act.
+2. **CI linter**: forbids `INSERT/UPDATE` into ledger tables unless they go through `LedgerRepository.save(..., Permit)`. This catches 90% of bypasses at merge.
+3. **DB trigger**: `BEFORE UPDATE` verifies the `Permit` signature in the transaction context (`SET LOCAL app.permit = '...'`). This is a **physical** guarantee — the last line, and it is exactly what turns "discipline" into "closure".
 
-Порядок обязательный: без третьего уровня первые два — организационные меры.
+The order is mandatory: without the third level, the first two are organisational measures.
 
-### 5.2. Single writer как SPOF
+### 5.2. Single writer as a SPOF
 
-«Один writer» — это **логическая**, не физическая единица. Два способа:
+"One writer" is a **logical**, not a physical unit. Two ways:
 
-- **Event sourcing**: клиенты эмитят `IntentToTransfer` в очередь; writer — консьюмер с партиционированием по `tenant_id`. Масштабируется, но добавляет задержку и сложность.
-- **DB-level enforcement**: writer'ов много, но триггер с проверкой `Permit` не даёт записать без валидного права. Проще, дешевле, и на пилоте — предпочтительно.
+- **Event sourcing**: clients emit `IntentToTransfer` into a queue; the writer is a consumer partitioned by `tenant_id`. It scales, but adds latency and complexity.
+- **DB-level enforcement**: there are many writers, but the trigger with `Permit` verification prevents a write without a valid right. Simpler, cheaper, and preferable for the pilot.
 
-Для пилота: **второй вариант**. Он даёт то же свойство (нет мутации без `Permit`) без распределённых транзакций.
+For the pilot: **the second option**. It gives the same property (no mutation without a `Permit`) without distributed transactions.
 
-### 5.3. «Три дня» против непрерывного деплоя
+### 5.3. "Three days" versus continuous deployment
 
-Правило трёх дней убивает CI/CD, если применять его к каждому эндпоинту. Решение — **расщепить Z на две границы**:
+The three-day rule kills CI/CD if it is applied to every endpoint. The solution is to **split Z into two boundaries**:
 
-| Граница | Что меняется | Как обновляется | SLA |
+| Boundary | What changes | How it is updated | SLA |
 |---|---|---|---|
-| **Статическая (инфра)** | новый writer, новая БД, новый канал, новые креды, новая очередь | 4 подписи | 3 рабочих дня |
-| **Динамическая (код)** | новый эндпоинт внутри существующего сервиса | автоматически: хеш M и policy_hash вшиваются в артефакт сборки | **real-time** |
+| **Static (infra)** | a new writer, a new DB, a new channel, new credentials, a new queue | 4 signatures | 3 working days |
+| **Dynamic (code)** | a new endpoint inside an existing service | automatically: the M hash and policy_hash are baked into the build artefact | **real-time** |
 
-Деплой с несовпадающим хешем M физически не проходит (CI-гейт + проверка на стороне M при старте). То есть **кодовая граница не может измениться незаметно** — а инфраструктурная требует подписи.
+A deploy with a mismatched M hash physically does not pass (CI gate + a check on the M side at startup). That is, **the code boundary cannot change unnoticed** — while the infrastructure one requires signatures.
 
-И на время окна вводится состояние **`DEGRADED`**: новые пути — deny by default; денежные пути — полный deny до перевыпуска. Три дня не должны быть окном легального обхода.
+And for the duration of the window a **`DEGRADED`** state is introduced: new paths — deny by default; money paths — full deny until re-issuance. Three days must not be a window of legal bypass.
 
-### 5.4. Парадокс break-glass
+### 5.4. The break-glass paradox
 
-Смысл аварийного доступа в том, чтобы работать, когда медиатор сломан. Значит его нельзя медиировать. Решение — **криптографический аварийный токен**:
+The point of emergency access is to work when the mediator is broken. So it cannot be mediated. The solution is a **cryptographic emergency token**:
 
-- аппаратный ключ (HSM/YubiKey) у CISO клиента, не в системе;
-- DBA подписывает сырой SQL этим ключом → БД принимает, но ставит флаг `is_emergency = true`;
-- witness немедленно генерирует алерт критического уровня;
-- **гарантия суспендируется автоматически** до реконсиляции и подписания акта инцидента.
+- a hardware key (HSM/YubiKey) held by the client's CISO, not in the system;
+- the DBA signs raw SQL with this key → the DB accepts it but sets the flag `is_emergency = true`;
+- the witness immediately generates a critical-level alert;
+- **the guarantee is suspended automatically** until reconciliation and signing of the incident act.
 
-Это честно: аварийный доступ существует, он виден, он документирован и он приостанавливает гарантию. Прятать его — значит получить обход, о котором узнают после инцидента.
+This is honest: emergency access exists, it is visible, it is documented, and it suspends the guarantee. Hiding it means getting a bypass that is discovered only after an incident.
 
 ---
 
-## 6. Инварианты как исполняемые проверки
+## 6. Invariants as executable checks
 
-Каждое решение из круга 4 должно превратиться в проверку, иначе оно остаётся текстом.
+Every decision from circle 4 must become a check, otherwise it remains text.
 
-| # | Инвариант | Чем проверяется автоматически |
+| # | Invariant | How it is checked automatically |
 |---|---|---|
-| **I1** Полное посредничество | каждая мутация леджера проходит через M | сверка `pgaudit`-дельты с журналом `Allow`-событий; расхождение → провал |
-| **I2** Capability enforcement | операция принимается только с валидным `Permit` | DB-триггер отклоняет запись без подписи; попытка без `Permit` → `BLOCKED` |
-| **I3** Атомарная авторизация | проверка, `Permit`, событие и мутация — одна транзакция | тест с инъекцией сбоя на каждом шаге: не должно остаться «разрешено, но не исполнено» |
-| **I4** Нет ambient authority у БД | write-доступ к леджеру только у M | сканер кредов: список принципалов с `INSERT/UPDATE` = {M} |
-| **I5** Подписанный деплой | M, политика и миграции только при совпадении хешей | CI-гейт + проверка хеша при старте M |
-| **I6** Fail-closed audit | недоступность журнала/witness → `Deny` | chaos-тест: убить канал, ожидать отказ, а не успех |
-| **I7** Version-bound решение | решение валидно только для версии объекта и политики | параллельный тест: изменить объект между `Permit` и записью → `BLOCKED` |
-| **I8** Процедура restore | restore только через подписанный snapshot + перевыпуск Z | прогон процедуры из 6 шагов как acceptance test |
+| **I1** Complete mediation | every ledger mutation passes through M | reconciliation of the `pgaudit` delta with the log of `Allow` events; any discrepancy → failure |
+| **I2** Capability enforcement | an operation is accepted only with a valid `Permit` | the DB trigger rejects a write without a signature; an attempt without a `Permit` → `BLOCKED` |
+| **I3** Atomic authorisation | the check, the `Permit`, the event and the mutation are one transaction | a test with fault injection at each step: nothing must be left "authorised but not executed" |
+| **I4** No ambient authority at the DB | write access to the ledger only for M | credential scanner: the list of principals with `INSERT/UPDATE` = {M} |
+| **I5** Signed deploy | M, policy and migrations only when the hashes match | CI gate + hash check at M startup |
+| **I6** Fail-closed audit | unavailability of the log/witness → `Deny` | chaos test: kill the channel, expect a denial, not a success |
+| **I7** Version-bound decision | a decision is valid only for the version of the object and of the policy | concurrent test: change the object between the `Permit` and the write → `BLOCKED` |
+| **I8** Restore procedure | restore only via a signed snapshot + re-issuance of Z | a run of the 6-step procedure as an acceptance test |
 
-**Три инварианта из восьми — не «доказательство», а тест.** I1, I6, I8 нельзя доказать формально для произвольной системы, но можно проверять каждый прогон. Это ровно то различие «доказано / измерено», которое мы зафиксировали в круге 3, и его нельзя размывать в акте.
+**Three of the eight invariants are not a "proof" but a test.** I1, I6, I8 cannot be proved formally for an arbitrary system, but they can be checked on every run. This is exactly the "proved / measured" distinction that we fixed in circle 3, and it must not be blurred in the act.
 
-Сверх восьми рецензенты дали важное уточнение: `∀ Permit ⟹ P` **недостаточен**. Нужен второй инвариант:
+Beyond the eight, the reviewers gave an important refinement: `∀ Permit ⟹ P` is **insufficient**. A second invariant is needed:
 
-> **∀ мутация(ledger) ⟹ ∃ Permit ∧ ∃ подписанное `Allow`-событие**
+> **∀ mutation(ledger) ⟹ ∃ Permit ∧ ∃ signed `Allow` event**
 
-Первый говорит «медиатор не врёт». Второй — «мимо медиатора не прошли». Без второго типовая защита остаётся библиотекой, которую можно не вызвать. Это I1+I2 вместе, и они обязаны проверяться раздельно.
+The first says "the mediator does not lie". The second says "nothing went past the mediator". Without the second, the typical protection remains a library that can simply not be called. This is I1+I2 together, and they must be checked separately.
 
 ---
 
-## 7. Как получить «супер качество» без человека: eval harness
+## 7. How to get "super quality" without a human: the eval harness
 
-Качество не должно зависеть от оператора, поэтому стенд проверяет сам себя на каждом изменении.
+Quality must not depend on the operator, so the rig checks itself on every change.
 
-| Тест стенда | Что ловит | Частота |
+| Rig test | What it catches | Frequency |
 |---|---|---|
-| **Мутационное тестирование медиатора** | 20+ мутантов: инверсия сравнения, снятие проверки версии, обход `deny` | каждый PR |
-| **Канареечные атаки** | 7 скриптов, все обязаны быть `BLOCKED` | каждый релиз |
-| **Тест witness-плоскости A** (replay/подмена) | подделка наблюдения | каждый релиз |
-| **Тест witness-плоскости B** (независимость) | агент не может отключить канал | каждый релиз |
-| **Детерминизм** | 20 повторных прогонов одной задачи → идентичные хеши | каждый релиз |
-| **Негативный корпус** | репозитории, где уязвимости нет → 0 ложных `PROVEN` | каждый релиз |
-| **Регрессия приёмки** | акт Z, собранный вчера, воспроизводится байт-в-байт | каждую ночь |
+| **Mediator mutation testing** | 20+ mutants: comparison inversion, removal of the version check, bypass of `deny` | every PR |
+| **Canary attacks** | 7 scripts, all must be `BLOCKED` | every release |
+| **Witness plane test A** (replay/substitution) | forgery of an observation | every release |
+| **Witness plane test B** (independence) | an agent cannot disable the channel | every release |
+| **Determinism** | 20 repeated runs of one task → identical hashes | every release |
+| **Negative corpus** | repositories with no vulnerability → 0 false `PROVEN` | every release |
+| **Acceptance regression** | act Z assembled yesterday is reproduced byte for byte | every night |
 
-**Главный принцип качества: акт Z воспроизводим байт-в-байт.** Если вчерашний акт нельзя пересобрать и получить тот же хеш — стенд недетерминирован, и никакая подпись под ним ничего не стоит. Это тест, который ловит всё остальное.
+**The main quality principle: act Z is reproducible byte for byte.** If yesterday's act cannot be reassembled and give the same hash, the rig is non-deterministic, and no signature under it is worth anything. This is the test that catches everything else.
 
 ---
 
-## 8. Ре-аттестация: одна команда
+## 8. Re-attestation: one command
 
 ```
 $ flow-attest --z z-042 --commit 9f3a1c --sign
-  [1/9] compile ........ хеш манифеста 3b7e…
-  [2/9] inventory ...... 14 writer'ов, Δ = 0     ← изменение границы не обнаружено
+  [1/9] compile ........ manifest hash 3b7e…
+  [2/9] inventory ...... 14 writers, Δ = 0     ← no boundary change detected
   [3/9] policy ......... SMT ok, Δ = 0
-  [4/9] mediate ........ M 1.4.2, хеш совпал с доказанным
-  [5/9] witness ........ 3 канала ok, приёмочные тесты A/B прошли
+  [4/9] mediate ........ M 1.4.2, hash matched the proved one
+  [5/9] witness ........ 3 channels ok, A/B acceptance tests passed
   [6/9] attack ......... 7/7 BLOCKED
-  [7/9] prove .......... пере-верификация: 0 sorry, 0 new assume
-  [8/9] declare ........ акт Z-042 v7, хеш 8d21…
-  [9/9] gate ........... Δ пуст → автоподпись разрешена владельцем
-  ✓ Гарантия продлена до 2027-10-27
+  [7/9] prove .......... re-verification: 0 sorry, 0 new assume
+  [8/9] declare ........ act Z-042 v7, hash 8d21…
+  [9/9] gate ........... Δ empty → auto-signature allowed by the owner
+  ✓ Guarantee extended to 2027-10-27
 ```
 
-**15 минут, 2 подписи.** Это и есть продукт, за который платят подписку. Если хоть один шаг показал `Δ ≠ 0`, стенд останавливается и требует G2/G3 — то есть человек подключается ровно тогда, когда что-то реально изменилось.
+**15 minutes, 2 signatures.** This is the product people pay a subscription for. If even one step showed `Δ ≠ 0`, the rig stops and requires G2/G3 — that is, the human joins exactly when something has actually changed.
 
 ---
 
-## 9. Day 1: Hello World, который проверяет всю гипотезу
+## 9. Day 1: a Hello World that tests the whole hypothesis
 
-Не начинать с платформы. Начать с одного потока и 500 строк.
+Do not start with the platform. Start with one flow and 500 lines.
 
-| День | Что делаем | Артефакт |
+| Day | What we do | Artefact |
 |---|---|---|
-| 1 | берём open-source «банк» (или 500 строк из клиентского репо по NDA): мутация баланса | репо + коммит |
-| 2 | `inventory`: bpftrace + pgaudit → черновик реестра writer'ов | 14 строк реестра |
-| 3 | черновик P + SMT: «баланс меняет только владелец/система» | контрпример или `unsat` |
-| 4–6 | `Permit` + медиатор на Rust/Verus (~150 строк) + DB-триггер | рабочий M |
-| 7–9 | witness: tap + дайджест + идентичность на этом же стенде | 3 канала |
-| 10 | 7 атак-скриптов | 7 × `BLOCKED` |
-| 11–13 | доказательство M на Verus: **замер proof-fixing** | цифра «дней на 100 строк» |
-| 14 | акт Z + подписи, ре-аттестация одной командой | воспроизводимый акт |
+| 1 | take an open-source "bank" (or 500 lines from the client repo under NDA): balance mutation | repo + commit |
+| 2 | `inventory`: bpftrace + pgaudit → draft register of writers | 14 lines of the register |
+| 3 | draft P + SMT: "only the owner/system changes the balance" | a counterexample or `unsat` |
+| 4–6 | `Permit` + mediator in Rust/Verus (~150 lines) + DB trigger | a working M |
+| 7–9 | witness: tap + digest + identity on this same rig | 3 channels |
+| 10 | 7 attack scripts | 7 × `BLOCKED` |
+| 11–13 | proof of M in Verus: **measurement of proof-fixing** | the figure "days per 100 lines" |
+| 14 | act Z + signatures, re-attestation with one command | a reproducible act |
 
-**Что это доказывает за 14 дней:** (а) инвентаризация автоматизируется, (б) `Permit`+триггер физически блокируют обход, (в) доказательство стоит столько, сколько мы оценили, (г) ре-аттестация — минуты.
+**What this proves in 14 days:** (a) inventory can be automated, (b) `Permit`+trigger physically block bypass, (c) the proof costs what we estimated, (d) re-attestation takes minutes.
 
-**Что это опровергает, если не получится:** если на дне 10 хоть одна атака проходит — вся гипотеза «замыкания» ложна, и это надо узнать на 10-й день, а не на 45-й.
+**What it refutes if it does not work out:** if on day 10 even one attack passes, the whole "closure" hypothesis is false, and that must be learned on day 10, not on day 45.
 
 ---
 
-## 10. Что стоит и кто нужен
+## 10. What it costs and who is needed
 
-| Статья | Пилот (45 дн) | Стенд (постоянно) |
+| Item | Pilot (45 days) | Rig (ongoing) |
 |---|---|---|
-| Люди | 24 человеко-дня | 0.5 FTE на поддержку стенда |
-| Инфраструктура | 1 bare-metal узел + object storage | $1.5–3k/мес `[оценка]` |
-| LLM | proof-fixing и генерация скелетов | $200–800 на ангажемент `[оценка]` |
-| Proof-инструменты | Verus/Dafny/Z3 — открытые | 0 |
+| People | 24 person-days | 0.5 FTE for rig maintenance |
+| Infrastructure | 1 bare-metal node + object storage | $1.5–3k/month `[estimate]` |
+| LLM | proof-fixing and skeleton generation | $200–800 per engagement `[estimate]` |
+| Proof tools | Verus/Dafny/Z3 — open source | 0 |
 
-**Команда минимум:** 1 platform/sandbox, 1 formal-methods, 1 AppSec. Три человека — это ровно те, кто закрывает G2 и G3 и строит стенд. Без формальщика пилот невозможен: доказательство медиатора — единственное, что нельзя делегировать.
+**Minimum team:** 1 platform/sandbox, 1 formal-methods, 1 AppSec. Three people are exactly those who close G2 and G3 and build the rig. Without a formal-methods person the pilot is impossible: the proof of the mediator is the one thing that cannot be delegated.
 
 ---
 
-## 11. Что осознанно не строим в v1
+## 11. What we deliberately do not build in v1
 
-| Не строим | Почему |
+| Not building | Why |
 |---|---|
-| Пять политик сразу | пилоту нужны две: принадлежность и лимит. Остальные — после первого клиента |
-| Event sourcing / распределённый writer | DB-триггер даёт то же свойство дешевле |
-| Свой proof assistant | Verus/Dafny/Lean существуют и дешевле, чем своя разработка |
-| Автоматический поиск новых атак агентом | в акт идут только воспроизводимые скрипты; агент — вне зачёта |
-| Поддержку 10 стеков | один стек на пилот, второй — по деньгам клиента |
-| SaaS-мультитенантность | один клиент, один стенд, один акт |
+| Five policies at once | the pilot needs two: ownership and limit. The rest — after the first client |
+| Event sourcing / distributed writer | the DB trigger gives the same property more cheaply |
+| Our own proof assistant | Verus/Dafny/Lean exist and are cheaper than in-house development |
+| Automatic search for new attacks by an agent | only reproducible scripts go into the act; the agent is out of scope |
+| Support for 10 stacks | one stack for the pilot, the second — if the client pays |
+| SaaS multi-tenancy | one client, one rig, one act |
 
 ---
 
-## 12. Итог
+## 12. Summary
 
-Стенд — это не «агент, который всё делает». Это **конвейер, который производит свидетельства, и четыре экрана, на которых человек их ратифицирует**. Три вещи делают его автоматическим по существу:
+The rig is not "an agent that does everything". It is **a pipeline that produces evidence, and four screens on which the human ratifies it**. Three things make it automatic in substance:
 
-1. **Черновики вместо пустых полей** — человек всегда видит diff, никогда не пишет с нуля.
-2. **Скрипты вместо агентов** в том, что попадает в акт — потому что недетерминированная проверка не является проверкой.
-3. **Ре-аттестация одной командой** — весь выигрыш от автоматизации живёт здесь, и именно она превращает разовый проект в подписку.
+1. **Drafts instead of empty fields** — the human always sees a diff, never writes from scratch.
+2. **Scripts instead of agents** in whatever goes into the act — because a non-deterministic check is not a check.
+3. **Re-attestation with one command** — the whole gain from automation lives here, and it is what turns a one-off project into a subscription.
 
-А «супер качество» обеспечивается не людьми, а тем, что **вчерашний акт воспроизводится байт-в-байт**. Если это верно — подпись под ним значит что-то. Если нет — это PDF.
+And "super quality" is provided not by people but by the fact that **yesterday's act is reproduced byte for byte**. If that holds, the signature under it means something. If not, it is a PDF.

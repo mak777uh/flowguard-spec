@@ -1,577 +1,575 @@
-# 20. Решения второго круга: свод двух рецензий
+# 20. Second-round decisions: a digest of two reviews
 
-> Вход: два независимых ответа на `10-ROUND2-QUESTIONS.md` (рецензент №1 и №2), оба без доступа друг к другу.
-> Правила: 2/2 → принимаем; расхождение → назначаем измерение, а не голосование; консенсус против нашей спеки → правим спеку.
-> Ниже — только то, что **изменило** документы. Спорное и нерешённое вынесено в §9.
+> Input: two independent answers to `10-ROUND2-QUESTIONS.md` (reviewer #1 and #2), neither with access to the other.
+> Rules: 2/2 → accept; divergence → assign a measurement, not a vote; consensus against our spec → fix the spec.
+> Below is only what **changed** the documents. Contested and unresolved items are moved to §9.
 
 ---
 
-## 1. Блок A: 11 из 12 решений — консенсус
+## 1. Block A: 11 of 12 decisions — consensus
 
-| Вопрос | №1 | №2 | Итог |
+| Question | #1 | #2 | Outcome |
 |---|---|---|---|
-| A1 что в «находках» | б (80) | а (99), но обоснование = «гипотезы отдельным приложением» | **Принято: только `PROVEN` в находках, гипотезы — отдельное приложение.** У №2 буква расходится с обоснованием; по смыслу — совпадение |
-| A2 кто подписывает | а наш assessor (80) | а (78) | **2/2 — принято** |
-| A3 первый вход | а репозиторий (75) | а (91) | **2/2 — принято** |
-| A4 где ров 12 мес | б evidence plane (60) | б (93) | **2/2 — принято, спека исправлена** (см. §5.1) |
-| A5 модель цены | а за скоуп (70) | а (86) | **2/2 — принято** |
-| A6 human review | а 100% (90) | а (91) | **2/2 — принято**, наивысшая согласованность круга |
-| A7 размещение | б гибрид (60) | б (89) | **2/2 — принято** |
-| A8 формалка в v1 | а нет (65) | а (96) | **2/2 — принято** |
-| A9 live-тесты | а никогда (85) | а (89) | **2/2 — принято** |
-| A10 невоспроизводимый PoC | а NRE, не биллить (80) | а (94) | **2/2 — принято** |
-| A11 спека для R5 | в совместно + независимый ревьюер (70) | в (90) | **2/2 — принято** |
-| A12 «уязвимостей нет» | б с явными ограничениями (85) | б (98) | **2/2 — принято** |
+| A1 what goes in "findings" | b (80) | a (99), but the rationale = "hypotheses as a separate appendix" | **Accepted: only `PROVEN` in findings, hypotheses — a separate appendix.** With #2 the letter diverges from the rationale; substantively — agreement |
+| A2 who signs | a, our assessor (80) | a (78) | **2/2 — accepted** |
+| A3 first entry point | a, the repository (75) | a (91) | **2/2 — accepted** |
+| A4 where the moat is at 12 months | b, the evidence plane (60) | b (93) | **2/2 — accepted, spec corrected** (see §5.1) |
+| A5 pricing model | a, per scope (70) | a (86) | **2/2 — accepted** |
+| A6 human review | a, 100% (90) | a (91) | **2/2 — accepted**, the highest agreement of the round |
+| A7 deployment | b, hybrid (60) | b (89) | **2/2 — accepted** |
+| A8 formal methods in v1 | a, no (65) | a (96) | **2/2 — accepted** |
+| A9 live tests | a, never (85) | a (89) | **2/2 — accepted** |
+| A10 non-reproducible PoC | a, NRE, do not bill (80) | a (94) | **2/2 — accepted** |
+| A11 spec for R5 | c, jointly + independent reviewer (70) | c (90) | **2/2 — accepted** |
+| A12 "no vulnerabilities" | b, with explicit limitations (85) | b (98) | **2/2 — accepted** |
 
-**Что это значит.** Спор о продуктовой модели закрыт: узкий repo-only сервис с доказанным результатом, подписью человека, гибридным размещением и ценой за скоуп. Дальше его не нужно переспрашивать — нужно измерять.
+**What this means.** The dispute about the product model is closed: a narrow repo-only service with a proven result, human signature, hybrid deployment and per-scope pricing. It no longer needs to be asked about again — it needs to be measured.
 
 ---
 
-## 2. Блок Б: числа — где сошлись, где разброс
+## 2. Block B: the numbers — where they converged, where they spread
 
-| Метрика | №1 | №2 | Разброс | Решение |
+| Metric | #1 | #2 | Spread | Decision |
 |---|---|---|---|---|
-| Б1 стоимость валидированной находки | $400 | $150 | 2.7× | **Порог `$8` снят окончательно.** Порядок — сотни долларов; управляем стоимостью **ангажемента** |
-| Б2 p90 dynamic-PoC | $3 000 | $1 000 | 3× | Держим как отдельный класс в отчётности, не усредняем |
-| Б3 time-to-first-validated | 6 ч / 48 ч | 4 ч / 24 ч | 1.5–2× | **Принято: p50 ≤6 ч, p95 ≤48 ч.** Прежний порог 15 мин — ошибка спеки |
-| Б4 wall-clock cap | 24 ч | 8 ч | 3× | **8 ч** — продуктовый SLA, **24 ч** — асинхронный batch-тариф |
-| Б5 repro rate | ≥90% | ≥95% | близко | **≥95%** как порог, 90% как минимум для релиза |
-| Б6 fix-acceptance | 60% | 60% | **точно совпало** | **Принято 60%** для v1 (не 70%); 70% — цель после 20 ангажементов |
-| Б7 цена S1 | $12 000 | $2 000 | **6×** | **Не решается моделями.** Уходит в интервью с покупателями, не в спеку |
-| Б8 маржа R1 / R3 | 70% / 55% | 60% / 35% | 10–20 п.п. | Планируем по нижней границе: **R1 ≥60%, R3 ≥35%** |
-| Б9 находок на S1 | 4 | 3 | **совпало** | **Планируем 3–4.** Ключевое число всей экономики |
-| Б10 до первого клиента | 4 чел × 4 мес = 16 ч-мес | 3 чел × 2 мес = 6 ч-мес | 2.7× | **Планируем 12 ч-мес.** 6 ч-мес достижимы только для repo-only SaaS без гибрида, что противоречит A7 |
+| B1 cost of a validated finding | $400 | $150 | 2.7× | **The `$8` threshold is removed for good.** The order of magnitude is hundreds of dollars; we manage the cost of the **engagement** |
+| B2 p90 dynamic-PoC | $3 000 | $1 000 | 3× | Kept as a separate class in reporting, not averaged |
+| B3 time-to-first-validated | 6 h / 48 h | 4 h / 24 h | 1.5–2× | **Accepted: p50 ≤6 h, p95 ≤48 h.** The previous 15 min threshold was a spec error |
+| B4 wall-clock cap | 24 h | 8 h | 3× | **8 h** — product SLA, **24 h** — asynchronous batch tier |
+| B5 repro rate | ≥90% | ≥95% | close | **≥95%** as the threshold, 90% as the minimum for release |
+| B6 fix-acceptance | 60% | 60% | **exactly matched** | **60% accepted** for v1 (not 70%); 70% is the target after 20 engagements |
+| B7 price of S1 | $12 000 | $2 000 | **6×** | **Not decided by models.** Goes to buyer interviews, not to the spec |
+| B8 margin R1 / R3 | 70% / 55% | 60% / 35% | 10–20 pp | We plan on the lower bound: **R1 ≥60%, R3 ≥35%** |
+| B9 findings per S1 | 4 | 3 | **matched** | **We plan for 3–4.** The key number of the whole economics |
+| B10 up to the first client | 4 people × 4 months = 16 person-months | 3 people × 2 months = 6 person-months | 2.7× | **We plan for 12 person-months.** 6 person-months is reachable only for a repo-only SaaS without the hybrid, which contradicts A7 |
 
-**Главный вывод блока Б.** Оба рецензента независимо сказали одно: находок мало (3–4), каждая дорогая ($150–400), поэтому **экономика определяется стоимостью ангажемента, а не эффективностью на находку**. Это переворачивает метрику первого круга.
+**The main conclusion of Block B.** Both reviewers independently said the same thing: findings are few (3–4), each one is expensive ($150–400), therefore **the economics is determined by engagement cost, not by efficiency per finding**. This overturns the first-round metric.
 
 ---
 
-## 3. Блок В: фатальные механизмы, подтверждённые двумя голосами
+## 3. Block C: fatal mechanisms confirmed by two votes
 
-| Механизм | Кто назвал | Голоса | Действие |
+| Mechanism | Who named it | Votes | Action |
 |---|---|---|---|
-| **Негерметичные зависимости:** сборка тянет сеть, `DEPLOY_FAILED`, ноль находок; replay не воспроизводится у клиента | №1 (п.2), №2 (п.4) | **2/2** | **P0-задача:** стадия prefetch зависимостей через allowlist-зеркало **до** запечатывания + все зависимости и контрольные суммы в replay-комплект |
-| **Оракул проверяет не ту семантику:** C/T/N проходит, но предикат неверен; систематическая воспроизводимая ошибка | №1 (п.4), №2 (п.1) | **2/2** | **P0-задача:** независимый эталонный корпус + мутационное тестирование оракула + ревью реализации → стало аксиомой **C8** |
-| **Экономика ломается на сложных находках:** один dynamic-PoC = дни ручной работы при фиксированной цене | №1 (п.1, п.5), №2 (п.5) | **2/2** | **P0-задача:** адаптивный K (3→10), бюджет исполнения в цене, «тяжёлые» классы — отдельный тариф |
-| Подпись 100% как линейная нагрузка (очередь) | №1 (п.3) | 1/2 | Принято как ограничение масштаба: карточка ревью на 1 страницу + авто-replay, потолок 15 мин |
-| Пустой отчёт: 0 находок за полную цену | №1 (п.5) | 1/2 | **Принято как продукт:** «аттестация покрытия» — продаваемый нулевой результат |
-| Действия вне скоупа через injection | №2 (п.2) | 1/2 | Уже покрыто C7 + egress deny-all на уровне инфраструктуры |
-| Фикс проходит тесты, но ломает бизнес-логику | №2 (п.3) | 1/2 | Принято: контракт поведения клиента в обязательную приёмку R1 |
+| **Non-hermetic dependencies:** the build reaches the network, `DEPLOY_FAILED`, zero findings; the replay does not reproduce at the client | #1 (p.2), #2 (p.4) | **2/2** | **P0 task:** a dependency prefetch stage through an allowlist mirror **before** sealing + all dependencies and checksums in the replay kit |
+| **The oracle checks the wrong semantics:** C/T/N passes, but the predicate is wrong; a systematic, reproducible error | #1 (p.4), #2 (p.1) | **2/2** | **P0 task:** an independent reference corpus + mutation testing of the oracle + implementation review → became axiom **C8** |
+| **The economics breaks on hard findings:** one dynamic-PoC = days of manual work at a fixed price | #1 (p.1, p.5), #2 (p.5) | **2/2** | **P0 task:** adaptive K (3→10), an execution budget inside the price, "heavy" classes — a separate tier |
+| 100% signing as a linear load (a queue) | #1 (p.3) | 1/2 | Accepted as a scaling constraint: a one-page review card + auto-replay, a 15 min ceiling |
+| An empty report: 0 findings at full price | #1 (p.5) | 1/2 | **Accepted as a product:** "coverage attestation" — a sellable zero result |
+| Out-of-scope actions via injection | #2 (p.2) | 1/2 | Already covered by C7 + egress deny-all at the infrastructure level |
+| The fix passes the tests but breaks business logic | #2 (p.3) | 1/2 | Accepted: a client behaviour contract in the mandatory R1 acceptance |
 
-**Правки на единицу усилий** (пересечение): герметичный bundle с пиннингом зависимостей (2 нед) · инструментирование экономики полного цикла (1 нед) · адаптивный K (1 нед) · независимый эталонный корпус (3 нед). Порядок — по убыванию отношения «снятый риск / усилие».
-
----
-
-## 4. Блок Г: реальный объём v1 (пересечение, не объединение)
-
-**Оставить (4 компонента, названные обоими):** `(1)` микроVM · `(2)` PoC-контракт C/T/N · `(3)` запечатанный оракул · `(6)` офлайн replay kit.
-
-**Каждый рецензент добавил по одному:** №1 — `(12)` named signatory; №2 — `(5)` evidence plane с hash-chain.
-
-**Итог v1:** четыре согласованных + `(5)` + `(12)`. При этом №2 прямо оговаривает: вырезание `(12)` допустимо **только для внутреннего прототипа**, для коммерческого V1 подпись обязательна. То есть по существу — согласие.
-
-**Срезано обоими:** `(4)` canary-nonce · `(7)` live DAST · `(8)` root-cause graph · `(9)` peer-генерация R0–R5 · `(10)` verifier farm · `(11)` формальный трек.
-
-### Одно решение против консенсуса (задокументировано)
-
-**`(4)` canary-nonce остаётся в v1, несмотря на 2/2 «вырезать».** Обоснование: и №1, и №2 исходят из того, что запечатанный оракул делает наблюдение неподделываемым. Это неверно. Оракул проверяет **предикат** над наблюдением, но само наблюдение производится внутри VM, которую контролирует агент: агент может не «придумать баг», а **сфабриковать наблюдение** — напечатать в лог строку, которую оракул сочтёт доказательством. Canary-nonce стоит один день работы (случайный токен в синтетическую таблицу) и закрывает ровно этот вектор; без него вся защита сводится к честности агента.
-
-Стоимость ошибки в обратную сторону: если мы правы, то без nonce первый же «изобретательный» прогон отгрузит клиенту фальшивое доказательство — а это K3 (ложная верификация) и конец продукта. Асимметрия: 1 день против компании. Оставляем. **Кандидат в третий круг** — вопрос сформулирован в §9.
+**Changes per unit of effort** (the intersection): a hermetic bundle with dependency pinning (2 weeks) · full-cycle economics instrumentation (1 week) · adaptive K (1 week) · an independent reference corpus (3 weeks). The order is by decreasing ratio of "risk removed / effort".
 
 ---
 
-## 5. Что изменено в документах
+## 4. Block D: the real scope of v1 (intersection, not union)
 
-| Изменение | Файл | Причина |
+**To keep (4 components named by both):** `(1)` microVM · `(2)` PoC contract C/T/N · `(3)` sealed oracle · `(6)` offline replay kit.
+
+**Each reviewer added one:** #1 — `(12)` named signatory; #2 — `(5)` evidence plane with a hash-chain.
+
+**v1 outcome:** the four agreed + `(5)` + `(12)`. At the same time #2 states explicitly: cutting `(12)` is permissible **only for an internal prototype**; for a commercial V1 the signature is mandatory. That is, substantively — agreement.
+
+**Cut by both:** `(4)` canary-nonce · `(7)` live DAST · `(8)` root-cause graph · `(9)` peer generation of R0–R5 · `(10)` verifier farm · `(11)` the formal track.
+
+### One decision against consensus (documented)
+
+**`(4)` canary-nonce stays in v1, despite a 2/2 "cut it".** Rationale: both #1 and #2 assume that a sealed oracle makes the observation unforgeable. That is wrong. The oracle checks a **predicate** over an observation, but the observation itself is produced inside the VM that the agent controls: the agent need not "invent a bug", it can **fabricate an observation** — print a line into the log that the oracle will take as proof. Canary-nonce costs one day of work (a random token in a synthetic table) and closes exactly this vector; without it the whole defence reduces to the agent's honesty.
+
+The cost of an error in the other direction: if we are right, then without the nonce the very first "inventive" run will ship a false proof to the client — and that is K3 (false verification) and the end of the product. The asymmetry is 1 day against the company. We keep it. **A candidate for the third round** — the question is formulated in §9.
+
+---
+
+## 5. What changed in the documents
+
+| Change | File | Reason |
 |---|---|---|
-| 5.1 Ров 0–12 мес: **evidence plane**, подпись — коммерческая упаковка | `00-SYNTHESIS.md` §3.1 | A4: 2/2 |
-| 5.2 Новая аксиома **C8**: проверяльщик сам под проверкой (независимый корпус, мутация оракула, ревью реализации) | `00-SYNTHESIS.md` §2 | В3: 2/2 диссидентства против C1 |
-| 5.3 **I2 переформулирован**: «тот же вердикт с заявленным repro rate ≥ p», а не «тот же результат» | `00-SYNTHESIS.md` §7, `10-ROUND2-QUESTIONS.md` (не менять — см. §8) | В3 №1 |
-| 5.4 **K адаптивный** 3→10 вместо фиксированного K=10; K печатается в бандле | `01-VARIANTS.md`, `02-GRID.md` | В1 №1: 3 ветки × 10 VM × перезапуски = взрыв стоимости |
-| 5.5 Стадия **prefetch зависимостей** через allowlist-зеркало до запечатывания | `01-VARIANTS.md` (V1) | В1 №2 + В1 №4: 2/2 |
-| 5.6 Порог `cost per validated ≤$8` **снят**; управляющая метрика — стоимость ангажемента | `03-EVAL-ROADMAP.md` §2 | Б1: $150 и $400 |
-| 5.7 `time-to-first-validated`: **≤6 ч p50 / ≤48 ч p95** вместо 15 мин | `03-EVAL-ROADMAP.md` §2 | Б3: 2/2 |
-| 5.8 `fix-acceptance` **60%** для v1 вместо 70% | `03-EVAL-ROADMAP.md` §2 | Б6: точное совпадение |
-| 5.9 Добавлены **K6** (коллапс выхода) и **K7** (коллапс продления) | `03-EVAL-ROADMAP.md` §3 | Д1: 2/2, разные механизмы одного семейства |
-| 5.10 Новый продукт **«аттестация покрытия»** для нулевого результата | `01-VARIANTS.md` (V1), ниже §6 | В1 №5 |
-| 5.11 **Процедура отзыва отчёта**: отзыв, уведомление, сроки, исправление уже выданного | ниже §7 | Е1 №2 |
+| 5.1 Moat at 0–12 months: **the evidence plane**, the signature — commercial packaging | `00-SYNTHESIS.md` §3.1 | A4: 2/2 |
+| 5.2 New axiom **C8**: the verifier itself is under verification (independent corpus, oracle mutation, implementation review) | `00-SYNTHESIS.md` §2 | C3: 2/2 dissent against C1 |
+| 5.3 **I2 reformulated**: "the same verdict with the declared repro rate ≥ p", not "the same result" | `00-SYNTHESIS.md` §7, `10-ROUND2-QUESTIONS.md` (do not change — see §8) | C3 #1 |
+| 5.4 **K is adaptive**, 3→10 instead of a fixed K=10; K is printed in the bundle | `01-VARIANTS.md`, `02-GRID.md` | C1 #1: 3 branches × 10 VM × restarts = a cost explosion |
+| 5.5 A **dependency prefetch** stage through an allowlist mirror before sealing | `01-VARIANTS.md` (V1) | C1 #2 + C1 #4: 2/2 |
+| 5.6 The `cost per validated ≤$8` threshold is **removed**; the governing metric is engagement cost | `03-EVAL-ROADMAP.md` §2 | B1: $150 and $400 |
+| 5.7 `time-to-first-validated`: **≤6 h p50 / ≤48 h p95** instead of 15 min | `03-EVAL-ROADMAP.md` §2 | B3: 2/2 |
+| 5.8 `fix-acceptance` **60%** for v1 instead of 70% | `03-EVAL-ROADMAP.md` §2 | B6: exact match |
+| 5.9 **K6** (output collapse) and **K7** (renewal collapse) added | `03-EVAL-ROADMAP.md` §3 | D1: 2/2, different mechanisms of one family |
+| 5.10 A new product, **"coverage attestation"**, for a zero result | `01-VARIANTS.md` (V1), see §6 below | C1 #5 |
+| 5.11 **Report withdrawal procedure**: withdrawal, notification, deadlines, correction of what was already issued | see §7 below | E1 #2 |
 
 ---
 
-## 6. «Пустой отчёт» как продукт, а не как неудача
+## 6. The "empty report" as a product, not as a failure
 
-При 3–4 находках на ангажемент и строгом фильтре `PROVEN` значимая доля заказов даст **ноль находок**. Продавать такой отчёт как «мы ничего не нашли» — это потерянный клиент. Решение (принято по В1 №5):
+With 3–4 findings per engagement and a strict `PROVEN` filter, a significant share of orders will yield **zero findings**. Selling such a report as "we found nothing" means a lost client. The decision (accepted on C1 #5):
 
-**Аттестация покрытия** — отдельный продаваемый деливерабл, который покупают *вместо* находок:
-1. Карта поверхности: что именно было протестировано, с digest'ами и временем.
-2. Перечень классов атак, по которым прогон выполнялся, и результат по каждому (`не обнаружено` / `не достижимо` / `не проверялось`).
-3. Replayable-доказательство: клиент переигрывает прогон и убеждается, что проверки действительно выполнялись.
-4. Негативный скоуп — как договорный текст, а не сноска.
+**Coverage attestation** is a separate sellable deliverable that is bought *instead of* findings:
+1. A surface map: what exactly was tested, with digests and timestamps.
+2. A list of the attack classes the run covered, and the result for each (`not detected` / `not reachable` / `not tested`).
+3. Replayable proof: the client replays the run and confirms that the checks really were performed.
+4. A negative scope — as contractual text, not a footnote.
 
-Ключевое: «не нашли» продаётся только вместе с доказательством, что **искали**. Это отличает нас от сканера, чей пустой отчёт неотличим от сломанного сканера.
+The key point: "we did not find" sells only together with proof that we **looked**. This is what distinguishes us from a scanner whose empty report is indistinguishable from a broken scanner.
 
 ---
 
-## 7. Ответственность (Е1, оба рецензента)
+## 7. Liability (E1, both reviewers)
 
-Сошлись: лимит ответственности размером платы до первой крупной сделки + E&O-страховка + негативный скоуп как **договорный** текст.
+They agreed: liability capped at the fee until the first large deal + E&O insurance + a negative scope as **contractual** text.
 
-Добавлено №2 и принято как продуктовое требование: **процедура отзыва отчёта** — обязательные элементы:
+Added by #2 and accepted as a product requirement: the **report withdrawal procedure** — mandatory elements:
 
-| Элемент | Требование |
+| Element | Requirement |
 |---|---|
-| Триггер отзыва | обнаружена ошибка оракула/верификатора либо расхождение replay сверх заявленного repro rate |
-| Уведомление | все получатели затронутого отчёта, срок фиксирован в договоре |
-| Содержание | что именно неверно, какие утверждения отзываются, какие остаются в силе |
-| Исправление | пере-прогон и пере-подпись; старый отчёт помечается отозванным, но не удаляется |
-| Учёт | реестр отзывов доступен аудитору и страховщику |
+| Withdrawal trigger | an oracle/verifier error is found, or a replay divergence beyond the declared repro rate |
+| Notification | all recipients of the affected report; the deadline is fixed in the contract |
+| Content | what exactly is wrong, which statements are withdrawn, which remain in force |
+| Correction | re-run and re-sign; the old report is marked as withdrawn but not deleted |
+| Record | a withdrawal register available to the auditor and the insurer |
 
-Без этого механизма «подписанный отчёт» — это не ответственность, а её имитация: подпись, которую нельзя отозвать, невозможно и застраховать.
-
----
-
-## 8. Инструмент заморожен
-
-`10-ROUND2-QUESTIONS.md` **не правится** под решения второго круга, хотя теперь в нём есть заведомо устаревшие формулировки (K=10, I2 «тот же результат», порог 15 мин). Это сознательно: набор вопросов — измерительный прибор, а изменение прибора посреди серии ломает сопоставимость ответов. Все поправки живут в спеке (`00`, `01`, `02`, `03` и этом файле).
-
-Когда прибор можно будет обновить: после третьего круга, вместе с новым набором вопросов.
+Without this mechanism a "signed report" is not liability but an imitation of it: a signature that cannot be withdrawn cannot be insured either.
 
 ---
 
-## 9. Что осталось открытым и уходит в третий круг
+## 8. The instrument is frozen
 
-Разброс 2/2 или 6× означает не «модели глупые», а «вопрос требует данных либо поставлен неверно». Отсюда — только четыре пункта, ни один не про архитектуру.
+`10-ROUND2-QUESTIONS.md` is **not edited** to match the second-round decisions, although it now contains formulations that are known to be outdated (K=10, I2 "the same result", the 15 min threshold). This is deliberate: the question set is a measuring instrument, and changing the instrument in the middle of a series breaks comparability of the answers. All corrections live in the spec (`00`, `01`, `02`, `03` and this file).
 
-| # | Вопрос | Почему не решён | Как закрывать |
+When the instrument may be updated: after the third round, together with a new question set.
+
+---
+
+## 9. What remains open and goes to the third round
+
+A 2/2 split or a 6× spread does not mean "the models are stupid", it means "the question needs data or is posed wrongly". Hence only four items, none of them about architecture.
+
+| # | Question | Why it is not settled | How to close it |
 |---|---|---|---|
-| Q1 | **Цена S1: $2k или $12k** (6×) | Не решается мнением — только готовностью платить | 10 интервью с покупателями по триггерам (аттестация / релиз-гейт / M&A), не с моделями |
-| Q2 | **Гибридный runner: срок и минимальный объём** (6 vs 16 ч-мес) | Прямое противоречие: A7 = гибрид по умолчанию, Б10 №2 = 6 ч-мес, что гибрид не вмещает | Спросить: минимальный runner, который закрывает закупочный блокер, — это 2 недели или 8? |
-| Q3 | **Canary-nonce: оставить или вырезать** (2/2 против, мы против консенсуса) | Спор технический и узкий: подделываемо ли наблюдение при запечатанном оракуле | Вопрос в §9.1 — задать всем моделям третьего круга |
-| Q4 | **Что ведёт: выход или продление** (месяц 10 «пусто» vs месяц 6 «не продлевают») | Два индикатора одного семейства; неясно, какой срабатывает раньше | Оба в дашборд с первого пилота; через 3 месяца данные скажут сами |
+| Q1 | **Price of S1: $2k or $12k** (6×) | Not decided by opinion — only by willingness to pay | 10 buyer interviews by trigger (attestation / release gate / M&A), not with models |
+| Q2 | **Hybrid runner: timeline and minimum scope** (6 vs 16 person-months) | A direct contradiction: A7 = hybrid by default, B10 #2 = 6 person-months, which cannot accommodate the hybrid | Ask: the minimum runner that clears the procurement blocker — is it 2 weeks or 8? |
+| Q3 | **Canary-nonce: keep or cut** (2/2 against, we are against consensus) | A technical and narrow dispute: is the observation forgeable under a sealed oracle | The question is in §9.1 — put it to all third-round models |
+| Q4 | **Which leads: output or renewal** (month 10 "empty" vs month 6 "not renewing") | Two indicators of one family; it is unclear which fires first | Both in the dashboard from the first pilot; in 3 months the data will speak for itself |
 
-### 9.1. Вопрос третьего круга (единственный технический)
+### 9.1. The third-round question (the only technical one)
 
-> Агент исполняется в микроVM и полностью контролирует процессы внутри неё. Оракул запечатан: агент не пишет предикат, а только поставляет данные, по которым детерминированный код вычисляет `O`. Может ли агент получить `PROVEN`, **не найдя уязвимость**, а сфабриковав наблюдение (записав в лог/ответ строку, файл или эффект, который оракул сочтёт доказательством)? Если да — какой минимальный механизм это закрывает и сколько он стоит в человеко-днях? Если нет — почему именно, с указанием конкретного барьера.
+> The agent executes in a microVM and fully controls the processes inside it. The oracle is sealed: the agent does not write the predicate, it only supplies the data from which deterministic code computes `O`. Can the agent obtain `PROVEN`, **without finding a vulnerability**, by fabricating an observation (writing into the log/response a string, a file or an effect that the oracle will take as proof)? If yes — what minimal mechanism closes this and what does it cost in person-days? If no — why exactly, naming the specific barrier.
 
-Ответ на этот вопрос решает Q3, а Q3 — это разница между «доказано» и «агент сказал, что доказано».
+The answer to this question decides Q3, and Q3 is the difference between "proven" and "the agent said it is proven".
 
 ---
 
-# 10. Третий рецензент: что изменилось
+# 10. Third reviewer: what changed
 
-> §10 дополняет и в спорных местах **заменяет** §1–§2. Три независимых ответа вместо двух — это уже не голосование, а проверка устойчивости.
+> §10 supplements and, where contested, **replaces** §1–§2. Three independent answers instead of two is no longer a vote but a robustness check.
 
-## 10.1. Блок A: 12 из 12 — консенсус полный
+## 10.1. Block A: 12 of 12 — full consensus
 
-Все три рецензента дали **одну и ту же букву по всем двенадцати вопросам**. Не «похожие», а идентичные: A1 б, A2 а, A3 а, A4 б, A5 а, A6 а, A7 б, A8 а, A9 а, A10 а, A11 в, A12 б.
+All three reviewers gave **the same letter on all twelve questions**. Not "similar" but identical: A1 b, A2 a, A3 a, A4 b, A5 a, A6 a, A7 b, A8 a, A9 a, A10 a, A11 c, A12 b.
 
-Это означает: продуктовая модель закрыта окончательно, и дальнейшие круги по этим вопросам — потеря времени. Блок A из прибора можно убирать; в следующем наборе вопросов ему места нет.
+This means: the product model is definitively closed, and further rounds on these questions are a waste of time. Block A can be removed from the instrument; there is no place for it in the next question set.
 
-Единственное содержательное расхождение — **уверенность**, и она информативна: по A4 (где ров) разброс 60 / 93 / 80, по A1 — 80 / 99 / 90. То есть все согласны *что* делать, но не согласны, *насколько это очевидно*. Для планирования это значит: A4 — самый рискованный из «решённых» пунктов.
+The only substantive divergence is **confidence**, and it is informative: on A4 (where the moat is) the spread is 60 / 93 / 80, on A1 — 80 / 99 / 90. That is, everyone agrees on *what* to do but not on *how obvious* it is. For planning this means: A4 is the riskiest of the "settled" items.
 
-## 10.2. Блок Б: разброс 40–65× — это не разногласие, а разные определения
+## 10.2. Block B: a 40–65× spread is not a disagreement but different definitions
 
-| Метрика | №1 | №2 | №3 | Разброс |
+| Metric | #1 | #2 | #3 | Spread |
 |---|---|---|---|---|
-| Б1 стоимость валидированной находки | $400 | $150 | **$6 000–10 000** | **40–65×** |
-| Б2 p90 dynamic-PoC | $3 000 | $1 000 | $18 000–30 000 | 18–30× |
-| Б3 time-to-first | 6 ч / 48 ч | 4 ч / 24 ч | **48 ч / 120 ч** | 8–12× |
-| Б4 wall-clock cap | 24 ч | 8 ч | 8 ч | 3× (2/3 за 8 ч) |
-| Б5 repro rate | 90% | 95% | 90% | **сошлось** |
-| Б6 fix-acceptance | 60% | 60% | 70% | **сошлось (~60–70)** |
-| Б7 цена S1 | $12k | $2k | $10k | 6× |
-| Б8 маржа R1 / R3 | 70 / 55 | 60 / 35 | 70 / 45 | умеренно |
-| Б9 находок на S1 | 4 | 3 | 6 | **3–6** |
-| Б10 человеко-месяцев | 16 | 6 | 10–12 | медиана 12 |
+| B1 cost of a validated finding | $400 | $150 | **$6 000–10 000** | **40–65×** |
+| B2 p90 dynamic-PoC | $3 000 | $1 000 | $18 000–30 000 | 18–30× |
+| B3 time-to-first | 6 h / 48 h | 4 h / 24 h | **48 h / 120 h** | 8–12× |
+| B4 wall-clock cap | 24 h | 8 h | 8 h | 3× (2/3 for 8 h) |
+| B5 repro rate | 90% | 95% | 90% | **converged** |
+| B6 fix-acceptance | 60% | 60% | 70% | **converged (~60–70)** |
+| B7 price of S1 | $12k | $2k | $10k | 6× |
+| B8 margin R1 / R3 | 70 / 55 | 60 / 35 | 70 / 45 | moderate |
+| B9 findings per S1 | 4 | 3 | 6 | **3–6** |
+| B10 person-months | 16 | 6 | 10–12 | median 12 |
 
-**Три числа сошлись и им можно верить:** находок на ангажемент 3–6, `repro rate` ~90–95%, `fix-acceptance` ~60–70%. Это ядро экономики, и оно устойчиво.
+**Three numbers converged and can be trusted:** findings per engagement 3–6, `repro rate` ~90–95%, `fix-acceptance` ~60–70%. This is the core of the economics, and it is stable.
 
-**Три числа разошлись в десятки раз — и это дефект вопроса, а не ответов.** Диагностика:
+**Three numbers diverged by tens of times — and that is a defect of the question, not of the answers.** Diagnosis:
 
-- №1 и №2 считали **маржинальную** стоимость (compute + триаж до валидированной находки).
-- №3 считал **полную загрузку** (assessor $120/ч × 4–8 ч на находку + валидация + ревью).
-- Поскольку A6 = 100% человеческого ревью есть консенсус, **правильным является определение №3**. Человек и есть стоимость.
+- #1 and #2 computed the **marginal** cost (compute + triage up to a validated finding).
+- #3 computed **full load** (assessor $120/h × 4–8 h per finding + validation + review).
+- Since A6 = 100% human review is consensus, **definition #3 is the correct one**. The human is the cost.
 
-**Но число №3 арифметически не сходится само с собой.** Сверка:
+**But #3's number does not add up with itself arithmetically.** Cross-check:
 
 ```
-assessor:  4–8 ч × $120/ч           = $480–960 на находку
-на ангажемент (6–10 находок)        = $2 900–9 600
-плюс compute (№1: $220–1 650)       = $3 100–11 250
-÷ 6–10 находок                      = $520–1 130 на находку  ← сходится с №1
+assessor:  4–8 h × $120/h           = $480–960 per finding
+per engagement (6–10 findings)      = $2 900–9 600
+plus compute (#1: $220–1 650)       = $3 100–11 250
+÷ 6–10 findings                     = $520–1 130 per finding  ← matches #1
 ```
 
-А №3 заявляет $6–10k на находку, то есть $36–100k на ангажемент — при собственной цене S1 $10k и собственной марже 70% (что означает себестоимость $3k). **Противоречие в 12–30 раз внутри одного ответа.** Наиболее вероятно, $6–10k — это не «на находку», а стоимость ангажемента, поделённая неверно.
+And #3 claims $6–10k per finding, that is $36–100k per engagement — with its own S1 price of $10k and its own 70% margin (which means a cost of $3k). **A 12–30× contradiction inside a single answer.** Most likely, $6–10k is not "per finding" but the engagement cost divided incorrectly.
 
-**Принятое значение: $500–1 200 полностью загруженной стоимости на PROVEN-находку**, при медиане ≈ $800. Это подтверждает №1 ($400 как маржинальную) и опровергает №3 (как арифметику), а не как экспертизу.
+**The accepted value: $500–1 200 of fully loaded cost per PROVEN finding**, with a median of ≈ $800. This confirms #1 ($400 as marginal) and refutes #3 (as arithmetic), not as expertise.
 
-**Главное следствие — не в цифре, а в том, что из неё следует.** Доминирующая статья расходов — **часы assessor'а**, а не compute. Значит:
+**The main consequence is not in the number but in what follows from it.** The dominant cost line is **assessor hours**, not compute. Therefore:
 
-> Карточка ревью на одну страницу с авто-replay и потолком 15 минут — это не UX-улучшение. **Это и есть маржа.** Сокращение ревью с 6 часов до 15 минут снижает себестоимость находки с ~$800 до ~$100 и превращает продукт из убыточного в прибыльный.
+> A one-page review card with auto-replay and a 15 minute ceiling is not a UX improvement. **It is the margin.** Cutting review from 6 hours to 15 minutes lowers the cost of a finding from ~$800 to ~$100 and turns the product from loss-making into profitable.
 
-Ни один рецензент не сформулировал это как экономический вывод; №1 предложил карточку как способ разгрузить очередь. Это самая ценная производная всего круга.
+No reviewer formulated this as an economic conclusion; #1 proposed the card as a way to unload the queue. This is the most valuable derivative of the whole round.
 
-## 10.3. Time-to-first: два разных SLA, а не одно число
+## 10.3. Time-to-first: two different SLAs, not one number
 
-Разброс 4–48 ч объясняется тем же дефектом определения:
+The 4–48 h spread is explained by the same definition defect:
 
-| Метрика | Что мерит | Кто дал | Принято |
+| Metric | What it measures | Who gave it | Accepted |
 |---|---|---|---|
-| `time-to-validated` | repo принят → машинный вердикт `PROVEN` | №1 (6 ч), №2 (4 ч) | **p50 ≤6 ч** |
-| `time-to-signed` | repo принят → **подписанный** отчёт | №3 (48 ч / 120 ч) | **p50 ≤48 ч, p95 ≤120 ч** — это и есть обещание клиенту |
+| `time-to-validated` | repo accepted → machine verdict `PROVEN` | #1 (6 h), #2 (4 h) | **p50 ≤6 h** |
+| `time-to-signed` | repo accepted → **signed** report | #3 (48 h / 120 h) | **p50 ≤48 h, p95 ≤120 h** — this is the promise to the client |
 
-**Коммерческое следствие:** нельзя продавать «результат за часы», если подпись занимает двое суток. Продаём: «подписанный отчёт в течение двух рабочих дней» — это всё равно в 15–30 раз быстрее человеческого пентеста (4–10 недель), и это правда.
+**Commercial consequence:** you cannot sell a "result in hours" if the signature takes two days. We sell: "a signed report within two business days" — still 15–30× faster than a human pentest (4–10 weeks), and it is true.
 
-## 10.4. Что третий рецензент изменил по существу
+## 10.4. What the third reviewer changed substantively
 
-Пять пунктов, которых не было у первых двух, все приняты.
+Five points the first two did not have, all accepted.
 
-**1. Verifier farm нужен в V1, а не в V2.** Уникальный и самый острый аргумент: если проверяльщик живёт в той же песочнице, что и агент, то агент может влиять на проверяльщик — и **I1 перестаёт быть инвариантом, становясь пожеланием**. №1 и №2 оба вырезали verifier farm, сохраняя при этом запечатанный оракул; это несогласованно (см. §10.5). Принято: минимальный verifier-сервис **вне** микроVM агента, в V1, +2–3 человеко-недели.
+**1. The verifier farm is needed in V1, not in V2.** A unique and the sharpest argument: if the verifier lives in the same sandbox as the agent, the agent can influence the verifier — and **I1 stops being an invariant and becomes a wish**. Both #1 and #2 cut the verifier farm while keeping the sealed oracle; this is inconsistent (see §10.5). Accepted: a minimal verifier service **outside** the agent's microVM, in V1, +2–3 person-weeks.
 
-**2. V1 сужается до stateless / детерминированно-оракульных классов.** Механизм: offense-gated на stateful-приложении даёт высокий NRE и мало `PROVEN` → выручка голодает. Это третья независимая формулировка того же, о чём писали №1 («пустой отчёт») и №2 («экономика ломается на сложных находках»). **Три голоса → решение:** в V1 продаём только классы, для которых существует детерминированный оракул (инъекции, обход авторизации, path traversal, секреты, известные CVE, небезопасные конфигурации). Гонки, бизнес-логика, DoS — вне V1.
+**2. V1 narrows to stateless / deterministically oracleable classes.** Mechanism: offense-gated on a stateful application gives a high NRE and few `PROVEN` → revenue starves. This is the third independent formulation of what #1 ("empty report") and #2 ("the economics breaks on hard findings") wrote. **Three votes → a decision:** in V1 we sell only the classes for which a deterministic oracle exists (injections, authorization bypass, path traversal, secrets, known CVEs, insecure configurations). Races, business logic, DoS are outside V1.
 
-**3. Lane A не бесплатен.** Дыра в нашей двухтрековой схеме: мы объявили coverage-трек «не биллится», но не ограничили его стоимость. Compute и поддержка Lane A идут в COGS с нулевой выручкой. Принято: **жёсткий бюджет compute на Lane A на ангажемент**; при превышении — либо платный расширенный триаж, либо усечение карты покрытия с явной пометкой.
+**3. Lane A is not free.** A hole in our two-track scheme: we declared the coverage track "not billed" but did not cap its cost. Compute and support for Lane A go into COGS with zero revenue. Accepted: **a hard compute budget for Lane A per engagement**; on overrun — either a paid extended triage or a truncated coverage map with an explicit mark.
 
-**4. Публичный список отказа.** «Какой класс уязвимостей мы **публично отказываемся** продавать в v1, даже если найдём». Ответ №3: логические/бизнес-уязвимости без детерминированного оракула — только в Lane A, бесплатно, без обещаний. Это не ограничение, а **продукт доверия**: публичный отказ от класса — единственное доказательство, что мы не продаём шум. Принято, см. `03-EVAL-ROADMAP.md`.
+**4. A public refusal list.** "Which class of vulnerabilities do we **publicly refuse** to sell in v1, even if we find one". #3's answer: logic/business vulnerabilities without a deterministic oracle — only in Lane A, free of charge, without promises. This is not a limitation but a **trust product**: a public refusal of a class is the only proof that we do not sell noise. Accepted, see `03-EVAL-ROADMAP.md`.
 
-**5. R5 — платный R&D, а не обещание V3.** Согласуется с §3.6 синтеза, но жёстче: не «кредибилити-актив с критерием перехода», а «платный R&D без обещания срока». Принято: V3 не имеет даты в коммерческих материалах.
+**5. R5 is paid R&D, not a V3 promise.** Consistent with §3.6 of the synthesis but harsher: not "a credibility asset with a transition criterion" but "paid R&D with no timeline promise". Accepted: V3 has no date in commercial materials.
 
-## 10.5. Ключевая связка, которую пропустили все трое
+## 10.5. The key linkage all three missed
 
-`(4)` canary-nonce и `(10)` verifier farm — **взаимодополняющие, а не альтернативные защиты**, и резать оба нельзя:
+`(4)` canary-nonce and `(10)` verifier farm are **complementary, not alternative defences**, and both cannot be cut:
 
-| Защита | От чего защищает |
+| Defence | What it protects against |
 |---|---|
-| Verifier вне VM агента | агент **не может подменить функцию вердикта** |
-| Canary-nonce | агент **не может сфабриковать наблюдение**, которое verifier добросовестно проверит |
+| Verifier outside the agent's VM | the agent **cannot substitute the verdict function** |
+| Canary-nonce | the agent **cannot fabricate an observation** that the verifier will dutifully check |
 
-Второй вектор реален и не закрывается первым: агент может записать в контролируемую им БД строку `role=admin` и легитимно её прочитать — verifier честно зафиксирует эффект, оракул честно вернёт `PROVEN`, и находки не существует.
+The second vector is real and is not closed by the first: the agent can write a `role=admin` row into a database it controls and legitimately read it back — the verifier honestly records the effect, the oracle honestly returns `PROVEN`, and the finding does not exist.
 
-Все три рецензента вырезали canary-nonce (3/3), двое вырезали verifier farm (2/3). Если следовать обоим сокращениям, **агент контролирует и наблюдение, и вердикт** — то есть I1 ложен.
+All three reviewers cut canary-nonce (3/3), two cut the verifier farm (2/3). Following both cuts, **the agent controls both the observation and the verdict** — that is, I1 is false.
 
-**Решение против консенсуса, окончательное:** в V1 остаются **оба**. Цена — 1 день (canary) + 2–3 недели (verifier). Это единственная пара, где 3 недели инженерии отделяют «доказано» от «агент сказал, что доказано». Разница в цене ошибки: K3 — ложная верификация — необратима.
+**A final decision against consensus:** in V1 **both** stay. The cost is 1 day (canary) + 2–3 weeks (verifier). This is the only pair where 3 weeks of engineering separate "proven" from "the agent said it is proven". The difference is in the cost of an error: K3 — false verification — is irreversible.
 
-## 10.6. Блок Г: пересечение устойчиво, v1 = 6 компонентов
+## 10.6. Block D: the intersection is stable, v1 = 6 components
 
-Три набора «оставить»: `{1,2,3,6,12}` · `{1,2,3,5,6}` · `{1,2,3,5,12}`.
+Three "keep" sets: `{1,2,3,6,12}` · `{1,2,3,5,6}` · `{1,2,3,5,12}`.
 
-| Компонент | Голоса «оставить» | Статус |
+| Component | "Keep" votes | Status |
 |---|---|---|
-| (1) микроVM | 3/3 | **v1** |
+| (1) microVM | 3/3 | **v1** |
 | (2) C/T/N | 3/3 | **v1** |
-| (3) запечатанный оракул | 3/3 | **v1** |
+| (3) sealed oracle | 3/3 | **v1** |
 | (5) evidence plane / hash-chain | 2/3 | **v1** |
 | (6) offline replay kit | 2/3 | **v1** |
-| (12) named signatory | 2/3 | **v1** (№2 оговорил: только для коммерческого) |
-| (10) verifier farm | 1/3, но аргумент сильнейший | **v1** (см. §10.5) |
-| (4) canary-nonce | 0/3 | **v1** (см. §10.5) |
-| (7) live DAST · (8) graph · (9) peer-gen · (11) формалка | 0/3 | **V2+** |
+| (12) named signatory | 2/3 | **v1** (#2 qualified: only for the commercial offering) |
+| (10) verifier farm | 1/3, but the strongest argument | **v1** (see §10.5) |
+| (4) canary-nonce | 0/3 | **v1** (see §10.5) |
+| (7) live DAST · (8) graph · (9) peer-gen · (11) formal methods | 0/3 | **V2+** |
 
-**Итог: 8 компонентов в v1, из них 6 — консенсусные.** Расхождение с прошлым сводом (§4) в том, что verifier farm переехал из V2 в V1: аргумент №3 сильнее, потому что он про инвариант, а не про удобство.
+**Outcome: 8 components in v1, of which 6 are consensus.** The difference from the previous digest (§4) is that the verifier farm moved from V2 to V1: #3's argument is stronger because it is about an invariant, not about convenience.
 
-Замечание по №3: он вырезал `(6)` replay kit, сохранив `(5)` hash-chain, с обоснованием «без hash-chain нет офлайн-приёмки». Но офлайн-приёмка требует именно replay kit; hash-chain без него даёт только tamper-evidence. Считаю это несогласованностью формулировки, а не позицией — оставляем оба.
+A note on #3: it cut `(6)` replay kit while keeping `(5)` hash-chain, with the rationale "without a hash-chain there is no offline acceptance". But offline acceptance requires the replay kit itself; a hash-chain without it gives only tamper-evidence. I consider this an inconsistency of wording, not a position — we keep both.
 
-## 10.7. Д1: два из трёх назвали месяц 10 и голод `PROVEN`
+## 10.7. D1: two of three named month 10 and `PROVEN` starvation
 
-| | Месяц | Механизм | Индикатор |
+| | Month | Mechanism | Indicator |
 |---|---|---|---|
-| №1 | 10 | коллапс выхода PROVEN | >50% заказов с ≤1 находкой, 2 месяца |
-| №2 | 6 | не покупают повторно | <30% платят за повторный прогон |
-| №3 | 10 | мало PROVEN + бесплатный Lane A съедает экономику + продажи не конвертируются | **PROVEN на S1 < 3 и HYPOTHESIS/PROVEN > 10** |
+| #1 | 10 | collapse of PROVEN output | >50% of orders with ≤1 finding, 2 months |
+| #2 | 6 | they do not buy again | <30% pay for a re-run |
+| #3 | 10 | few PROVEN + free Lane A eats the economics + sales do not convert | **PROVEN per S1 < 3 and HYPOTHESIS/PROVEN > 10** |
 
-**2/3 на месяце 10 и на голоде `PROVEN`** → это уже прогноз, а не гипотеза. Индикатор №3 лучше обоих: он **относительный** (доля гипотез к доказанному), поэтому не зависит от размера ангажемента и виден на 9-м месяце.
+**2/3 on month 10 and on `PROVEN` starvation** → this is already a forecast, not a hypothesis. #3's indicator is better than both: it is **relative** (the ratio of hypotheses to proven), so it does not depend on the engagement size and is visible in month 9.
 
-Принято в `03-EVAL-ROADMAP.md` как K6 с индикатором-отношением.
+Accepted in `03-EVAL-ROADMAP.md` as K6 with a ratio indicator.
 
-## 10.8. Е1: список отказа как договорный артефакт
+## 10.8. E1: the refusal list as a contractual artefact
 
-№3 добавил измерение, которого не было: не только «кто отвечает», но и **«что мы отказываемся продавать»**. Публичный перечень непоставляемых классов — это одновременно:
+#3 added a dimension that was missing: not only "who is liable" but also **"what we refuse to sell"**. A public list of non-deliverable classes is at the same time:
 
-- ограничение ответственности (нельзя предъявить претензию за класс, который мы не продавали);
-- доказательство честности (мы не «не нашли», мы «не берёмся»);
-- защита I1 (не обещаем `PROVEN` там, где нет детерминированного оракула).
+- a limitation of liability (no claim can be brought for a class we did not sell);
+- proof of honesty (we did not "fail to find", we "do not take it on");
+- protection of I1 (we do not promise `PROVEN` where there is no deterministic oracle).
 
-Все три рецензента сошлись на лимите ответственности + E&O + негативном скоупе как договорном тексте. Добавлен четвёртый элемент: **публичный перечень отказа**.
+All three reviewers agreed on the liability cap + E&O + a negative scope as contractual text. A fourth element is added: **the public refusal list**.
 
-## 10.9. Повестка третьего круга: два вопроса
+## 10.9. Third-round agenda: two questions
 
-| # | Вопрос | Кому | Почему не решён |
+| # | Question | To whom | Why it is not settled |
 |---|---|---|---|
-| Q1 | Цена S1: $2k / $10k / $12k (6×) | **не моделям** — покупателям | Только готовность платить; 10 интервью по триггерам |
-| Q2 | Гибридный runner: минимальный объём, закрывающий закупочный блокер — 2 недели или 8? | моделям + 2 закупочным интервью | Прямое противоречие A7 и Б10 |
-| Q3 | Подделываемо ли наблюдение при запечатанном оракуле **и** verifier вне VM? | моделям (узкий технический вопрос) | Решает, нужен ли canary-nonce; ответы №1–№3 его не закрыли, т.к. все трое резали canary, двое — verifier |
+| Q1 | Price of S1: $2k / $10k / $12k (6×) | **not to models** — to buyers | Only willingness to pay; 10 interviews by trigger |
+| Q2 | Hybrid runner: the minimum scope that clears the procurement blocker — 2 weeks or 8? | models + 2 procurement interviews | A direct contradiction between A7 and B10 |
+| Q3 | Is the observation forgeable under a sealed oracle **and** a verifier outside the VM? | models (a narrow technical question) | Decides whether canary-nonce is needed; answers #1–#3 did not close it, since all three cut canary and two cut the verifier |
 
-Q4 (выход vs продление) закрыт: 2/3 за «выход», оба индикатора в дашборд, решает пилот.
+Q4 (output vs renewal) is closed: 2/3 for "output", both indicators into the dashboard, the pilot decides.
 
-**Что убрать из прибора:** весь блок A (12/12, закрыт), блок Б в текущей формулировке (дефект определения — считать стоимость надо в человеко-часах assessor'а, а не в «стоимости находки»), блок Г в текущей формулировке (пересечение стабильно на двух независимых сводах).
+**What to remove from the instrument:** the whole of Block A (12/12, closed), Block B in its current formulation (a definition defect — cost must be counted in assessor person-hours, not in "cost of a finding"), Block D in its current formulation (the intersection is stable across two independent digests).
 
-**Что добавить:** вопросы про **минимальный verifier-сервис** (его границы, что он наблюдает, как доказывается, что он вне контроля агента) и про **карточку ревью** (что можно ужать до 15 минут без потери качества подписи). Это две точки, где 3 недели и 15 минут превращаются в маржу.
+**What to add:** questions about the **minimal verifier service** (its boundaries, what it observes, how it is proven to be outside the agent's control) and about the **review card** (what can be compressed to 15 minutes without losing signature quality). These are the two points where 3 weeks and 15 minutes turn into margin.
 
 ---
 
-# 11. Четвёртый рецензент: круг закрыт
+# 11. Fourth reviewer: the round is closed
 
-## 11.1. Блок A: 4/4 по существу
+## 11.1. Block A: 4/4 substantively
 
-| Вопрос | №1 | №2 | №3 | №4 | Итог |
+| Question | #1 | #2 | #3 | #4 | Outcome |
 |---|---|---|---|---|---|
-| A1 | б | а* | б | а | **4/4 по существу**: в находках только `PROVEN`. Расхождение букв — про упаковку: приложение с гипотезами (б) или отдельный Lane A-артефакт (а) |
-| A2 | а | а | а | а | 4/4 |
-| A3 | а | а | а | а | 4/4 |
-| A4 | б | б | б | **а** | **3/1** — см. §11.2 |
-| A5–A11 | — | — | — | — | 4/4 по всем |
-| A12 | б | б | б | а* | **4/4 по существу**: только с негативным скоупом, никогда как абсолют |
+| A1 | b | a* | b | a | **4/4 substantively**: only `PROVEN` in findings. The letter divergence concerns packaging: an appendix with hypotheses (b) or a separate Lane A artefact (a) |
+| A2 | a | a | a | a | 4/4 |
+| A3 | a | a | a | a | 4/4 |
+| A4 | b | b | b | **a** | **3/1** — see §11.2 |
+| A5–A11 | — | — | — | — | 4/4 on all |
+| A12 | b | b | b | a* | **4/4 substantively**: only with a negative scope, never as an absolute |
 
-`*` — буква расходится с собственным обоснованием; по смыслу совпадение.
+`*` — the letter diverges from the reviewer's own rationale; substantively a match.
 
-**Блок A закрыт.** Восемь вопросов — единодушно, четыре — единодушно по существу. Дальнейшие круги по продуктовой модели бессмысленны.
+**Block A is closed.** Eight questions — unanimous, four — unanimous substantively. Further rounds on the product model are pointless.
 
-## 11.2. A4: 3/1, но оба ответа верны про разное
+## 11.2. A4: 3/1, but both answers are right about different things
 
-№1–№3: evidence plane, потому что **подпись без воспроизводимости аудитор не примет** → воспроизводимость это *предусловие*.
-№4: подпись и приёмка аудитором, потому что **воспроизводимость копируется, а контракт с аудитором — нет** → это *ров*.
+#1–#3: the evidence plane, because **an auditor will not accept a signature without reproducibility** → reproducibility is a *precondition*.
+#4: the signature and auditor acceptance, because **reproducibility can be copied, but the contract with an auditor cannot** → that is the *moat*.
 
-**Примирение (принято):** evidence plane — **предусловие**, signature + аудиторская приёмка — **ров**. Строятся одновременно (одно бессмысленно без другого), но в спорных решениях приоритет у воспроизводимости, а в стратегии — у отношений с аудитором. Это снимает кажущееся противоречие и подтверждает §5.1.
+**Reconciliation (accepted):** the evidence plane is a **precondition**, signature + auditor acceptance is the **moat**. They are built simultaneously (one is meaningless without the other), but in contested decisions reproducibility has priority, and in strategy the relationship with the auditor does. This removes the apparent contradiction and confirms §5.1.
 
-## 11.3. Блок Б: четыре значения, разброс 65× — метрика сломана
+## 11.3. Block B: four values, a 65× spread — the metric is broken
 
-| Метрика | №1 | №2 | №3 | №4 | Разброс |
+| Metric | #1 | #2 | #3 | #4 | Spread |
 |---|---|---|---|---|---|
-| Б1 стоимость находки | $400 | $150 | $6–10k | $1,8–3,5k | **65×** |
-| Б2 p90 dynamic-PoC | $3k | $1k | $18–30k | $8–20k | 30× |
-| Б3 time-to-first | 6 ч | 4 ч | 48 ч | **20–40 мин** | **72×** |
-| Б4 wall-clock cap | 24 ч | 8 ч | 8 ч | **45 мин** | **32×** |
-| Б5 repro | 90% | 95% | 90% | 95% | **сошлось** |
-| Б6 fix-acceptance | 60% | 60% | 70% | 70% | **сошлось** |
-| Б7 цена S1 | $12k | $2k | $10k | $7,5–12k | 6×, медиана ≈ $10k |
-| Б8 маржа R1/R3 | 70/55 | 60/35 | 70/45 | 60–70/35–45 | **сошлось** |
-| Б9 находок на S1 | 4 | 3 | 6 | 3–7 | **сошлось: 3–7, медиана 4** |
-| Б10 человеко-мес | 16 | 6 | 10–12 | 9 | **сошлось: 9–16, медиана 11** |
+| B1 cost of a finding | $400 | $150 | $6–10k | $1,8–3,5k | **65×** |
+| B2 p90 dynamic-PoC | $3k | $1k | $18–30k | $8–20k | 30× |
+| B3 time-to-first | 6 h | 4 h | 48 h | **20–40 min** | **72×** |
+| B4 wall-clock cap | 24 h | 8 h | 8 h | **45 min** | **32×** |
+| B5 repro | 90% | 95% | 90% | 95% | **converged** |
+| B6 fix-acceptance | 60% | 60% | 70% | 70% | **converged** |
+| B7 price of S1 | $12k | $2k | $10k | $7,5–12k | 6×, median ≈ $10k |
+| B8 margin R1/R3 | 70/55 | 60/35 | 70/45 | 60–70/35–45 | **converged** |
+| B9 findings per S1 | 4 | 3 | 6 | 3–7 | **converged: 3–7, median 4** |
+| B10 person-months | 16 | 6 | 10–12 | 9 | **converged: 9–16, median 11** |
 
-**Пять из десяти чисел сошлись** (Б5, Б6, Б8, Б9, Б10) — это и есть устойчивое ядро. По ним решения принимаются: находок 3–7 (план 4), маржа R1 60–70%, R3 35–45%, команда ~11 человеко-месяцев, fix-acceptance 60–70%, repro 90–95%.
+**Five of ten numbers converged** (B5, B6, B8, B9, B10) — that is the stable core. Decisions are made on them: 3–7 findings (plan 4), R1 margin 60–70%, R3 35–45%, a team of ~11 person-months, fix-acceptance 60–70%, repro 90–95%.
 
-**Пять разошлись на порядки — и это дефект метрики, подтверждённый четырьмя независимыми способами.** Итоговый вывод:
+**Five diverged by orders of magnitude — and that is a defect of the metric, confirmed in four independent ways.** The final conclusion:
 
-> «Стоимость находки» не существует как измеримая величина: находки лумпированы (1–7 на ангажемент), а стоимость почти целиком постоянная (build, SCA/SAST, прогон, ревью, поддержка). Делить постоянные издержки на случайное число находок — это не метрика, а шум.
+> "Cost of a finding" does not exist as a measurable quantity: findings are lumpy (1–7 per engagement) and the cost is almost entirely fixed (build, SCA/SAST, run, review, support). Dividing fixed costs by a random number of findings is not a metric but noise.
 
-**Замена метрики (окончательно):**
-1. `engagement_cost` — полная себестоимость одного ангажемента (compute + песочницы + assessor-часы + поддержка).
-2. `assessor_minutes_per_finding` — человеко-минуты на одну подписанную находку.
-3. `findings_per_engagement` — как факт, не как KPI.
+**Replacement metric (final):**
+1. `engagement_cost` — the full cost of one engagement (compute + sandboxes + assessor hours + support).
+2. `assessor_minutes_per_finding` — person-minutes per signed finding.
+3. `findings_per_engagement` — as a fact, not as a KPI.
 
-Стоимость находки — производная этих трёх, и её нельзя обсуждать отдельно.
+The cost of a finding is a derivative of these three, and it cannot be discussed separately.
 
-## 11.4. Две внутренние несогласованности №4 — важнее самих чисел
+## 11.4. Two internal inconsistencies in #4 — more important than the numbers themselves
 
-**Первая: Б4 (лимит 45 минут) противоречит Б2 ($8–20k на dynamic-PoC).** Если прогон ограничен 45 минутами, тяжёлый синтез PoC физически невозможен; если он возможен, лимит не 45 минут. Вероятно, Б3/Б4 описывают узкий случай (без сборки из исходников или без динамической проверки). Значения Б3/Б4 отклонены как несопоставимые; из четырёх оценок времени принимаем **медианную**: `time-to-validated` p50 ≤6 ч, `time-to-signed` p50 ≤48 ч (§10.3).
+**First: B4 (a 45 minute cap) contradicts B2 ($8–20k per dynamic-PoC).** If the run is capped at 45 minutes, heavy PoC synthesis is physically impossible; if it is possible, the cap is not 45 minutes. Probably B3/B4 describe a narrow case (without a build from source or without dynamic checking). The B3/B4 values are rejected as incomparable; of the four time estimates we take the **median**: `time-to-validated` p50 ≤6 h, `time-to-signed` p50 ≤48 h (§10.3).
 
-**Вторая, и она серьёзная: A7 (гибрид по умолчанию, 4/4) против В1 №4 («гибрид с первого дня требует IaC, поддержки VPC и секретов клиента — это не 8 недель»).**
-Это не разногласие между рецензентами, а **противоречие внутри консенсуса**: все четверо хотят гибрид, и один из них прямо говорит, что гибрид не влезает в v1. Плюс арифметика §10.2 (Б10 №2: 6 человеко-месяцев, куда гибрид не помещается).
+**Second, and it is serious: A7 (hybrid by default, 4/4) against C1 #4 ("a hybrid from day one requires IaC, VPC support and client secrets — that is not 8 weeks").**
+This is not a disagreement between reviewers but a **contradiction inside the consensus**: all four want the hybrid, and one of them says plainly that the hybrid does not fit into v1. Plus the arithmetic of §10.2 (B10 #2: 6 person-months, into which the hybrid does not fit).
 
-**Решение:** A7 остаётся стратегическим дефолтом (продукт проектируется гибридным), но **v1 поставляется как SaaS с ephemeral runner**, а гибридный runner включается вторым релизом. Разделяем «архитектура обязана допускать гибрид» и «v1 обязан поставлять гибрид» — первое да, второе нет. Это единственный способ не сорвать срок и не потерять enterprise-сегмент.
+**Decision:** A7 remains the strategic default (the product is designed as hybrid), but **v1 ships as SaaS with an ephemeral runner**, and the hybrid runner is enabled in the second release. We separate "the architecture must permit the hybrid" and "v1 must ship the hybrid" — the first yes, the second no. This is the only way not to miss the deadline and not to lose the enterprise segment.
 
-## 11.5. Блок В: оракул — горлышко, подтверждённое 4/4
+## 11.5. Block C: the oracle is the bottleneck, confirmed 4/4
 
-| Механизм | №1 | №2 | №3 | №4 |
+| Mechanism | #1 | #2 | #3 | #4 |
 |---|---|---|---|---|
-| **Оракул/верификатор — слабое звено** | п.4 «запечатанный оракул ограничивает классы» | п.1 «оракул проверяет не ту семантику» | п.1 «агент влияет на проверяльщик» | п.1 **«оракул невозможно запечатать для большинства багов: нет универсального предиката»** |
+| **The oracle/verifier is the weak link** | p.4 "a sealed oracle limits the classes" | p.1 "the oracle checks the wrong semantics" | p.1 "the agent influences the verifier" | p.1 **"the oracle cannot be sealed for most bugs: there is no universal predicate"** |
 
-Четвёртый рецензент формулирует то, что остальные описывали косвенно: **для большинства классов уязвимостей не существует машинного предиката «эксплуатация удалась»**, поэтому агент либо пишет предикат сам (нарушение I1), либо находка не становится `PROVEN`. Отсюда два следствия, оба приняты:
+The fourth reviewer formulates what the others described indirectly: **for most vulnerability classes there is no machine predicate for "exploitation succeeded"**, so the agent either writes the predicate itself (a violation of I1) or the finding does not become `PROVEN`. Hence two consequences, both accepted:
 
-**(1) v1 сужается до классов с готовым запечатанным оракулом — три класса.** Инъекции (SQLi/NoSQLi/командные), обход авторизации, path traversal / небезопасная работа с путями. Плюс секреты и известные CVE как отдельный, уже детерминированный слой. Всё остальное — Lane A без обещаний. Библиотека типовых оракулов: 4–6 человеко-недель, это P0-инвестиция, а не «когда-нибудь».
+**(1) v1 narrows to classes with a ready sealed oracle — three classes.** Injections (SQLi/NoSQLi/command), authorization bypass, path traversal / unsafe path handling. Plus secrets and known CVEs as a separate, already deterministic layer. Everything else is Lane A without promises. A library of standard oracles: 4–6 person-weeks, a P0 investment, not a "someday".
 
-**(2) Verifier вне VM — не опция, а следствие.** Если оракул для части классов пишется человеком (human-sealed), то единственная защита от того, что агент подменит предикат или подделает наблюдение, — исполнение вердикта вне досягаемости агента. Спор §10.5 закрыт в пользу **оставить и verifier, и canary-nonce**: 3/4 рецензента резали verifier, но их собственные аргументы (оракул слаб, агент влияет на проверяльщика) требуют обратного.
+**(2) A verifier outside the VM is not an option but a consequence.** If the oracle for some classes is written by a human (human-sealed), the only protection against the agent substituting the predicate or forging the observation is to execute the verdict out of the agent's reach. The dispute in §10.5 is closed in favour of **keeping both the verifier and canary-nonce**: 3/4 reviewers cut the verifier, but their own arguments (the oracle is weak, the agent influences the verifier) require the opposite.
 
-## 11.6. Три новые правки, которых не было у первых трёх
+## 11.6. Three new corrections the first three did not have
 
-**1. Не продавать лестницу, которую нельзя произвести.** В v1 peer-генерация R0–R5 — V2, значит v1 физически производит **только R0 и R1**. Обещать в коммерческих материалах R3–R5 — это I3-нарушение на уровне оффера. Принято: в v1 продаются R0/R1, остальное — roadmap без дат.
+**1. Do not sell a ladder that cannot be produced.** In v1 peer generation of R0–R5 is V2, so v1 physically produces **only R0 and R1**. Promising R3–R5 in commercial materials is an I3 violation at the level of the offer. Accepted: v1 sells R0/R1, the rest is a roadmap without dates.
 
-**2. C4 сформулирована неверно.** «Формальные методы — узкий премиум-трек» читается как «можно добавить позже». Нельзя: спецификация, assumptions ledger и версии тулчейна определяют **схему данных evidence plane** с первого дня. Если держаться за текущую C4, V3 потребует переписать evidence plane. Правка: **C4 → «формальный трек не реализуется в v1, но его контракт данных закладывается в v1»**. Принято, см. `00-SYNTHESIS.md` §2.
+**2. C4 is formulated incorrectly.** "Formal methods are a narrow premium track" reads as "can be added later". It cannot: the specification, the assumptions ledger and toolchain versions determine the **evidence plane data schema** from day one. Holding on to the current C4 means V3 will require rewriting the evidence plane. Correction: **C4 → "the formal track is not implemented in v1, but its data contract is laid down in v1"**. Accepted, see `00-SYNTHESIS.md` §2.
 
-**3. Мы отдаём клиенту работающий эксплойт — это отдельный вектор ответственности.** Единственный, кто это заметил. Следствия, приняты как продуктовые требования:
-- классификация каждого PoC по опасности (`read-only` / `state-changing` / `destructive`);
-- `destructive` не поставляется вовсе, `state-changing` — только с явным approval клиента;
-- режим `assertion-only`: PoC без payload, проверяющий только предусловие и наблюдение;
-- запрет авто-исполнения PoC на инфраструктуре клиента без его подписи.
+**3. We hand the client a working exploit — that is a separate liability vector.** The only one who noticed. Consequences, accepted as product requirements:
+- classification of every PoC by danger (`read-only` / `state-changing` / `destructive`);
+- `destructive` is not delivered at all, `state-changing` — only with the client's explicit approval;
+- an `assertion-only` mode: a PoC without a payload that checks only the precondition and the observation;
+- a ban on auto-executing a PoC on the client's infrastructure without their signature.
 
-## 11.7. Д1: механизм сошёлся, месяц — нет
+## 11.7. D1: the mechanism converged, the month did not
 
-| | Месяц | Механизм | Индикатор |
+| | Month | Mechanism | Indicator |
 |---|---|---|---|
-| №1 | 10 | коллапс выхода | ≤1 находка, 2 месяца |
-| №2 | 6 | не продлевают | <30% повторных |
-| №3 | 10 | мало PROVEN + Lane A ест экономику | PROVEN <3 и HYPOTHESIS/PROVEN >10 |
-| №4 | **4–6** | оракулы не покрывают реальные классы, PROVEN-поток пуст | **PROVEN <2 на 10 подряд ангажементах** |
+| #1 | 10 | output collapse | ≤1 finding, 2 months |
+| #2 | 6 | they do not renew | <30% repeat |
+| #3 | 10 | few PROVEN + Lane A eats the economics | PROVEN <3 and HYPOTHESIS/PROVEN >10 |
+| #4 | **4–6** | the oracles do not cover real classes, the PROVEN stream is empty | **PROVEN <2 over 10 consecutive engagements** |
 
-**3/4 называют механизм: голод `PROVEN` из-за неадекватных оракулов.** Это уже прогноз. Месяц расходится (4–6 против 10), но индикаторы №1 и №4 почти совпадают по форме («находок меньше двух-одной на ангажемент») и срабатывают **раньше** даты смерти — на 3–4-м месяце.
+**3/4 name the mechanism: `PROVEN` starvation due to inadequate oracles.** This is already a forecast. The month diverges (4–6 against 10), but the indicators of #1 and #4 almost coincide in form ("fewer than two-to-one findings per engagement") and fire **earlier** than the death date — in month 3–4.
 
-**Принято в K6:** индикатор `PROVEN per engagement < 2 на 10 подряд ангажементах` + `HYPOTHESIS/PROVEN > 10`. Оба относительные, оба не зависят от размера ангажемента, оба видны до того, как клиенты начнут уходить.
+**Accepted into K6:** the indicator `PROVEN per engagement < 2 over 10 consecutive engagements` + `HYPOTHESIS/PROVEN > 10`. Both are relative, both are independent of engagement size, both are visible before clients start leaving.
 
-## 11.8. Итог четырёх рецензий
+## 11.8. The outcome of four reviews
 
-**Что решено окончательно** (4/4): продуктовая модель (A1–A12), ядро v1 из шести компонентов плюс verifier и canary, три класса уязвимостей в v1, R0/R1 как единственные производимые уровни, гибрид как архитектура но не как v1-поставка, продажа нулевого результата как аттестации покрытия.
+**What is definitively settled** (4/4): the product model (A1–A12), the v1 core of six components plus the verifier and canary, three vulnerability classes in v1, R0/R1 as the only producible tiers, the hybrid as architecture but not as a v1 delivery, the sale of a zero result as coverage attestation.
 
-**Что решено и не обсуждается дальше, потому что измеряется:** все числа из «сошедшегося ядра» (Б5, Б6, Б8, Б9, Б10).
+**What is settled and is no longer discussed because it is measured:** all the numbers from the "converged core" (B5, B6, B8, B9, B10).
 
-**Что осталось и не решается моделями:** два пункта.
+**What remains and is not decided by models:** two items.
 
-| # | Вопрос | Как закрывать |
+| # | Question | How to close it |
 |---|---|---|
-| Q1 | Цена S1: $2k / $7,5k / $10k / $12k — медиана $10k, но разброс 6× | 10 интервью с покупателями по триггерам. Модели тут бесполезны |
-| Q2 | Гибридный runner: минимальный объём, снимающий закупочный блокер | 2 интервью с закупками + dry-run установки у 1 клиента |
+| Q1 | Price of S1: $2k / $7,5k / $10k / $12k — median $10k, but a 6× spread | 10 buyer interviews by trigger. Models are useless here |
+| Q2 | Hybrid runner: the minimum scope that clears the procurement blocker | 2 procurement interviews + an installation dry-run at 1 client |
 
-**Прибор исчерпан.** Четыре независимых ответа дали: 100% согласия по продуктовой модели, схождение по пяти числам из десяти, 4/4 указание на оракул как горлышко и 4/4 указание на неверную аксиому — при том что каждая из четырёх аксиомных претензий оказалась верной. Пятый ответ имеет смысл только если он **противоречит** чему-то из §11.8; если он подтверждает — это уже не информация, а повторение.
+**The instrument is exhausted.** Four independent answers gave: 100% agreement on the product model, convergence on five of ten numbers, 4/4 pointing at the oracle as the bottleneck and 4/4 pointing at a wrong axiom — even though each of the four axiom claims turned out to be correct. A fifth answer makes sense only if it **contradicts** something in §11.8; if it confirms, it is no longer information but repetition.
 
-**Главный вывод круга, который стоит держать в голове:** четыре эксперта независимо сказали, что продукт умрёт не от конкуренции и не от технологии, а от **нехватки проверяемых находок из-за отсутствия машинных оракулов**. Значит, первые 4–6 недель работы — не про агента, не про песочницу и не про формальные методы, а про **библиотеку оракулов на три класса**. Всё остальное вторично.
+**The main conclusion of the round, worth keeping in mind:** four experts independently said that the product will die not from competition and not from technology but from a **shortage of verifiable findings due to the absence of machine oracles**. So the first 4–6 weeks of work are not about the agent, not about the sandbox and not about formal methods, but about a **library of oracles for three classes**. Everything else is secondary.
 
 ---
 
-# 12. Пятый рецензент: круг закрыт окончательно
+# 12. Fifth reviewer: the round is definitively closed
 
-## 12.1. Блок A: 10 из 12 — единогласно по букве, 12 из 12 — по существу
+## 12.1. Block A: 10 of 12 — unanimous by letter, 12 of 12 — substantively
 
-| Вопрос | №1 | №2 | №3 | №4 | №5 | Итог |
+| Question | #1 | #2 | #3 | #4 | #5 | Outcome |
 |---|---|---|---|---|---|---|
-| A1 | б | а* | б | а | б | 3/2 по упаковке, **5/5 по существу**: гипотезы никогда не в одном списке с `PROVEN` |
-| A4 | б | б | б | а | б | **4/1** evidence plane |
-| A12 | б | б | б | а* | б | 4/1 по букве, **5/5 по существу**: только с негативным скоупом |
-| остальные 9 | — | — | — | — | — | **5/5 единогласно** |
+| A1 | b | a* | b | a | b | 3/2 on packaging, **5/5 substantively**: hypotheses never in the same list as `PROVEN` |
+| A4 | b | b | b | a | b | **4/1** evidence plane |
+| A12 | b | b | b | a* | b | 4/1 by letter, **5/5 substantively**: only with a negative scope |
+| the other 9 | — | — | — | — | — | **5/5 unanimous** |
 
-`*` — буква расходится с обоснованием. Два случая за пять рецензий: это не разногласие, а неоднозначность формулировки варианта. **Блок A закрыт и из прибора удаляется.**
+`*` — the letter diverges from the rationale. Two cases across five reviews: this is not a disagreement but an ambiguity in the wording of the option. **Block A is closed and is removed from the instrument.**
 
-## 12.2. Блок Б: пять значений вскрыли не разброс, а два разных бизнеса
+## 12.2. Block B: five values revealed not a spread but two different businesses
 
-| Метрика | №1 | №2 | №3 | №4 | №5 | Медиана |
+| Metric | #1 | #2 | #3 | #4 | #5 | Median |
 |---|---|---|---|---|---|---|
-| Б1 стоимость находки | $400 | $150 | $6–10k | $1,8–3,5k | $3 000 | **$1,8–3,5k** |
-| Б2 p90 dynamic-PoC | $3k | $1k | $18–30k | $8–20k | $12k | ~$12k |
-| Б3 time-to-first | 6 ч | 4 ч | 48 ч | 20–40 мин | 4 раб. дня | — |
-| Б4 wall-clock cap | 24 ч | 8 ч | 8 ч | 45 мин | 6 ч | **8 ч** |
-| Б5 repro | 90 | 95 | 90 | 95 | 95 | **95** |
-| Б6 fix-acceptance | 60 | 60 | 70 | 70 | 60 | **60–70** |
-| Б7 цена S1 | $12k | $2k | $10k | $7,5–12k | **$25k** | **$10–12k** |
-| Б8 маржа R1/R3 | 70/55 | 60/35 | 70/45 | 60–70/35–45 | 65/35 | **65/35** |
-| Б9 находок на S1 | 4 | 3 | 6 | 3–7 | 4 | **4** |
-| Б10 человеко-мес | 16 | 6 | 10–12 | 9 | 30 | **10–12** |
+| B1 cost of a finding | $400 | $150 | $6–10k | $1,8–3,5k | $3 000 | **$1,8–3,5k** |
+| B2 p90 dynamic-PoC | $3k | $1k | $18–30k | $8–20k | $12k | ~$12k |
+| B3 time-to-first | 6 h | 4 h | 48 h | 20–40 min | 4 business days | — |
+| B4 wall-clock cap | 24 h | 8 h | 8 h | 45 min | 6 h | **8 h** |
+| B5 repro | 90 | 95 | 90 | 95 | 95 | **95** |
+| B6 fix-acceptance | 60 | 60 | 70 | 70 | 60 | **60–70** |
+| B7 price of S1 | $12k | $2k | $10k | $7,5–12k | **$25k** | **$10–12k** |
+| B8 margin R1/R3 | 70/55 | 60/35 | 70/45 | 60–70/35–45 | 65/35 | **65/35** |
+| B9 findings per S1 | 4 | 3 | 6 | 3–7 | 4 | **4** |
+| B10 person-months | 16 | 6 | 10–12 | 9 | 30 | **10–12** |
 
-**Сошлось (5/5) и принимается как факт для планирования:** находок 4 (диапазон 3–7), `repro` 95%, `fix-acceptance` 60–70%, маржа R1 ~65%, R3 ~35%, команда 10–12 человеко-месяцев, wall-clock cap 8 часов.
+**Converged (5/5) and accepted as a fact for planning:** 4 findings (range 3–7), `repro` 95%, `fix-acceptance` 60–70%, R1 margin ~65%, R3 ~35%, a team of 10–12 person-months, wall-clock cap 8 hours.
 
-**Не сошлось: стоимость находки ($150–10 000) и цена ($2k–25k).** Но при пяти точках проявляется структура, а не шум:
+**Did not converge: the cost of a finding ($150–10 000) and the price ($2k–25k).** But with five points a structure appears rather than noise:
 
 ```
-Режим A — «дешёвое ревью, много находок»
-  R1 $400, R2 $150  ×  4 находки  =  $600–1 600 себестоимости
-  цена $2k–12k                    →  маржа 75–87%
-  условие: ревью ≤15 мин на находку (карточка + авто-replay)
+Mode A — "cheap review, many findings"
+  R1 $400, R2 $150  ×  4 findings =  $600–1 600 cost
+  price $2k–12k                   →  margin 75–87%
+  condition: review ≤15 min per finding (card + auto-replay)
 
-Режим B — «дорогое ревью, глубокое доказательство»
-  R4 $1,8–3,5k, R5 $3 000  ×  4 находки  =  $7–14k себестоимости
-  цена $25k                        →  маржа ~44–72%
-  условие: senior-ревьюер, глубокая валидация, enterprise-клиент
+Mode B — "expensive review, deep proof"
+  R4 $1,8–3,5k, R5 $3 000  ×  4 findings =  $7–14k cost
+  price $25k                       →  margin ~44–72%
+  condition: senior reviewer, deep validation, enterprise client
 
-Режим C — «середина» (сюда случайно попадают почти все)
-  $3k × 4 = $12k себестоимости при цене $10–12k  →  маржа 0–15%
-  R3 прямо: $6–10k × 6 = $36–60k при цене $10k  →  глубокая минус
+Mode C — "the middle" (almost everything lands here by accident)
+  $3k × 4 = $12k cost at a $10–12k price         →  margin 0–15%
+  R3 plainly: $6–10k × 6 = $36–60k for $10k     →  deeply negative
 ```
 
-> **Продукт имеет два жизнеспособных режима и одну смертельную середину.** Выбор между A и B — не вопрос технологии, а вопрос того, чем является продукт: **автоматизацией ревью** (A) или **глубиной доказательства** (B). Попытка взять середину даёт отчёт за $10k, который стоит $12k.
+> **The product has two viable modes and one lethal middle.** The choice between A and B is not a question of technology but of what the product is: **review automation** (A) or **depth of proof** (B). An attempt to take the middle yields a $10k report that costs $12k.
 
-**Решение для v1 — режим A**, потому что A6 (100% человеческого ревью) — консенсус 5/5, а значит ограничение живой пропускной способности задаёт именно время ревьюёра. Отсюда единственный критический путь продукта — не агент и не песочница:
+**The decision for v1 is mode A**, because A6 (100% human review) is a 5/5 consensus, which means the live throughput constraint is set by reviewer time. Hence the single critical path of the product is not the agent and not the sandbox:
 
-> **Карточка ревью на одну страницу с авто-replay и потолком 15 минут — главная фича v1.** Она переводит режим C в A и меняет маржу с 0% на 75%. Это подтверждено двумя независимыми путями: арифметикой (R1: «подпись 100% как линейная нагрузка») и экономикой (R5: «ручное ревью съедает маржу»).
+> **A one-page review card with auto-replay and a 15 minute ceiling is the main feature of v1.** It moves mode C into A and changes the margin from 0% to 75%. This is confirmed in two independent ways: by arithmetic (R1: "100% signing as a linear load") and by economics (R5: "manual review eats the margin").
 
-**Б3 отклонён как несопоставимый** — пять значений от 20 минут до 4 дней означают, что метрика снова не определена. Действующей остаётся пара из §10.3: `time-to-validated` ≤6 ч, `time-to-signed` ≤48 ч.
+**B3 is rejected as incomparable** — five values from 20 minutes to 4 days mean the metric is again undefined. The pair from §10.3 remains in force: `time-to-validated` ≤6 h, `time-to-signed` ≤48 h.
 
-**Б10: 30 человеко-месяцев у №5** — не выброс, а честная оценка для полного гибрида с двумя дизайн-партнёрами. Это третье независимое подтверждение того, что **гибрид не помещается в v1**.
+**B10: 30 person-months from #5** is not an outlier but an honest estimate for a full hybrid with two design partners. This is the third independent confirmation that **the hybrid does not fit into v1**.
 
-## 12.3. Блок В: голоса по фатальным механизмам (из 5)
+## 12.3. Block C: votes on the fatal mechanisms (out of 5)
 
-| Механизм | Голоса | Что решаем |
+| Mechanism | Votes | What we decide |
 |---|---|---|
-| **Оракул не покрывает/не запечатывается** | **4/5** (№1п4, №2п1, №4п1, №5п4) | v1 = 3 класса с готовыми оракулами + human-sealed для остальных. Библиотека оракулов — P0 |
-| **Окружение не совпадает: PoC гаснет у клиента** | **3/5** (№1п2, №2п4, №5п3) | fingerprint — часть контракта; вне его → `HYPOTHESIS` |
-| **Экономика на тяжёлых находках** | **3/5** (№2п5, №3п3, №4п2) | режим A + отдельный тариф на тяжёлые классы |
-| **Ручное ревью съедает маржу** | 2/5 (№1п3, №5п2) | карточка ревью 15 мин — критический путь |
-| **Репозиторий не собирается** | 2/5 (№1п2, №5п1) | **preflight buildability gate** + публичный контракт валидируемости |
-| **Гибрид не влезает в v1** | 2/5 (№4п4, №5п5) | v1 = SaaS с ephemeral runner; гибрид — второй релиз |
-| **Leстница продана, но не произведена** | 1/5 (№4п3) | в v1 поставляем только R0/R1 |
+| **The oracle does not cover / cannot be sealed** | **4/5** (#1p4, #2p1, #4p1, #5p4) | v1 = 3 classes with ready oracles + human-sealed for the rest. The oracle library is P0 |
+| **The environment does not match: the PoC dies at the client** | **3/5** (#1p2, #2p4, #5p3) | the fingerprint is part of the contract; outside it → `HYPOTHESIS` |
+| **The economics on heavy findings** | **3/5** (#2p5, #3p3, #4p2) | mode A + a separate tier for heavy classes |
+| **Manual review eats the margin** | 2/5 (#1p3, #5p2) | a 15 min review card — the critical path |
+| **The repository does not build** | 2/5 (#1p2, #5p1) | a **preflight buildability gate** + a public contract of validatability |
+| **The hybrid does not fit into v1** | 2/5 (#4p4, #5p5) | v1 = SaaS with an ephemeral runner; the hybrid is the second release |
+| **The ladder sold but not produced** | 1/5 (#4p3) | in v1 we deliver only R0/R1 |
 
-## 12.4. Блок Г: v1 = шесть компонентов, третий независимый свод дал тот же ответ
+## 12.4. Block D: v1 = six components, a third independent digest gave the same answer
 
-Голоса «оставить» из пяти наборов: `(1)` 5/5 · `(2)` 5/5 · `(3)` 5/5 · `(12)` 4/5 · `(5)` 3/5 · `(6)` 3/5 · `(4)` 0/5 · `(10)` 0/5 · `(7)(8)(9)(11)` 0/5.
+"Keep" votes across five sets: `(1)` 5/5 · `(2)` 5/5 · `(3)` 5/5 · `(12)` 4/5 · `(5)` 3/5 · `(6)` 3/5 · `(4)` 0/5 · `(10)` 0/5 · `(7)(8)(9)(11)` 0/5.
 
-**Ядро v1 (стабильно на трёх независимых сводах):** микроVM · C/T/N · запечатанный оракул · evidence plane · replay kit · named signatory.
+**The v1 core (stable across three independent digests):** microVM · C/T/N · sealed oracle · evidence plane · replay kit · named signatory.
 
-**Спор о verifier farm закрыт — и это не уступка, а уточнение.** Пять из пяти резали *farm как сервис* (масштабируемый многотенантный верификатор, +2–3 недели). Ни один не возражал против *функции*: оракул исполняется процессом **вне VM агента** и агент не имеет прав записи в него. Эта функция — прямое следствие `(3)`, которое все пять сохранили. Значит:
+**The dispute about the verifier farm is closed — and this is not a concession but a clarification.** Five out of five cut *the farm as a service* (a scalable multi-tenant verifier, +2–3 weeks). None objected to *the function*: the oracle is executed by a process **outside the agent's VM** and the agent has no write rights into it. This function is a direct consequence of `(3)`, which all five kept. Therefore:
 
-> **Verifier как отдельный процесс вне песочницы — в v1 (≈3 дня). Verifier farm как сервис — V2.** Я защищал функцию, они резали сервис; оба решения верны одновременно.
+> **A verifier as a separate process outside the sandbox — in v1 (≈3 days). A verifier farm as a service — V2.** I defended the function, they cut the service; both decisions are correct at the same time.
 
-**Canary-nonce переквалифицирован: это не фича, а приёмочный тест witness-плоскости.** Пока тест не пройден — «наблюдение вне контроля агента» не доказано, и `PROVEN` остаётся утверждением. В таком виде против него невозможно возразить: 1 день работы, статус — тест, а не компонент.
+**Canary-nonce has been reclassified: it is not a feature but an acceptance test of the witness plane.** Until the test passes, "an observation outside the agent's control" is not proven, and `PROVEN` remains an assertion. In this form it cannot be argued against: 1 day of work, and its status is a test, not a component.
 
-## 12.5. Блок Д: 5/5 назвали один механизм
+## 12.5. Block E: 5/5 named one mechanism
 
-Все пять: **голод `PROVEN`**. Месяцы 4–6 (2), 6 (1), 10 (2), 12 (1) — медиана ≈10.
+All five: **`PROVEN` starvation**. Months 4–6 (2), 6 (1), 10 (2), 12 (1) — median ≈10.
 
-№5 добавил то, чего не было ни у кого: смерть наступает не технически, а **на стороне покупателя** — «покрытие без покупки»: отчёты технически корректны, но закупщик требует *управляемое покрытие*, и отрицательный скоуп его не убеждает.
+#5 added what nobody else had: death comes not technically but **on the buyer's side** — "coverage without a purchase": the reports are technically correct, but the procurement officer demands *manageable coverage*, and a negative scope does not convince them.
 
-| Индикатор (в дашборд с первого пилота) | Порог |
+| Indicator (into the dashboard from the first pilot) | Threshold |
 |---|---|
-| `PROVEN per engagement` | <2 на 10 подряд ангажементах |
+| `PROVEN per engagement` | <2 over 10 consecutive engagements |
 | `HYPOTHESIS / PROVEN` | >10 |
-| запросы «coverage statement» вместо подписи негативного скоупа | ≥3 из 5 пилотов |
-| конверсия пилот → оплата | <20% при ≥5 пилотах |
+| requests for a "coverage statement" instead of signing the negative scope | ≥3 of 5 pilots |
+| pilot → paid conversion | <20% with ≥5 pilots |
 
-**Следствие для продукта:** аттестация покрытия должна быть **позитивным** утверждением («вот что проверено, вот воспроизводимое доказательство прогона»), а не отрицательным («мы не нашли»). Отрицательное утверждение покупатель не принимает — это подтверждено единственным рецензентом, который смотрел на закупку.
+**Consequence for the product:** coverage attestation must be a **positive** statement ("here is what was checked, here is the reproducible proof of the run"), not a negative one ("we found nothing"). The buyer does not accept a negative statement — confirmed by the only reviewer who looked at procurement.
 
-## 12.6. I2: окончательная формулировка (3/5 назвали её неверной)
+## 12.6. I2: the final formulation (3/5 called it wrong)
 
-Трое из пяти независимо сказали одно и то же: абсолютное «тот же результат» ложно для stateful, распределённых и временных эффектов. Лучшая формулировка — у №5:
+Three of five independently said the same thing: the absolute "the same result" is false for stateful, distributed and temporal effects. The best formulation is #5's:
 
-> **I2.** Всё отгруженное воспроизводимо **в пределах заявленного fingerprint** (образы, версии, конфигурация, seed, сетевые политики, время). Вне заявленного fingerprint — статус `HYPOTHESIS`, а не `PROVEN`. Утверждение «воспроизводится всегда» не делается никогда.
+> **I2.** Everything shipped is reproducible **within the declared fingerprint** (images, versions, configuration, seed, network policies, time). Outside the declared fingerprint the status is `HYPOTHESIS`, not `PROVEN`. The claim "it always reproduces" is never made.
 
-Это делает fingerprint **договорной границей** доказательства, а не технической деталью. Принято и внесено в `00-SYNTHESIS.md`.
+This makes the fingerprint a **contractual boundary** of the proof rather than a technical detail. Accepted and incorporated into `00-SYNTHESIS.md`.
 
-## 12.7. Два продукт-артефакта, которых не было до этого круга
+## 12.7. Two product artefacts that did not exist before this round
 
-Оба пришли от рецензентов и оба — про границу продукта, а не про технологию.
+Both came from reviewers, and both are about the product boundary, not about technology.
 
-**1. Публичный перечень отказа** (№3): классы, которые мы не продаём в v1, даже если найдём. Логические/бизнес-уязвимости без детерминированного оракула — только Lane A, без обещаний. Это одновременно ограничение ответственности, доказательство честности и защита I1.
+**1. A public refusal list** (#3): classes we do not sell in v1, even if we find them. Logic/business vulnerabilities without a deterministic oracle — Lane A only, without promises. This is at once a limitation of liability, a proof of honesty and a protection of I1.
 
-**2. Контракт валидируемости** (№5): минимальные входные требования, при которых репозиторий вообще принимается в v1:
-- воспроизводимая сборка;
-- lock-файлы;
-- команда тестов **или** health-оракул;
-- образ/раннер без секретов.
+**2. A validatability contract** (#5): the minimum input requirements under which a repository is accepted into v1 at all:
+- a reproducible build;
+- lock files;
+- a test command **or** a health oracle;
+- an image/runner without secrets.
 
-Если чего-то нет — только Lane A или отказ. Это прямой ответ на механизм «репозиторий не собирается» (2/5) и одновременно **preflight buildability gate**, снимающий `DEPLOY_FAILED` до того, как он съест бюджет.
+If something is missing — Lane A only or a refusal. This is a direct answer to the "the repository does not build" mechanism (2/5) and at the same time a **preflight buildability gate** that removes `DEPLOY_FAILED` before it eats the budget.
 
-Оба артефакта публикуются. Вместе они делают то, чего не делает ни один сканер: **заранее объявляют, что продукт не берётся делать.**
+Both artefacts are published. Together they do what no scanner does: **declare in advance what the product does not undertake to do.**
 
-## 12.8. Круг закрыт: сводка решений
+## 12.8. The round is closed: a summary of decisions
 
-| Решено | Статус |
+| Decision | Status |
 |---|---|
-| Продуктовая модель A1–A12 | 5/5, закрыто |
-| Ядро v1: 6 компонентов + verifier-процесс + canary как тест | три независимых свода, стабильно |
-| v1 = 3 класса уязвимостей с готовыми оракулами | 4/5 |
-| v1 = R0/R1 | 1/5 прямо, но следствие A8+A3 5/5 |
-| v1 = SaaS с ephemeral runner, гибрид — второй релиз | 2/5 прямо + арифметика Б10 |
-| Режим A (дешёвое ревью) как экономическая основа v1 | арифметика пяти оценок |
-| Карточка ревью 15 мин — критический путь | 2/5 + арифметика |
-| I2 — в пределах fingerprint | 3/5 |
-| C4 — контракт данных закладывается в v1 | 1/5, принято |
-| C8 — проверяльщик под проверкой | 1/5, принято |
-| Перечень отказа + контракт валидируемости | 1/5 каждый, принято |
+| Product model A1–A12 | 5/5, closed |
+| v1 core: 6 components + verifier process + canary as a test | three independent digests, stable |
+| v1 = 3 vulnerability classes with ready oracles | 4/5 |
+| v1 = R0/R1 | 1/5 explicitly, but a consequence of A8+A3 5/5 |
+| v1 = SaaS with an ephemeral runner, the hybrid is the second release | 2/5 explicitly + the B10 arithmetic |
+| Mode A (cheap review) as the economic basis of v1 | the arithmetic of five estimates |
+| A 15 min review card — the critical path | 2/5 + arithmetic |
+| I2 — within the fingerprint | 3/5 |
+| C4 — the data contract is laid down in v1 | 1/5, accepted |
+| C8 — the verifier under verification | 1/5, accepted |
+| The refusal list + the validatability contract | 1/5 each, accepted |
 
-**Не решается моделями и уходит в интервью:**
+**Not decided by models and going to interviews:**
 
-| # | Вопрос | Кому |
+| # | Question | To whom |
 |---|---|---|
-| Q1 | Цена: режим A ($7,5–12k) или режим B ($25k) | 10 интервью с покупателями по триггерам |
-| Q2 | Минимальный объём гибридного runner, снимающий закупочный блокер | 2 интервью с закупками + 1 dry-run |
+| Q1 | Price: mode A ($7,5–12k) or mode B ($25k) | 10 buyer interviews by trigger |
+| Q2 | The minimum scope of the hybrid runner that clears the procurement blocker | 2 procurement interviews + 1 dry-run |
 
-**Пятый круг не нужен.** Пять независимых ответов дали: 100% согласия по продуктовой модели, схождение по семи числам из десяти, 4/5 на оракул как горлышко, 5/5 на голод `PROVEN` как механизм смерти и 5/5 на наличие неверной аксиомы (при том что все пять претензий оказались верны и все приняты).
+**A fifth round is not needed.** Five independent answers gave: 100% agreement on the product model, convergence on seven of ten numbers, 4/5 on the oracle as the bottleneck, 5/5 on `PROVEN` starvation as the death mechanism and 5/5 on the presence of a wrong axiom (even though all five claims turned out to be correct and all were accepted).
 
-Дальнейшие вопросы к моделям будут давать всё более уверенные ответы на всё менее важные вопросы. **Следующий шаг — не текст, а два интервью и библиотека оракулов на три класса.**
-
-
+Further questions to models will produce ever more confident answers to ever less important questions. **The next step is not text but two interviews and a library of oracles for three classes.**

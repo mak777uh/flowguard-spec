@@ -1,285 +1,285 @@
-# 00. Синтез: что собрано, где источники согласны, где расходятся и что из этого следует
+# 00. Synthesis: what has been assembled, where the sources agree, where they diverge, and what follows from that
 
-> Документ фиксирует **решения**, а не мнения. Всё, что ниже помечено `РЕШЕНО`, — принято и переносится в спеку.
-> Всё, что помечено `ПИЛОТ` — не решается текстом, решается измерением.
+> The document records **decisions**, not opinions. Everything below marked `DECIDED` is settled and carried over into the spec.
+> Everything marked `PILOT` is not decided by text; it is decided by measurement.
 
 ---
 
-## 0. Карта комплекта
+## 0. Map of the package
 
-| Файл | Что внутри | Кому |
+| File | What is inside | For whom |
 |---|---|---|
-| `00-SYNTHESIS.md` (этот) | анализ 9 источников, консенсус, 7 реальных расхождений и их разрешение, скоринг | всем |
-| `01-VARIANTS.md` | 3 архитектуры (A/B/C) + 2 стратегические опции, схемы, стоимость, когда что | архитектору, инвестору |
-| `02-GRID.md` | единая лестница исправлений R0–R5 × уровни уверенности L0–L5 × SKU, «паспорт варианта» | продукту, инженерам |
-| `03-EVAL-ROADMAP.md` | eval-suite, пороги приёмки, kill criteria, 3 горизонта, экономика, найм | основателю |
-| `../proposals/*.md` | 6 исходных предложений команды целиком (не отредактированы) | истории |
+| `00-SYNTHESIS.md` (this one) | analysis of 9 sources, consensus, 7 real divergences and their resolution, scoring | everyone |
+| `01-VARIANTS.md` | 3 architectures (A/B/C) + 2 strategic options, diagrams, cost, when which | the architect, the investor |
+| `02-GRID.md` | a single ladder of fixes R0–R5 × confidence levels L0–L5 × SKU, the "variant passport" | product, engineers |
+| `03-EVAL-ROADMAP.md` | eval suite, acceptance thresholds, kill criteria, 3 horizons, economics, hiring | the founder |
+| `../proposals/*.md` | the 6 original team proposals in full (not edited) | for the record |
 
 ---
 
-## 1. Источники: девять независимых ставок
+## 1. Sources: nine independent bets
 
-Три внешних предложения (присланы заказчиком) + шесть внутренних (каждое писала отдельная модель в отдельном контексте, без доступа к остальным).
+Three external proposals (sent by the client) + six internal ones (each written by a separate model in a separate context, with no access to the others).
 
-| # | Источник | Главная ставка — одной фразой |
+| # | Source | The main bet — in one phrase |
 |---|---|---|
-| **S1** | Внешн. «Оркестратор + субагенты, R0–R4, tier-верификация» | Мультиагентный оркестратор вокруг классических инструментов; формалка — отдельный Tier 3 |
-| **S2** | Внешн. «Proof-Carrying Remediation + Security Improvement Graph» | Исправление = пакет доказательств; знания живут в типизированном графе причин и рисков |
-| **S3** | Внешн. «4 варианта: быстрый контур / фабрика патчей / формальный конвейер / гибрид с арбитражем» | Rust→Lean и C→SPARK как продуктовый трек; остальное — обвязка |
-| **T1** | Внутр. `01-offense-repro` | Находки не существует без PoC; фикса не существует без погашенного PoC и variant suite |
-| **T2** | Внутр. `02-formal-core` | Продаём не патчи, а инварианты; граница доказуемого проходит по классам свойств |
-| **T3** | Внутр. `03-platform` | 80% качества — control plane; модель сменна, артефакт вечен |
-| **T4** | Внутр. `04-product` | Находки бесплатны; дефицит — подпись с именем, формат для третьей стороны, фикс, который доезжает |
-| **T5** | Внутр. `05-critic` | Продукт убивают не пропущенные баги, а ложные находки, сломанные фиксы и недоказуемость прогона |
-| **T6** | Внутр. `06-high-assurance` | В регулируемом домене вывод LLM не может быть доказательством вообще — только гипотезой о том, где искать доказательство |
+| **S1** | Ext. "Orchestrator + subagents, R0–R4, tier verification" | A multi-agent orchestrator around classical tools; the formal tool is a separate Tier 3 |
+| **S2** | Ext. "Proof-Carrying Remediation + Security Improvement Graph" | A fix = an evidence package; knowledge lives in a typed graph of causes and risks |
+| **S3** | Ext. "4 variants: fast loop / patch factory / formal pipeline / hybrid with arbitration" | Rust→Lean and C→SPARK as the product track; everything else is scaffolding |
+| **T1** | Int. `01-offense-repro` | A finding does not exist without a PoC; a fix does not exist without a killed PoC and a variant suite |
+| **T2** | Int. `02-formal-core` | We sell invariants, not patches; the boundary of the provable runs along property classes |
+| **T3** | Int. `03-platform` | 80% of quality is the control plane; the model is replaceable, the artifact is eternal |
+| **T4** | Int. `04-product` | Findings are free; the scarce thing is a signature with a name, a format for a third party, a fix that actually lands |
+| **T5** | Int. `05-critic` | A product is killed not by missed bugs but by false findings, broken fixes and an unprovable run |
+| **T6** | Int. `06-high-assurance` | In a regulated domain an LLM's output cannot be evidence at all — only a hypothesis about where to look for evidence |
 
 ---
 
-## 2. Консенсус — это уже не спор, а фундамент
+## 2. Consensus — no longer a dispute but a foundation
 
-Семь положений поддержаны 7–9 источниками из 9. Они не обсуждаются и уходят в спеку как аксиомы.
+Seven propositions are supported by 7–9 of the 9 sources. They are not up for discussion and go into the spec as axioms.
 
-**C1. Агент предлагает, детерминированный проверяльщик решает, человек подписывает.**
-Ни один артефакт, попавший в отчёт как «проверено», не должен быть создан вероятностной моделью. В регулируемом домене (T6) это возведено в жёсткое правило: агент физически не имеет права писать в хранилище доказательств — единственный писатель — детерминированный арбитр, и это право доступа в песочнице, а не политика. T5 называет нарушение этого правила режимом отказа F03 (reward hacking верификатора) — самым частым механизмом тихой смерти продукта.
+**C1. The agent proposes, a deterministic checker decides, a human signs.**
+No artifact that enters a report as "verified" may be produced by a probabilistic model. In a regulated domain (T6) this is elevated to a hard rule: the agent physically has no right to write to the evidence store — the only writer is a deterministic arbiter, and this is an access right in the sandbox, not a policy. T5 names violation of this rule failure mode F03 (reward hacking of the verifier) — the most frequent mechanism of a product's quiet death.
 
-**C2. Находка без воспроизводимого артефакта — не находка, а гипотеза.**
-Формулировки разные («PoC-бандл» у T1, «status: demonstrated» у T4, «evidence record» у T6, «verification matrix» у S1/S2), но вывод один: отчёт обязан физически разделять два класса — *доказано* и *предполагается* — и никогда не смешивать их в одном списке.
+**C2. A finding without a reproducible artifact is not a finding but a hypothesis.**
+The wording differs ("PoC bundle" in T1, "status: demonstrated" in T4, "evidence record" in T6, "verification matrix" in S1/S2), but the conclusion is one: the report must physically separate the two classes — *proved* and *assumed* — and never mix them in one list.
 
-**C3. Продукт продаёт лестницу исправлений, а не патч.**
-Все девять источников независимо пришли к градации из 4–6 уровней. Расхождение только в числе уровней и в том, что считать нижней границей (см. §3.3).
+**C3. The product sells a ladder of fixes, not a patch.**
+All nine sources independently arrived at a gradation of 4–6 levels. The divergence is only in the number of levels and in what counts as the lower bound (see §3.3).
 
-**C4. Формальные методы — узкий премиум-трек, а не основа массового продукта.**
-Даже самый ярый сторонник (T2) честно пишет: «на CRUD-бэкенде не окупается», «формальные методы — дорогой спец-инструмент для узкого класса». Подтверждение извне: пайплайн Rust→Lean 4 на Charon/Aeneas + AI-пруверы (Aristotle, Aleph) **работает** на production-криптокоде, но авторы experience report прямо перечисляют незакрытые инженерные дыры — дрейф тулчейна Lean 4, пределы извлечения Aeneas/Hax, `unsafe` Rust вне покрытия. См. `03-EVAL-ROADMAP.md`, §5.
+**C4. Formal methods are a narrow premium track, not the basis of a mass product.**
+Even the most ardent proponent (T2) writes honestly: "it does not pay off on a CRUD backend", "formal methods are an expensive special-purpose tool for a narrow class". External confirmation: the Rust→Lean 4 pipeline on Charon/Aeneas + AI provers (Aristotle, Aleph) **works** on production crypto code, but the authors of the experience report explicitly list the unresolved engineering holes — Lean 4 toolchain drift, the limits of Aeneas/Hax extraction, `unsafe` Rust outside coverage. See `03-EVAL-ROADMAP.md`, §5.
 
-**C5. Изоляция исполнения — микроVM/санбокс, deny-all сеть, ноль секретов в песочнице.**
-Консенсус без исключений. Docker/runc отвергнут всеми, кто рассматривал (T3 приводит таблицу «технология → что защищает → чего не защищает → стоимость»).
+**C5. Execution isolation — microVM/sandbox, deny-all network, zero secrets in the sandbox.**
+Consensus without exceptions. Docker/runc was rejected by everyone who considered it (T3 provides a table "technology → what it protects → what it does not protect → cost").
 
-**C6. Деструктив на проде запрещён; скоуп — подписанный манифест, а не «URL, который прислали».**
-T5 формулирует это как F06/F07 с явным правилом: по умолчанию клон/стенд, write-трафик классифицируется прокси, контрольная сумма канареечной таблицы до/после.
+**C6. Destructive action on prod is forbidden; the scope is a signed manifest, not "the URL someone sent".**
+T5 formulates this as F06/F07 with an explicit rule: by default a clone/test stand, write traffic is classified by a proxy, a checksum of the canary table before/after.
 
-**C7. Входные данные (репозиторий, сайт, комментарии в коде) — враждебный контент.**
-Prompt injection через целевой артефакт — штатный вектор для security-продукта, а не редкий случай. Техническая профилактика (split-модель «ридер без tool-доступа» + политика в коде harness + egress allowlist) поддержана T3, T5, S1.
+**C7. Input data (repository, site, comments in code) is hostile content.**
+Prompt injection through the target artifact is a standard vector for a security product, not a rare case. Technical prevention (a split model, "a reader without tool access" + policy in the harness code + egress allowlist) is supported by T3, T5, S1.
 
 ---
 
-**C8 (добавлена вторым кругом, рецензенты №1 и №2 независимо). Проверяльщик сам является объектом проверки.**
-Детерминированность — необходимое, но не достаточное условие. Детерминированный код может проверять неверный предикат: оракул, который стабильно классифицирует эффект неправильно, превращает воспроизводимую ошибку в **систематическую** ошибку продукта, и она неотличима от истины изнутри. Поэтому C1 переформулируется: «проверено = произведено детерминированным кодом **и** этот код сам прошёл проверку независимым эталонным корпусом, мутационное тестирование оракула и ревью реализации». Требования: версия оракула пиннится в бандле, оракул не может быть изменён агентом, каждый класс уязвимости имеет негативный контроль (санитизированный вход, который **не должен** срабатывать).
+**C8 (added in the second round, by reviewers #1 and #2 independently). The checker is itself an object of verification.**
+Determinism is a necessary but not sufficient condition. Deterministic code can check the wrong predicate: an oracle that consistently classifies an effect incorrectly turns a reproducible error into a **systematic** error of the product, and from the inside it is indistinguishable from truth. Therefore C1 is reformulated: "verified = produced by deterministic code **and** that code has itself passed verification by an independent reference corpus, mutation testing of the oracle, and review of the implementation". Requirements: the oracle's version is pinned in the bundle, the oracle cannot be modified by the agent, every vulnerability class has a negative control (a sanitized input that **must not** fire).
 
-## 3. Семь реальных расхождений и как они разрешены
+## 3. Seven real divergences and how they are resolved
 
-Это самая полезная часть синтеза: именно здесь девять предложений несовместимы, и именно здесь принимается архитектурное решение.
+This is the most useful part of the synthesis: this is exactly where the nine proposals are incompatible, and exactly where the architectural decision is taken.
 
-### 3.1. Где ров: capability / control plane / подпись / proof?
+### 3.1. Where is the moat: capability / control plane / signature / proof?
 
-**Позиции.** T1: ров — библиотека exploit-примитивов и deployment-адаптеров. T3: ров — воспроизводимость прогона. T4: ров — подпись с именем и приёмка артефакта аудитором. T2: ров — переиспользуемый proof-харнесс. S3: ров — формальный конвейер.
+**Positions.** T1: the moat is a library of exploit primitives and deployment adapters. T3: the moat is reproducibility of the run. T4: the moat is a signature with a name and acceptance of the artifact by an auditor. T2: the moat is a reusable proof harness. S3: the moat is the formal pipeline.
 
-**Разрешение `РЕШЕНО`.** Это не четыре ответа на один вопрос, а четыре **разных горизонта**:
+**Resolution `DECIDED`.** These are not four answers to one question but four **different horizons**:
 
-| Горизонт | Что является рвом | Срок жизни |
+| Horizon | What constitutes the moat | Lifetime |
 |---|---|---|
-| 0–12 мес | **Подпись + формат evidence, принятый третьей стороной** (T4). Capability копируется за квартал, подпись и договор с аудитором — нет | вечен, но требует сделки |
-| 12–24 мес | **Evidence plane** (T3): воспроизводимость, hash-chain, replay kit. Копируется, но дорого и не даёт немедленной выгоды конкуренту | 2–4 года |
-| 24–48 мес | **Proof-харнесс на 3–5 классах свойств** (T2/E-уровень) + библиотека deployment-адаптеров (T1) | 5+ лет, если поддерживать |
-| всегда | Capability обнаружения | **не ров вообще** — товар |
+| 0–12 months | **Signature + evidence format accepted by a third party** (T4). Capability is copied in a quarter; a signature and a contract with an auditor are not | eternal, but requires a deal |
+| 12–24 months | **Evidence plane** (T3): reproducibility, hash-chain, replay kit. Copied, but expensively and without immediate benefit to a competitor | 2–4 years |
+| 24–48 months | **Proof harness over 3–5 property classes** (T2/E-level) + a library of deployment adapters (T1) | 5+ years, if maintained |
+| always | Detection capability | **not a moat at all** — a commodity |
 
-Следствие: нельзя строить компанию на capability и нельзя начинать с proof. Правильный порядок инвестиций — обратный интуиции: сначала подпись и evidence (дешево, создаёт цену), потом control plane (дорого, создаёт защиту), потом proof (очень дорого, создаёт категорию).
+Consequence: you cannot build a company on capability, and you cannot start with proof. The correct order of investment is counter-intuitive: first the signature and evidence (cheap, creates price), then the control plane (expensive, creates protection), then proof (very expensive, creates a category).
 
-**Поправка второго круга.** Оба рецензента независимо поставили на первое место **evidence plane**, а не подпись (A4: 60 и 93 уверенности). Аргумент: подпись без воспроизводимости аудитор не примет, то есть подпись — это упаковка, а не ров. Ревизия: ров 0–12 мес — **evidence plane**, а подпись — коммерческая форма, в которой он продаётся. Порядок инвестиций от этого не меняется (они строятся вместе), но приоритет в спорных решениях отдаётся воспроизводимости.
+**Second-round correction.** Both reviewers independently put the **evidence plane** first, not the signature (A4: 60 and 93 confidence). The argument: an auditor will not accept a signature without reproducibility, that is, the signature is packaging, not a moat. Revision: the 0–12-month moat is the **evidence plane**, and the signature is the commercial form in which it is sold. The order of investment does not change because of this (they are built together), but in contested decisions priority goes to reproducibility.
 
-### 3.2. Offense-gated (PoC) vs static/taint-coverage: что является «входом в отчёт»?
+### 3.2. Offense-gated (PoC) vs static/taint coverage: what is the "entry into the report"?
 
-**Позиции.** T1: только доказанное; лучше отказаться от истинного бага, чем отгрузить ложный — precision ≥98%, recall сознательно приносится в жертву. S1/T2/T6: широкий статический проход как источник гипотез и карта покрытия, PoC — где возможен. T5: оба класса нужны, но с разными статусами, иначе клиент не видит 70% поверхности.
+**Positions.** T1: only what is proved; better to decline a true bug than to ship a false one — precision ≥98%, recall is deliberately sacrificed. S1/T2/T6: a broad static pass as a source of hypotheses and a coverage map, PoC — where possible. T5: both classes are needed, but with different statuses, otherwise the client does not see 70% of the surface.
 
-**Разрешение `РЕШЕНО`: два параллельных трека в одном отчёте.**
+**Resolution `DECIDED`: two parallel tracks in one report.**
 
 ```
 Lane A (Coverage)   static / taint / SCA / secrets / IaC / config
-                    → статус HYPOTHESIS, не биллится, формирует карту поверхности
-                    → назначение: не пропустить класс целиком, дать клиенту полноту
+                    → status HYPOTHESIS, not billed, forms the surface map
+                    → purpose: not to miss a class entirely, to give the client completeness
 
-Lane B (Proof)      агент дожимает кандидата до наблюдаемого эффекта
-                    → статус PROVEN / CONDITIONAL, биллится, попадает в «находки»
-                    → назначение: создавать доверие и цену
+Lane B (Proof)      the agent drives a candidate to an observable effect
+                    → status PROVEN / CONDITIONAL, billed, enters "findings"
+                    → purpose: to create trust and price
 ```
 
-Правило публикации: **Lane A никогда не улучшает precision-цифру и никогда не смешивается с Lane B в одном списке.** Это одновременно решает конфликт T1 (не отгружаем ложь) и T5 (не прячем слепые зоны): клиент видит и доказанное, и «мы посмотрели сюда, но не доказали».
+Publication rule: **Lane A never improves the precision figure and is never mixed with Lane B in one list.** This simultaneously resolves the conflict between T1 (we do not ship lies) and T5 (we do not hide blind spots): the client sees both what is proved and "we looked here but did not prove it".
 
-Это же снимает главную слабость offense-first, которую T1 сам признаёт: «он измеряет достижимость для нашего агента, а не риск».
+This also removes the main weakness of offense-first that T1 itself admits: "it measures reachability for our agent, not risk".
 
-### 3.3. Сколько уровней в лестнице: 4, 5 или 6?
+### 3.3. How many levels in the ladder: 4, 5 or 6?
 
-**Позиции.** T1: L0–L4. T2: A–E (5). T4: S1–S5 (5, коммерческие). T6: F0–F5 (6, сертификационные). S1: R0–R4. S2: 5 гридов. S3: 4 грида.
+**Positions.** T1: L0–L4. T2: A–E (5). T4: S1–S5 (5, commercial). T6: F0–F5 (6, certification). S1: R0–R4. S2: 5 grids. S3: 4 grids.
 
-**Разрешение `РЕШЕНО`: одна техническая решётка R0–R5, две проекции на неё.**
-Технических уровней — шесть, потому что T6 доказал: в регулируемом домене «ничего не менять, но доказать» (F0) и «изменить только конфигурацию/данные» (F1) — это **разные продукты с разной ценой**, и они не сводятся к патчу. Коммерческих SKU — пять (S1–S5), сертификационных — шесть (F0–F5), и обе проекции ложатся на R0–R5 без потерь. Полная таблица — в `02-GRID.md`.
+**Resolution `DECIDED`: one technical lattice R0–R5, two projections onto it.**
+There are six technical levels, because T6 proved: in a regulated domain "change nothing, but prove it" (F0) and "change only configuration/data" (F1) are **different products at different prices**, and they do not reduce to a patch. There are five commercial SKUs (S1–S5), six certification ones (F0–F5), and both projections map onto R0–R5 without loss. The full table is in `02-GRID.md`.
 
-### 3.4. Экономика: `$8` или `$50–500` за валидированную находку?
+### 3.4. Economics: `$8` or `$50–500` per validated finding?
 
-**Позиции.** T5 ставит порог GA `cost per validated ≤$8` (p50) и `≤$40` на прогон 100 kLOC. T1 оценивает `$50–500` на валидированный баг. T4 — `€200–1500` compute на ангажемент S1.
+**Positions.** T5 sets the GA threshold at `cost per validated ≤$8` (p50) and `≤$40` per run of 100 kLOC. T1 estimates `$50–500` per validated bug. T4 — `€200–1500` of compute per S1 engagement.
 
-**Разрешение `ПИЛОТ` + фиксация противоречия.** Цифры несовместимы на порядок, и это не ошибка округления — это разные определения:
+**Resolution `PILOT` + recording the contradiction.** The figures are incompatible by an order of magnitude, and this is not a rounding error — these are different definitions:
 
-- `$8` — **средняя стоимость по всем подтверждённым находкам, включая дешёвые** (SCA/секреты/конфиг: находка за минуты, стоимость близка к нулю). При 15–30 находках на прогон и $40 compute средняя действительно уходит в единицы долларов.
-- `$50–500` — **стоимость конкретной дорогой находки** с синтезом PoC на stateful-приложении (часы LLM-tool-loop + подъём среды).
+- `$8` — **the average cost across all confirmed findings, including cheap ones** (SCA/secrets/config: a finding in minutes, cost close to zero). With 15–30 findings per run and $40 of compute, the average does indeed go into single-digit dollars.
+- `$50–500` — **the cost of one expensive finding** with PoC synthesis on a stateful application (hours of LLM tool loop + bringing up the environment).
 
-Оба числа верны и оба бесполезны как единая метрика. `РЕШЕНО`: считаем **гистограмму по классам** (SCA / secrets / config / static-logic / dynamic-PoC / memory-corruption / formal), а не одно число. Единый KPI для управления — **блендед `cost per validated`** и отдельно **p90 по классу `dynamic-PoC`**. T5-порог `$8` переклассифицируется как «блендед по всем классам»; T1-вилка — как «p90 по dynamic-PoC». Пока не измерено — **не обещать цену за находку** (T4 уже запретил это делать: «цена за скоуп и решение, никогда за находку»).
+Both numbers are true and both are useless as a single metric. `DECIDED`: we count a **histogram by class** (SCA / secrets / config / static-logic / dynamic-PoC / memory-corruption / formal), not a single number. The single KPI for management is the **blended `cost per validated`** and separately the **p90 for the `dynamic-PoC` class**. The T5 threshold of `$8` is reclassified as "blended across all classes"; the T1 range — as "p90 for dynamic-PoC". Until it is measured — **do not promise a price per finding** (T4 has already forbidden this: "price for scope and decision, never for finding").
 
-**Уточнение после второго круга (рецензент №1).** Гипотезы рецензента закрывают спор арифметически: **блендед ≈ $400 на валидированную находку при ≈ 4 находках на ангажемент**. Отсюда:
+**Refinement after the second round (reviewer #1).** The reviewer's hypotheses close the dispute arithmetically: **blended ≈ $400 per validated finding at ≈ 4 findings per engagement**. Hence:
 
-- `$8` как порог **арифметически несовместим** с PROVEN-only v1: это $32 на весь ангажемент при 4 находках, что не покрывает даже ревью (25 мин × $80/ч = $33 за одну находку). Порог T5 остаётся валидным только для высокообъёмного SCA/secrets-микса, которого в v1 нет.
-- Правильная единица управления — **стоимость ангажемента** (compute + ревью + песочницы), а не стоимость находки: находок мало и их число не управляемо.
-- Следствие для цены: при €12k за скоуп и ≈$400 × 4 ≈ $1.6k себестоимости плюс ревью — экономика сходится, но **только если ангажемент вообще находит ≥1 находку**. Отсюда режим отказа «пустой отчёт» (см. ниже) и продуктовая правка: **ноль находок должен продаваться** — как аттестация покрытия с replayable-доказательством, а не как неудача.
-- `$50–500` (T1) подтверждается как порядок величины для p50; `$3 000` p90 по stateful — оценка рецензента, требует замера на 30 приложениях.
+- `$8` as a threshold is **arithmetically incompatible** with PROVEN-only v1: that is $32 for the whole engagement at 4 findings, which does not even cover review (25 min × $80/h = $33 for one finding). The T5 threshold remains valid only for a high-volume SCA/secrets mix, which v1 does not have.
+- The correct unit of management is the **cost of an engagement** (compute + review + sandboxes), not the cost of a finding: there are few findings and their number is not controllable.
+- Consequence for price: at €12k per scope and ≈$400 × 4 ≈ $1.6k of cost plus review, the economics work out, but **only if the engagement finds at least 1 finding at all**. Hence the failure mode "empty report" (see below) and a product correction: **zero findings must be sellable** — as a coverage attestation with replayable proof, and not as a failure.
+- `$50–500` (T1) is confirmed as the order of magnitude for p50; `$3 000` p90 for stateful is the reviewer's estimate and requires measurement on 30 applications.
 
-### 3.5. Сколько человека в контуре?
+### 3.5. How much human is in the loop?
 
-**Позиции.** T4: named signatory обязателен уже в S1 — «автогенерированный PDF это маркетинг, подписанный человеком — доказательство». T3: люди доминируют только в high-assurance, массовый прогон должен быть безлюдным. T5: доля выборочной человеческой проверки обязана раскрываться (риск «система протестировала, я проверил 20%»).
+**Positions.** T4: a named signatory is mandatory already in S1 — "an auto-generated PDF is marketing, one signed by a human is proof". T3: humans dominate only in high-assurance, the mass run must be unattended. T5: the share of sampled human verification must be disclosed (the risk of "the system tested it, I checked 20%").
 
-**Разрешение `РЕШЕНО`: подпись человека — на каждом отчёте v1, доля ручной проверки — публикуемая метрика.**
-В v1 человек проверяет 100% PROVEN-находок перед отгрузкой: это дорого, но именно это продаётся. По мере роста автоматизации доля падает, и продукт обязан печатать в отчёте `human_review_coverage: 100% | 40% | 20%` — не как маркетинг, а как ограничение утверждения. Переход «я протестировал» → «система протестировала, я проверил X%» — это продуктовое решение с юридическим следствием, и оно не может быть тихим.
+**Resolution `DECIDED`: a human signature on every v1 report, the share of manual verification as a published metric.**
+In v1 a human checks 100% of PROVEN findings before shipping: that is expensive, but that is exactly what is being sold. As automation grows the share falls, and the product must print in the report `human_review_coverage: 100% | 40% | 20%` — not as marketing but as a limitation on the claim. The transition from "I tested it" → "the system tested it, I checked X%" is a product decision with a legal consequence, and it cannot be silent.
 
-### 3.6. S5 (миграция на безопасное ядро): продукт или R&D?
+### 3.6. S5 (migration to a safe core): product or R&D?
 
-**Позиции.** T4: GM 19%, полугодовой кэш-цикл → «кредибилити-актив, не продукт», максимум 1–2 в год. T2: это главный дифференциатор и источник выручки, продаётся как «лицензия на доказательство + его поддержание».
+**Positions.** T4: GM 19%, a six-month cash cycle → "a credibility asset, not a product", at most 1–2 a year. T2: it is the main differentiator and source of revenue, sold as "a licence for the proof + its maintenance".
 
-**Разрешение `РЕШЕНО`: и то и другое, но разнесено во времени.**
-S5 в v1 — R&D-инвестиция с отрицательной маржой, продаётся по себестоимости как референс (T4 прав по экономике). Его **настоящий** продукт — не отдельный проект, а **переиспользуемый proof-харнесс** (T2 прав по стратегии): если харнесс закрывает 3–5 классов свойств (memory safety парсера, no-panic, constant-time крипто, инварианты доступа, стейт-машина протокола), то S5 из 19% GM превращается в 55%+ и становится воспроизводимым. Критерий перехода из R&D в продукт — **второй клиент на том же классе свойств с переиспользованием ≥70% харнесса**. До этого — не масштабировать.
+**Resolution `DECIDED`: both, but separated in time.**
+S5 in v1 is an R&D investment with a negative margin, sold at cost as a reference (T4 is right on the economics). Its **real** product is not a separate project but the **reusable proof harness** (T2 is right on strategy): if the harness covers 3–5 property classes (memory safety of a parser, no-panic, constant-time crypto, access invariants, protocol state machine), then S5 turns from 19% GM into 55%+ and becomes reproducible. The criterion for moving from R&D to product is **a second client on the same property class with ≥70% reuse of the harness**. Until then — do not scale.
 
-### 3.7. Недооценённая опция: продавать harness, а не находки
+### 3.7. An underrated option: sell the harness, not the findings
 
-**Позиция.** Ни один из 8 «продуктовых» источников её не рассматривает; T3 фактически её описывает, но не делает выводом.
+**Position.** None of the 8 "product" sources considers it; T3 in fact describes it but does not make it a conclusion.
 
-**Разрешение `РЕШЕНО КАК СТРАТЕГИЧЕСКАЯ ОПЦИЯ E`.** Если appsec-агенты коммодитизируются (а тренд именно такой: у гиперскейлеров уже есть agentic security researcher в preview), то ценность смещается к слою, который **доказывает** чужие находки. Это защищает от главного экзистенциального риска, названного T4: «гиперскейлер упакует AI-ревью + аттестацию в платформу». Опция не запускается в v1, но архитектура обязана допускать её: evidence plane и verifier farm проектируются как **отдельный сервис с внешним API**, а не как внутренний модуль. Стоимость этого решения — ноль сейчас, опция — целая компания потом.
+**Resolution `DECIDED AS STRATEGIC OPTION E`.** If appsec agents become commoditized (and the trend is exactly that: the hyperscalers already have an agentic security researcher in preview), then value shifts to the layer that **proves** other people's findings. This protects against the main existential risk named by T4: "a hyperscaler will package AI review + attestation into a platform". The option does not launch in v1, but the architecture must allow it: the evidence plane and the verifier farm are designed as a **separate service with an external API**, not as an internal module. The cost of this decision is zero now; the option is a whole company later.
 
 ---
 
-## 4. Скоринг по рубрике T5
+## 4. Scoring against the T5 rubric
 
-Рубрика и веса — из `proposals/05-critic.md`. Оценка только по артефактам: заявленное без механизма = 0. Максимум 5.00. Нокаут при ≤1 по критериям 1/3/4.
+The rubric and weights are from `proposals/05-critic.md`. Scoring is only on artifacts: claimed without a mechanism = 0. Maximum 5.00. Knockout at ≤1 on criteria 1/3/4.
 
-| Источник | 1. Доверие (18) | 2. Фикс (14) | 3. Аудит (12) | 4. Юр (12) | 5. TTV (10) | 6. Эконом (9) | 7. Injection (8) | 8. Изоляция (7) | 9. Масштаб (5) | 10. Реализ. (5) | **Σ** |
+| Source | 1. Trust (18) | 2. Fix (14) | 3. Audit (12) | 4. Legal (12) | 5. TTV (10) | 6. Econ (9) | 7. Injection (8) | 8. Isolation (7) | 9. Scale (5) | 10. Impl. (5) | **Σ** |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | **T1** offense-first | 5 | 5 | 4 | 4 | 5 | 3 | 5 | 4 | 3 | 4 | **4.36** |
-| **S1** оркестратор+субагенты | 4 | 3 | 3 | 3 | 4 | 4 | 2 | 3 | 4 | 5 | **3.44** |
+| **S1** orchestrator+subagents | 4 | 3 | 3 | 3 | 4 | 4 | 2 | 3 | 4 | 5 | **3.44** |
 | **T3** control plane | 2 | 3 | 5 | 4 | 2 | 3 | 5 | 5 | 4 | 3 | **3.43** |
 | **T6** high-assurance | 4 | 5 | 5 | 5 | 1 | 1 | 3 | 3 | 1 | 1 | **3.36** |
 | **S2** proof-carrying | 4 | 4 | 3 | 3 | 2 | 2 | 3 | 2 | 3 | 3 | **3.06** |
-| **S3** 4 варианта / Rust→Lean | 3 | 4 | 2 | 3 | 3 | 3 | 2 | 4 | 3 | 3 | **3.01** |
+| **S3** 4 variants / Rust→Lean | 3 | 4 | 2 | 3 | 3 | 3 | 2 | 4 | 3 | 3 | **3.01** |
 | **T2** formal-core | 3 | 5 | 3 | 3 | 1 | 2 | 2 | 2 | 3 | 2 | **2.79** |
 
-**Как читать таблицу.** Ни один источник не набирает больше 4.4 — и это ожидаемо: каждое предложение оптимизировалось под свою ставку. Победитель по сумме (T1) при этом **не является** победителем по аудиту (3-е место) и по изоляции (2-е), а T3 лидирует ровно там, где T1 слаб. T2/T6 набирают низко именно потому, что честно узкие — и их низкий скор по TTV/экономике **не** означает «не нужны», а означает «не могут быть ядром».
+**How to read the table.** No source scores above 4.4 — and that is expected: each proposal was optimized for its own bet. The winner by total (T1) is at the same time **not** the winner on audit (3rd place) or on isolation (2nd), while T3 leads exactly where T1 is weak. T2/T6 score low precisely because they are honestly narrow — and their low score on TTV/economics **does not** mean "not needed", it means "cannot be the core".
 
-**Вывод `РЕШЕНО`:** синтез не выбирает победителя, а **собирает слои** — и это единственная конфигурация, которая проходит все три нокаута одновременно.
+**Conclusion `DECIDED`:** the synthesis does not choose a winner, it **assembles layers** — and this is the only configuration that passes all three knockouts at once.
 
 ```
-Слой решения      ← T1  (PoC-контракт, C/T/N, sealed oracle, fix gate)
-Слой свидетельства← T3  (content addressing, hash-chain, replay kit, изоляция)
-Слой развёртывания← S1  (DAG субагентов, peer-модели, дедуп)
-Слой коммерции    ← T4  (подпись, негативный скоуп, SKU-лестница)
-Слой гарантий     ← T2+T6 (proof obligations, L0–L5, трассируемость, TCB)
-Дисциплина отказа ← T5  (eval, пороги, kill criteria, F01–F19)
+Decision layer     ← T1  (PoC contract, C/T/N, sealed oracle, fix gate)
+Evidence layer     ← T3  (content addressing, hash-chain, replay kit, isolation)
+Deployment layer   ← S1  (subagent DAG, peer models, dedup)
+Commerce layer     ← T4  (signature, negative scope, SKU ladder)
+Assurance layer    ← T2+T6 (proof obligations, L0–L5, traceability, TCB)
+Refusal discipline ← T5  (eval, thresholds, kill criteria, F01–F19)
 ```
 
 ---
 
-## 5. Что выброшено из присланных предложений и почему
+## 5. What was discarded from the submitted proposals and why
 
-Честность важнее полноты: часть утверждений во внешних предложениях я **не** переношу в спеку.
+Honesty matters more than completeness: some of the claims in the external proposals I do **not** carry over into the spec.
 
-| Утверждение | Статус | Почему |
+| Claim | Status | Why |
 |---|---|---|
-| «MAAP — 70.3% успешных патчей на 120 CVE», «RAVEN — 83.13% на 160 CVE» | **не подтверждено** | Не нашёл первоисточника с такими числами. Похожие цифры есть у AutoPatch/агентных работ, но сопоставимость бенчмарков не доказана. Не использовать в продаже |
-| «Nemesis: Red Team / Blue Team / Judge» как готовый паттерн | **проверить** | Паттерн полезен (он лёг в Var C как adversarial arbitration), но конкретная система не верифицирована |
-| «pwnkit с проверяемыми артефактами» | **не подтверждено** | Не подтверждается |
-| PentestGPT/Strix/CAI как «операционно пригодное ядро» | **частично** | PentestGPT перебрендирован в «autonomous», но независимый разбор (verification-gap) ставит вопрос: *доказывает* ли инструмент находку или *утверждает* её. Это ровно тот разрыв, который мы продаём — поэтому брать их как ядро нельзя, только как источники приёмов |
-| «Chrome full chain за 6 дней, $250K» (XBOW) | **принято как факт рынка** | Опубликовано вендором; использовать как ориентир, а не как обещание |
-| «AIxCC: 86% синтетических найдено, 68% пропатчено, $152/задача» | **принято** | Официальный релиз DARPA, 8 авг. 2025. Ключевой ориентир: **на 54M строк, средний патч 45 минут** — это планка, которую нельзя игнорировать |
-| Rust→Lean 4 (Charon/Aeneas + Aristotle/Aleph) | **принято с ограничениями** | Подтверждено experience report (Runtime Verification, 2026): работает на production-крипто, но `unsafe` вне покрытия, дрейф тулчейна, ручные леммы |
-| «Autoharness: 16 748 harness, 11 970 верифицировано» | **принято как ориентир автоматизации** | Показывает: автогенерация proof obligations масштабируется; generics (9 600 пропущено) и конкурентность — незакрыты |
+| "MAAP — 70.3% successful patches on 120 CVEs", "RAVEN — 83.13% on 160 CVEs" | **not confirmed** | I did not find a primary source with these numbers. Similar figures exist in AutoPatch/agentic work, but comparability of the benchmarks is not proven. Do not use in sales |
+| "Nemesis: Red Team / Blue Team / Judge" as a ready-made pattern | **to verify** | The pattern is useful (it went into Var C as adversarial arbitration), but the specific system is not verified |
+| "pwnkit with verifiable artifacts" | **not confirmed** | Not confirmed |
+| PentestGPT/Strix/CAI as an "operationally fit core" | **partially** | PentestGPT has been rebranded as "autonomous", but an independent analysis (verification-gap) raises the question: does the tool *prove* the finding or *assert* it. This is exactly the gap we sell — therefore they cannot be taken as a core, only as sources of techniques |
+| "Chrome full chain in 6 days, $250K" (XBOW) | **accepted as a market fact** | Published by the vendor; use as a reference point, not as a promise |
+| "AIxCC: 86% of synthetic found, 68% patched, $152/task" | **accepted** | Official DARPA release, 8 Aug. 2025. Key reference point: **on 54M lines, average patch 45 minutes** — this is a bar that cannot be ignored |
+| Rust→Lean 4 (Charon/Aeneas + Aristotle/Aleph) | **accepted with limitations** | Confirmed by an experience report (Runtime Verification, 2026): works on production crypto, but `unsafe` is outside coverage, toolchain drift, manual lemmas |
+| "Autoharness: 16 748 harnesses, 11 970 verified" | **accepted as an automation reference point** | It shows that auto-generation of proof obligations scales; generics (9 600 skipped) and concurrency remain uncovered |
 
-Практическое следствие `РЕШЕНО`: **любая цифра в коммерческом материале должна иметь либо ссылку на первоисточник, либо пометку «модель».** Внутренние оценки команды (стоимость, сроки, GM) уже помечены как гипотезы — так и оставить.
+Practical consequence `DECIDED`: **any figure in commercial material must have either a reference to a primary source or the label "model".** The team's internal estimates (cost, timelines, GM) are already labeled as hypotheses — leave them that way.
 
 ---
 
-## 6. Открытые вопросы, которые решает только пилот
+## 6. Open questions that only the pilot decides
 
-Не пытаться решить это текстом. Каждый пункт — измеримое задание на первые 90 дней.
+Do not try to settle these with text. Each item is a measurable task for the first 90 days.
 
-| # | Вопрос | Как измеряем | Порог, при котором архитектура меняется |
+| # | Question | How we measure | Threshold at which the architecture changes |
 |---|---|---|---|
-| Q1 | Реальная стоимость валидированной находки по классам | 20 прогонов, фактические счета | p90 dynamic-PoC > $600 → сокращать глубину, не цену |
-| Q2 | Воспроизводимость PoC у клиента | 20 бандлов переигрываются в его CI | < 90% → evidence plane не работает, стоп продаж |
-| Q3 | Deployment fidelity: доля таргетов, которые вообще поднялись | лог `DEPLOY_FAILED` | < 70% → продукт применим только к контейнеризуемым, менять TAM |
-| Q4 | Принимаемость патчей | 60 фиксов, % принятых без семантических правок | < 50% → фикс-трек не продаётся отдельно |
-| Q5 | Obedience к injection | канареечный корпус N=200 | > 2% → остановить автономные прогоны |
-| Q6 | Регрессия после фикса | CI клиента | > 3% → обязательный канареечный роллаут в продукте |
-| Q7 | Contamination: public vs private дельта | time-split после cutoff модели | разрыв > 20 п.п. → отозвать efficacy-заявления |
-| Q8 | Стоимость одной S5-миграции при переиспользовании харнесса | 2 кейса, один класс свойств | переиспользование < 70% → S5 остаётся R&D |
-| Q9 | Приёмка evidence-пакета аудитором | 1 фирма, 5 пакетов | отказ → переделывать формат отчёта, а не продажи |
-| Q10 | Готовность платить за триггер (не за размер) | 15 интервью по 5 триггерам | < 30% «купил бы» на триггере → менять сегмент |
+| Q1 | The real cost of a validated finding by class | 20 runs, actual invoices | p90 dynamic-PoC > $600 → cut depth, not price |
+| Q2 | Reproducibility of the PoC at the client | 20 bundles replayed in its CI | < 90% → the evidence plane does not work, stop sales |
+| Q3 | Deployment fidelity: the share of targets that came up at all | log `DEPLOY_FAILED` | < 70% → the product applies only to containerizable targets, change the TAM |
+| Q4 | Patch acceptability | 60 fixes, % accepted without semantic edits | < 50% → the fix track is not sold separately |
+| Q5 | Obedience to injection | canary corpus N=200 | > 2% → stop autonomous runs |
+| Q6 | Regression after a fix | client CI | > 3% → mandatory canary rollout in the product |
+| Q7 | Contamination: public vs private delta | time-split after the model cutoff | gap > 20 pp → withdraw efficacy claims |
+| Q8 | The cost of one S5 migration with harness reuse | 2 cases, one property class | reuse < 70% → S5 remains R&D |
+| Q9 | Acceptance of the evidence package by an auditor | 1 firm, 5 packages | refusal → redo the report format, not the sales |
+| Q10 | Willingness to pay for a trigger (not for size) | 15 interviews on 5 triggers | < 30% "would buy" on a trigger → change segment |
 
 ---
 
-## 7. Итоговое решение одной страницей
+## 7. The final decision on one page
 
-**`РЕШЕНО`.** Строим **Вариант B «Фабрика ремедиации»** (`01-VARIANTS.md`), спроектированный так, чтобы в него без переделки вставлялись:
+**`DECIDED`.** We build **Variant B "Remediation Factory"** (`01-VARIANTS.md`), designed so that the following plug into it without rework:
 
-1. **снизу** — Вариант A (тонкий offense-first) как первый релиз через 8–10 недель;
-2. **сверху** — Вариант C (high-assurance, «сертифицируемое изменение») как второй продукт через 9–15 месяцев;
-3. **сбоку** — Вариант E (evidence-plane как сервис) как страховка от коммодитизации.
+1. **from below** — Variant A (thin offense-first) as the first release in 8–10 weeks;
+2. **from above** — Variant C (high-assurance, "certifiable change") as the second product in 9–15 months;
+3. **from the side** — Variant E (evidence plane as a service) as insurance against commoditization.
 
-Три инварианта, которые нельзя нарушать ни в одном варианте:
+Three invariants that must not be violated in any variant:
 
-- **I1.** Всё, что названо «проверено», произведено детерминированным кодом, а не моделью.
-- **I2.** Всё отгруженное воспроизводимо **в пределах заявленного fingerprint** (образы, версии, конфигурация, seed, сетевые политики, время). Вне заявленного fingerprint — статус `HYPOTHESIS`, а не `PROVEN`. Утверждение «воспроизводится всегда» не делается никогда. *(Формулировка третьего круга: 3 из 5 рецензентов независимо показали, что абсолютное «тот же результат» ложно для stateful и распределённых эффектов, а fingerprint должен быть **договорной границей** доказательства, а не технической деталью.)*
-- **I3.** Всё, что утверждается, ограничено явным негативным скоупом.
+- **I1.** Everything called "verified" is produced by deterministic code, not by a model.
+- **I2.** Everything shipped is reproducible **within the declared fingerprint** (images, versions, configuration, seed, network policies, time). Outside the declared fingerprint the status is `HYPOTHESIS`, not `PROVEN`. The claim "reproduces always" is never made. *(Third-round wording: 3 of 5 reviewers independently showed that an absolute "same result" is false for stateful and distributed effects, and that the fingerprint must be a **contractual boundary** of the proof, not a technical detail.)*
+- **I3.** Everything asserted is bounded by an explicit negative scope.
 
-Нарушение любого из трёх — не баг бэклога, а остановка продаж (`03-EVAL-ROADMAP.md`, kill criteria K1–K5).
+Violation of any of the three is not a backlog bug but a stop-sales event (`03-EVAL-ROADMAP.md`, kill criteria K1–K5).
 
 ---
 
-## 8. Дополнение: источники S4 и S5 (пришли после первого синтеза)
+## 8. Addendum: sources S4 and S5 (arrived after the first synthesis)
 
-Два внешних предложения пришли позже. Ни одно не опрокинуло §2–§4, но каждое добавило по одному важному измерению.
+Two external proposals arrived later. Neither overturned §2–§4, but each added one important dimension.
 
-### S4 — «SaaS / гибрид с клиентским runner / полностью локально» (NIST SSDF-рамка)
+### S4 — "SaaS / hybrid with a client runner / fully local" (NIST SSDF frame)
 
-**Что нового.** Deployment-топология объявлена **архитектурной осью**, а не деталью эксплуатации: SaaS → гибрид (панель снаружи, runner в VPC клиента) → полная локальная установка, с рекомендацией «начать с гибрида, но с первого дня проектировать пакеты и обновления так, чтобы отдавать локально». Плюс жёсткая методологическая дисциплина: SARIF как основной формат, черновик PR вместо применения, «не обещать найти все», метрики = доля подтверждённых / доля FP / доля патчей, прошедших ре-проверку / воспроизводимость заданий.
+**What is new.** The deployment topology is declared an **architectural axis**, not an operational detail: SaaS → hybrid (panel outside, runner in the client's VPC) → full local installation, with the recommendation "start with hybrid, but from day one design packages and updates so that they can be delivered locally". Plus a strict methodological discipline: SARIF as the primary format, a draft PR instead of applying, "do not promise to find everything", metrics = share confirmed / share FP / share of patches that passed re-verification / reproducibility of tasks.
 
-**Что подтвердило.** C1, C2, C5, C6 — независимо и почти теми же словами. Отдельно ценно: «содержимое репозитория и результаты сканеров считать недоверенными данными, а не инструкциями» — это C7, сформулированный как правило harness, а не как совет.
+**What it confirmed.** C1, C2, C5, C6 — independently and in almost the same words. Separately valuable: "treat repository contents and scanner results as untrusted data, not as instructions" — this is C7, formulated as a harness rule rather than as advice.
 
-**Чего не хватает.** Нет ответа на «где ров» (ни одного из четырёх горизонтов §3.1), нет оценки экономики, нет механизма доказательства причинности (PoC-контракт отсутствует — только «повторить анализ»). Это honest baseline, а не дифференциатор.
+**What is missing.** No answer to "where is the moat" (none of the four horizons of §3.1), no estimate of the economics, no mechanism for proving causality (the PoC contract is absent — only "repeat the analysis"). This is an honest baseline, not a differentiator.
 
-### S5 — «4 варианта + Assurance Factory + remediation-first» (с внешними ссылками)
+### S5 — "4 variants + Assurance Factory + remediation-first" (with external references)
 
-**Что нового.** Три вещи, которых не было ни у кого:
+**What is new.** Three things that no one else had:
 
-1. **Формула продукта в одну строку:** «AI находит и предлагает; sandbox воспроизводит; формальные методы доказывают; человек утверждает; CI фиксирует». Это лучшая из встреченных формулировок — забираю как внешнюю формулировку позиционирования.
-2. **Уровень уверенности как поле каждого фикса:** `reproduced` / `static-only` / `formally-proven` / `human-approved`. Совпадает с решёткой L0–L5 из T6, но проще для клиента — беру как клиентское представление, L-решётку оставляю внутренним языком.
-3. **«Permission engine» с capability-правами** (`read_repo`, `run_tests`, `start_sandbox`, `execute_poc`, `open_pr`) и правилом «действия с последствиями требуют approval». Это операционализация T3 и одновременно ответ на вопрос T5 №4 «что является доверенной базой инструкций».
+1. **The product formula in one line:** "AI finds and proposes; the sandbox reproduces; formal methods prove; a human approves; CI records". This is the best of the formulations encountered — I take it as the external positioning statement.
+2. **Confidence level as a field of every fix:** `reproduced` / `static-only` / `formally-proven` / `human-approved`. It matches the L0–L5 lattice from T6 but is simpler for the client — I take it as the client-facing representation and keep the L-lattice as internal language.
+3. **A "Permission engine" with capability rights** (`read_repo`, `run_tests`, `start_sandbox`, `execute_poc`, `open_pr`) and the rule "actions with consequences require approval". This is an operationalization of T3 and at the same time an answer to T5 question #4, "what is the trusted instruction base".
 
-**Что подтвердило.** Мультиагентность, sandbox-гейт, «не переписывать всё на Lean — выделить TCB», TLA+/Quint для протоколов, red-teaming самого агента.
+**What it confirmed.** Multi-agent structure, the sandbox gate, "do not rewrite everything in Lean — isolate the TCB", TLA+/Quint for protocols, red-teaming of the agent itself.
 
-**Чего не хватает.** Тот же провал, что у S4: нет PoC-контракта с негативным контролем (C/T/N), нет модели экономики, нет ответа про подпись и ответственность. Плюс — это уже второй источник, который ставит «remediation-first» выше «finding-first» по продаваемости, не приводя ни одной цифры.
+**What is missing.** The same failure as S4: no PoC contract with a negative control (C/T/N), no model of the economics, no answer on signature and liability. Plus — this is already the second source that ranks "remediation-first" above "finding-first" in sellability without citing a single figure.
 
-### Что меняется в синтезе из-за S4/S5
+### What changes in the synthesis because of S4/S5
 
-**Одно структурное изменение `РЕШЕНО`.** «Варианты архитектуры» — не конкурирующие проекты, а **точка в трёхмерной матрице**:
+**One structural change `DECIDED`.** "Architecture variants" are not competing projects but **a point in a three-dimensional matrix**:
 
 ```
-Ось 1 — Уровень гарантий:   offense-gated  →  remediation factory  →  certified change
-Ось 2 — Размещение:         SaaS           →  hybrid runner       →  on-prem / air-gap
-Ось 3 — Охват:              repo-only      →  +API +container      →  +live targets  →  +formal core
+Axis 1 — Assurance level:  offense-gated  →  remediation factory  →  certified change
+Axis 2 — Placement:        SaaS           →  hybrid runner       →  on-prem / air-gap
+Axis 3 — Coverage:         repo-only      →  +API +container      →  +live targets  →  +formal core
 ```
 
-Это растворяет мнимое противоречие «cloud vs on-prem» (это не вариант, а ось), объясняет, почему 9 источников выглядели несовместимыми (они стояли в разных точках), и даёт продуктовую линейку вместо трёх взаимоисключающих ставок. Полная матрица — в `01-VARIANTS.md`.
+This dissolves the apparent "cloud vs on-prem" contradiction (it is not a variant but an axis), explains why the 9 sources looked incompatible (they stood at different points), and yields a product line instead of three mutually exclusive bets. The full matrix is in `01-VARIANTS.md`.
 
-Второе изменение, поменьше: **deployment-топология тянет за собой требование к evidence plane**. Если runner стоит в VPC клиента, replay kit обязан работать **без доступа к нашей инфраструктуре и без сети** — это уже было в T1 (`--offline`), но теперь становится жёстким архитектурным ограничением, а не пожеланием.
+A second, smaller change: **the deployment topology brings with it a requirement on the evidence plane**. If the runner sits in the client's VPC, the replay kit must work **without access to our infrastructure and without a network** — this was already in T1 (`--offline`), but now it becomes a hard architectural constraint rather than a wish.
 
 ---
 
-## 9. Готовность к второму кругу
+## 9. Readiness for the second round
 
-Первый круг дал девять философий и один синтез. Он **не дал** ответов на 10 вопросов из §6 и не разрешил 4 из 7 расхождений (3.4, 3.5, 3.6 остались решениями-гипотезами, 3.1 — решением-ставкой). Поэтому второй круг строится не как «ещё раз спросите про архитектуру», а как **принуждение к фальсифицируемым обязательствам**: одинаковый вход для всех, одинаковые вопросы, требуются числа и выбор, а не философия.
+The first round produced nine philosophies and one synthesis. It **did not** answer the 10 questions of §6 and did not resolve 4 of the 7 divergences (3.4, 3.5, 3.6 remained hypothesis-decisions, 3.1 — a bet-decision). Therefore the second round is built not as "ask about the architecture once more" but as **forcing falsifiable commitments**: the same input for everyone, the same questions, numbers and a choice required, not philosophy.
 
-Пакет для прогона: `10-ROUND2-QUESTIONS.md`.
+Package for the run: `10-ROUND2-QUESTIONS.md`.

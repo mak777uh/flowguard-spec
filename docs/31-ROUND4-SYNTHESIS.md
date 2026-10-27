@@ -1,271 +1,271 @@
-# 31. Четвёртый круг: свод по потокам (4 ответа)
+# 31. Round 4: synthesis across streams (4 responses)
 
-> Первый круг, где продукт проектировался не как «доказанный баг», а как **гарантия на защищаемый поток**. Четыре независимых ответа.
-> Правила свода: по составу — пересечение; для TAM — минимум; **для стоимости — максимум**; блок замыкания — вето-зона.
+> The first round in which the product was designed not as a "proven bug" but as a **guarantee for a defended flow**. Four independent responses.
+> Synthesis rules: for composition — intersection; for TAM — minimum; **for cost — maximum**; the closure block is the veto zone.
 
 ---
 
-## 1. Главный результат: пилот сошёлся идеально
+## 1. Main result: the pilot converged perfectly
 
-| Источник | Дни | Человеко-дни |
+| Source | Days | Person-days |
 |---|---|---|
 | №1 | 45 | 25 |
 | №2 | 45 | 24 |
 | №3 | 45 | 24 |
 | №4 | 45 | 23 |
 
-Четыре из четырёх: **45 календарных дней, 23–25 человеко-дней**. Это самый сильный консенсус за все четыре круга — сильнее, чем по классам уязвимостей (4/6) или по контракту (5/6). Значит **пилот уже спланирован и в обсуждении не нуждается**. Число принимается как есть: **45 дней / 24 человеко-дня**.
+Four out of four: **45 calendar days, 23–25 person-days**. This is the strongest consensus across all four rounds — stronger than for vulnerability classes (4/6) or for the contract (5/6). That means **the pilot is already planned and needs no discussion**. The number is accepted as is: **45 days / 24 person-days**.
 
 ---
 
-## 2. Замыкание Z: 9 обязательных элементов + 3 структурных
+## 2. Closure Z: 9 mandatory elements + 3 structural ones
 
-Пересечение четырёх списков (у №1 — 9, у №2 — 10, у №3 — 10, у №4 — 10).
+The intersection of the four lists (№1 has 9, №2 — 10, №3 — 10, №4 — 10).
 
-### Обязательный минимум (4/4, вето-зона)
+### Mandatory minimum (4/4, veto zone)
 
-| # | Элемент | «Иначе ложно» |
+| # | Element | "Otherwise false" |
 |---|---|---|
-| 1 | Синхронные входы: API, web, мобильное, партнёрское, вебхуки | иначе перевод без проверки P |
-| 2 | Batch / cron / ETL денежных операций | иначе фоновая запись мимо M |
-| 3 | Админ-консоль, support-инструменты, break-glass | иначе привилегированный обход |
-| 4 | Бэкап, restore, репликация, failover | иначе откат или дублирование баланса |
-| 5 | Все точки записи в леджер/баланс, включая хранимки и миграции | иначе обход через SQL |
-| 6 | Реестр принципалов БД с правом записи | иначе общая учётка пишет мимо M |
-| 7 | Очереди, ретраи, идемпотентность | иначе повтор исполняется без проверки состояния |
-| 8 | Конфигурация политики: лимиты, флаги, override + кто меняет | иначе лимит меняется без перевыпуска P |
-| 9 | CI/CD, секреты, деплой M и миграций | иначе в прод идёт код, не совпадающий с доказанным |
+| 1 | Synchronous ingress: API, web, mobile, partner, webhooks | otherwise a transfer without check P |
+| 2 | Batch / cron / ETL of money operations | otherwise a background write bypassing M |
+| 3 | Admin console, support tools, break-glass | otherwise a privileged bypass |
+| 4 | Backup, restore, replication, failover | otherwise a rollback or duplication of the balance |
+| 5 | All write points into the ledger/balance, including stored procedures and migrations | otherwise a bypass via SQL |
+| 6 | Registry of DB principals with write rights | otherwise a shared account writes bypassing M |
+| 7 | Queues, retries, idempotency | otherwise a repeat executes without a state check |
+| 8 | Policy configuration: limits, flags, override + who changes them | otherwise the limit is changed without reissuing P |
+| 9 | CI/CD, secrets, deployment of M and migrations | otherwise code goes to prod that does not match the proven one |
 
-### Три добавления по одному голосу, но логически обязательные
+### Three additions backed by one vote each, but logically mandatory
 
-| Элемент | Кто | Почему включаем несмотря на 1/4 |
+| Element | Who | Why we include it despite 1/4 |
 |---|---|---|
-| **Наблюдаемый слой** (tap, DB-дайджест, журнал идентичности, события M) | №4 | без него нельзя отличить обход от сбоя — то есть сам Z непроверяем |
-| **Внешние зачисления и reconciliation от провайдера** | №3 | входящие деньги — тоже запись в леджер, и ни один другой ответ её не назвал |
-| **Сам M с подписанной версией политики** | №4 (частично №1) | если M можно подменить вне Z, «обхода нет» ложно по определению. У №1 это выражено как «неизменяемый policy hash» в элементе CI |
+| **Observable layer** (tap, DB digest, identity log, M events) | №4 | without it one cannot distinguish a bypass from a failure — that is, Z itself is unverifiable |
+| **External credits and reconciliation from the provider** | №3 | incoming money is also a ledger write, and no other response named it |
+| **M itself with a signed policy version** | №4 (partly №1) | if M can be substituted outside Z, "no bypass" is false by definition. In №1 this is expressed as "immutable policy hash" in the CI element |
 
-**Итог: Z = 12 элементов.** Девять обязательных, три структурных. Последние три не голосуются — они следуют из логики самого утверждения.
+**Total: Z = 12 elements.** Nine mandatory, three structural. The last three are not put to a vote — they follow from the logic of the statement itself.
 
 ---
 
-## 3. Артефакт объявления: 8 полей, 4 подписи с разделением ответственности
+## 3. The declaration artifact: 8 fields, 4 signatures with separation of responsibility
 
-Все четыре дали по 8 полей, состав почти идентичен. Синтез — лучшая часть двух: №3 разделил ответственность **по типу утверждения**, №4 — **по владельцу системы**.
+All four gave 8 fields, the composition is almost identical. The synthesis is the best part of two: №3 separated responsibility **by type of statement**, №4 — **by system owner**.
 
-| Поле | Содержание |
+| Field | Content |
 |---|---|
-| `z_id`, версия, хеш артефакта | идентификация и целостность |
-| Поток F | операции, данные, владельцы, критерий успеха |
-| Реестр путей: `ресурс \| путь \| владелец \| решение` | медиировать / запретить / вне гарантии |
-| Хеш M: код, коммит, toolchain, хеш доказательства | что именно доказано |
-| Реестр принципалов БД и их прав на дату подписи | кто мог писать мимо |
-| Метод построения реестра | аудит прав + 14 дней DB-аудита + 30 дней ingress-логов `[оценка]` |
-| Список «вне гарантии» с причиной по каждой строке | негативный скоуп |
-| Результаты red-team с датой и версией M | подтверждение замыкания |
+| `z_id`, version, artifact hash | identification and integrity |
+| Flow F | operations, data, owners, success criterion |
+| Path registry: `resource \| path \| owner \| decision` | mediate / forbid / out of guarantee |
+| M hash: code, commit, toolchain, proof hash | what exactly is proven |
+| Registry of DB principals and their rights as of the signing date | who could write bypassing |
+| Method of building the registry | rights audit + 14 days of DB audit + 30 days of ingress logs `[estimate]` |
+| List of "out of guarantee" with a reason for each line | negative scope |
+| Red-team results with date and M version | confirmation of closure |
 
-**Четыре подписи, каждая отвечает за одно утверждение** — это лучшая находка круга по ответственности:
+**Four signatures, each responsible for one statement** — this is the round's best finding on responsibility:
 
-| Подписант | За что отвечает |
+| Signatory | Responsible for |
 |---|---|
-| **Product owner клиента** | полнота реестра **продуктовых** входов (API, UI, партнёрское) |
-| **Infra owner клиента** | полнота реестра **инфраструктурных** путей (batch, БД, CI, бэкап) |
-| **Security lead клиента** | реестр кредов и принципалов БД |
-| **Наш lead verifier** | хеши M, доказательство, прогон атак |
+| **Client product owner** | completeness of the registry of **product** ingress (API, UI, partner) |
+| **Client infra owner** | completeness of the registry of **infrastructure** paths (batch, DB, CI, backup) |
+| **Client security lead** | registry of credentials and DB principals |
+| **Our lead verifier** | M hashes, the proof, attack runs |
 
-Два владельца у клиента, а не один — потому что batch, БД и CI принадлежат инфраструктуре, а не продукту, и продуктовый CTO физически не знает про ночную джобу. Это и был главный риск «забыли batch».
+Two owners on the client side, not one — because batch, DB and CI belong to infrastructure, not to the product, and a product CTO physically does not know about the night job. This was the main risk of "batch was forgotten".
 
-**Договорное ограничение** (сведено из №4 и №3):
+**Contractual limitation** (merged from №4 and №3):
 
-> Гарантия действует только для путей, перечисленных в Декларации Z версии N. Путь, появившийся или изменённый после подписи, находится вне гарантии **до перевыпуска Декларации, который обязателен в течение 3 рабочих дней** с момента изменения границы.
+> The guarantee applies only to the paths listed in Declaration Z version N. A path that appears or changes after signing is out of guarantee **until the Declaration is reissued, which is mandatory within 3 working days** from the moment the boundary changes.
 
-Правило трёх дней — операционный механизм: без него артефакт устаревает в момент подписания.
+The three-day rule is an operational mechanism: without it the artifact becomes stale at the moment of signing.
 
 ---
 
-## 4. Медиатор: консенсус по контракту + одна идея, которая меняет всё
+## 4. The mediator: consensus on the contract + one idea that changes everything
 
-### 4.1. Что сошлось (4/4)
+### 4.1. What converged (4/4)
 
-1. Субъект — **только** из проверенного токена/IdP; поле владельца из тела запроса игнорируется.
-2. Владелец объекта — из доверенного хранилища, не из клиента.
-3. `deny-beats-allow`, default deny, отсутствие данных → `Deny`.
-4. Привязка к версии объекта; проверка и изменение атомарны (запрет TOCTOU).
-5. Решение журналируется (у №4 — подписанное событие **до** исполнения).
+1. The subject comes **only** from a verified token/IdP; the owner field from the request body is ignored.
+2. The owner of the object comes from a trusted store, not from the client.
+3. `deny-beats-allow`, default deny, absence of data → `Deny`.
+4. Binding to the object version; check and modification are atomic (TOCTOU prevention).
+5. The decision is logged (in №4 — a signed event **before** execution).
 
-### 4.2. Идея, которой не было ни у кого: `Permit` как непередаваемый тип
+### 4.2. The idea nobody else had: `Permit` as a non-transferable type
 
-№3 сформулировал то, чего не хватало всей архитектуре:
+№3 formulated what the whole architecture was missing:
 
-> `Permit` — непередаваемый тип, и слой данных принимает операцию **только** с ним.
+> `Permit` is a non-transferable type, and the data layer accepts an operation **only** with it.
 
-Это переводит обход из плоскости политики в плоскость **типовой системы**: запись без `Permit` не компилируется. То есть:
+This moves bypass from the plane of policy to the plane of the **type system**: a write without `Permit` does not compile. That is:
 
-- «обойти медиатор» становится **ошибкой типизации**, а не нарушением регламента;
-- это ровно object-capability модель («нет права — нет интерфейса») в конкретной реализации;
-- доказательство сводится к одному утверждению, которое №3 и написал: `∀ Permit ⟹ P(subj, obj, act)`.
+- "to bypass the mediator" becomes a **typing error**, not a violation of regulations;
+- this is exactly the object-capability model ("no right — no interface") in a concrete implementation;
+- the proof reduces to a single statement, which №3 also wrote: `∀ Permit ⟹ P(subj, obj, act)`.
 
-**Принято как обязательное свойство дизайна**, а не как рекомендация. Без него медиатор — это проверка, которую можно не вызвать.
+**Accepted as a mandatory design property**, not as a recommendation. Without it, the mediator is a check that can simply not be called.
 
-### 4.3. Два следствия из №3, которые тоже идут в спеку
+### 4.3. Two consequences from №3 that also go into the spec
 
-- **`Deny` для несуществующего объекта неотличим от `Deny` для чужого** — иначе медиатор сам становится оракулом для перебора.
-- **Отказ журнала → `Deny`**. Медиатор, который продолжает работать при недоступном аудите, не является reference monitor.
+- **`Deny` for a non-existent object is indistinguishable from `Deny` for someone else's** — otherwise the mediator itself becomes an oracle for enumeration.
+- **Log failure → `Deny`**. A mediator that keeps working when the audit is unavailable is not a reference monitor.
 
-### 4.4. Размещение: гибрид, а не один вариант
+### 4.4. Placement: a hybrid, not a single option
 
-Все четыре таблицы совпадают по trade-off'ам. Гибрид предложил №3, и он единственный согласуется с доказательством:
+All four tables agree on the trade-offs. The hybrid was proposed by №3, and it is the only one consistent with the proof:
 
-| Что контролируем | Где | Почему |
+| What we control | Where | Why |
 |---|---|---|
-| Принадлежность объекта, тенант, переход состояния | **in-process библиотека** | нужно в одной транзакции с операцией (TOCTOU), малое ядро — дёшево доказать |
-| Лимит суммы и собственно деньги | **единственный сервис-writer** | один writer = один путь записи; миграция дорогая, но обход закрывается отзывом кредов |
+| Object ownership, tenant, state transition | **in-process library** | needed in the same transaction as the operation (TOCTOU), small core — cheap to prove |
+| Amount limit and the money itself | **a single writer service** | one writer = one write path; migration is expensive, but bypass is closed by revoking credentials |
 
-Остаточный обход у всех четырёх вариантов один и тот же: **прямой доступ к БД**. Поэтому «отзыв write-кредов у всех, кроме сервиса M» — не завершающий штрих, а **условие существования замыкания**.
+The residual bypass is the same in all four options: **direct DB access**. Therefore "revoking write credentials from everyone except service M" is not a finishing touch but a **condition for the existence of the closure**.
 
 ---
 
-## 5. Пять политик: 20 дней в медиане, 35 в максимуме
+## 5. Five policies: 20 days at the median, 35 at the maximum
 
-| Политика | №1 | №2 | №3 | №4 | Медиана | План (max) |
+| Policy | №1 | №2 | №3 | №4 | Median | Plan (max) |
 |---|---|---|---|---|---|---|
-| Изоляция тенантов | 2 | 2–5 | 6 | 2 | 2 | 6 |
-| Принадлежность объекта | 6 | 3–6 | 6 | 5 | 5,5 | 6 |
-| Лимит суммы | 3 | 2–4 | 8 | 2 | 3 | 8 |
-| Класс PII | 4 | 3–6 | 10 | 4 | 4 | 10 |
-| Переход состояния | 5 | 3–7 | 6 | 6 | 5,5 | 6 |
-| **Итого** | 20 | 13–28 | **35** | 19 | **≈20** | **35** |
+| Tenant isolation | 2 | 2–5 | 6 | 2 | 2 | 6 |
+| Object ownership | 6 | 3–6 | 6 | 5 | 5.5 | 6 |
+| Amount limit | 3 | 2–4 | 8 | 2 | 3 | 8 |
+| PII class | 4 | 3–6 | 10 | 4 | 4 | 10 |
+| State transition | 5 | 3–7 | 6 | 6 | 5.5 | 6 |
+| **Total** | 20 | 13–28 | **35** | 19 | **≈20** | **35** |
 
-По правилу «для стоимости — максимум»: **пять политик = 35 человеко-дней**. Но для пилота нужны две (принадлежность + лимит) → **14 дней максимум, 9 в медиане**.
+By the "for cost — maximum" rule: **five policies = 35 person-days**. But the pilot needs two (ownership + limit) → **14 days maximum, 9 at the median**.
 
-№3 систематически в 1,5–2 раза выше остальных; он же единственный, кто учитывает overflow в арифметике лимитов и «все сериализаторы» для PII. Похоже, что три ответа считали happy path, а №3 — реальный объём. Принимаем его как верхнюю границу.
+№3 is systematically 1.5–2 times higher than the others; it is also the only one that accounts for overflow in limit arithmetic and for "all serializers" for PII. It seems the three responses counted the happy path, while №3 counted the real scope. We accept it as the upper bound.
 
 ---
 
-## 6. Семь путей обхода: ни один не получил 4/4 «вне гарантии»
+## 6. Seven bypass paths: none received 4/4 "out of guarantee"
 
-| Путь | Медиировать | Запретить | Вне гарантии | **Решение** |
+| Path | Mediate | Forbid | Out of guarantee | **Decision** |
 |---|---|---|---|---|
-| Batch / cron / ETL | **4** | — | — | **медиировать** |
-| Админка / support | **4** | — | — | **медиировать** + двойной контроль |
-| Партнёрское / мобильное API | **4** | — | — | **медиировать**, старые версии отключить |
-| Прямой доступ к БД | — | **4** | — | **запретить**, write-креды только у M, break-glass с журналом |
-| Бэкап / restore | — | 2 | 2 | **запретить прямой restore**; только подписанный snapshot + пост-сверка + перевыпуск акта |
-| Логи / аналитика | — | 2 | 2 | **запретить запись в денежный путь**; копия PII — отдельный поток F, продаётся отдельно |
-| CI / supply chain | 1 | 1 | 2 | **запретить креды данных** + проверка хеша деплоя; компрометация цепочки — вне гарантии |
+| Batch / cron / ETL | **4** | — | — | **mediate** |
+| Admin panel / support | **4** | — | — | **mediate** + dual control |
+| Partner / mobile API | **4** | — | — | **mediate**, disable old versions |
+| Direct DB access | — | **4** | — | **forbid**, write credentials only for M, break-glass with logging |
+| Backup / restore | — | 2 | 2 | **forbid direct restore**; only a signed snapshot + post-reconciliation + reissue of the act |
+| Logs / analytics | — | 2 | 2 | **forbid writing into the money path**; a PII copy is a separate flow F, sold separately |
+| CI / supply chain | 1 | 1 | 2 | **forbid data credentials** + deploy hash check; compromise of the chain is out of guarantee |
 
-**Итог: все семь внутри продукта, ноль «вне гарантии» на уровне пути.** Это сильнее и честнее, чем объявить часть вне скоупа.
+**Total: all seven inside the product, zero "out of guarantee" at the path level.** This is stronger and more honest than declaring part of it out of scope.
 
-Почему так: «вне гарантии» для restore означало бы, что самая опасная операция (возврат старого состояния с балансами) не покрыта — а это и есть сценарий, ради которого продукт существует. Вместо этого restore **запрещён как прямой путь** и разрешён только через процедуру перевыпуска акта: это дороже, но не оставляет дыру.
+The reason: "out of guarantee" for restore would mean that the most dangerous operation (returning an old state with balances) is not covered — and that is exactly the scenario the product exists for. Instead, restore is **forbidden as a direct path** and permitted only through the act-reissue procedure: it is more expensive, but it leaves no hole.
 
-Единственное, что остаётся вне гарантии, — **компрометация цепочки поставки**, и это заявлено явно: CI не имеет кредов данных (то есть не может двинуть деньги), но целостность самих инструментов сборки не доказывается.
-
----
-
-## 7. SKU: структура сошлась, цены — нет
-
-| | №1 | №2 | №3 | №4 | Медиана |
-|---|---|---|---|---|---|
-| A. Диагностика | $9k / 14 дн | $2–4k / 5–10 дн | $7,5–12k / 2–3 нед | $9,5k / 10 дн | **$9k / 10–14 дн** |
-| B. Миграция к M | $18k / 30 дн | $5–10k / 10–20 дн | $25–45k / 6–8 нед | $39k / 30 дн | **$27k / 30 дн** |
-| C. Гарантия | $35k/год / 45 дн | $3–7k / 7–15 дн | $30–60k + $10–15k/год | $78k / 45 дн | **$45k + $12k/год** |
-
-**Сошлось:** порядок продажи (4/4 — сначала диагностика), и соотношение B ≈ 2–4× A, C ≈ 1,5–2× B.
-
-**Не сошлось:** абсолютные цены, разброс 5× по B и 15× по C.
-
-**Одна ошибка, которую надо назвать:** у №2 цена гарантии ($3–7k за 7–15 дней) **ниже собственной себестоимости** — он же сам оценил доказательство в 15 человеко-дней (≈$12k при $80/ч). Такая цена продаётся только как убыточный вход, и если это стратегия, она должна быть названа стратегией, а не прайсом.
-
-**Принято для планирования:** A $9k, B $28k, C $48k + $12k/год. Цены — гипотезы, проверяются интервью, но **структура и порядок продажи — решение**.
+The only thing that remains out of guarantee is **compromise of the supply chain**, and this is stated explicitly: CI has no data credentials (that is, it cannot move money), but the integrity of the build tools themselves is not proven.
 
 ---
 
-## 8. Спор о цене witness закрыт фактурой: 11–12 дней
+## 7. SKU: the structure converged, the prices did not
 
-Это был главный незакрытый вопрос с прошлого круга (разброс 9–30 дней).
-
-| Канал | №1 | №2 | №3 | №4 | Медиана |
+| | №1 | №2 | №3 | №4 | Median |
 |---|---|---|---|---|---|
-| Network tap | 5 | 3 | 4 | 5 | **4,5** |
-| DB-дайджест | 4 | 3 | 3 | 6 | **3,5** |
-| Идентичность | 3 | 3 | 3 | 4 | **3** |
-| Склейка пакета | — | — | 1 | — | 1 |
-| **Итого** | **12** | **9** | **11** | **15** | **11,5** |
+| A. Diagnostics | $9k / 14 days | $2–4k / 5–10 days | $7.5–12k / 2–3 weeks | $9.5k / 10 days | **$9k / 10–14 days** |
+| B. Migration to M | $18k / 30 days | $5–10k / 10–20 days | $25–45k / 6–8 weeks | $39k / 30 days | **$27k / 30 days** |
+| C. Guarantee | $35k/year / 45 days | $3–7k / 7–15 days | $30–60k + $10–15k/year | $78k / 45 days | **$45k + $12k/year** |
 
-**Планировочное значение: 12 человеко-дней, wall-clock 5 дней при параллельной работе каналов.**
+**Converged:** the sales order (4/4 — diagnostics first), and the ratio B ≈ 2–4× A, C ≈ 1.5–2× B.
 
-Предыдущая оценка «30 дней» (единственный ответ с разбивкой по каналам в прошлом круге) не подтвердилась: фактура от четырёх независимых источников даёт 11–12. Ответ был не злонамеренно завышен, а считал другой объём — вероятно, включая исправление проблем наблюдаемости и выдачу доступов клиентом. Это отдельная строка: **+2–5 календарных дней на ожидание доступов, не человеко-дни.**
+**Did not converge:** the absolute prices, a 5× spread on B and 15× on C.
 
-**Следствие: моё решение «фаза 1 = 45 дней» было основано на одном числе и оказалось неверным.**
+**One error that has to be named:** in №2 the price of the guarantee ($3–7k for 7–15 days) is **below its own cost** — he himself estimated the proof at 15 person-days (≈$12k at $80/h). Such a price can only be sold as a loss leader, and if that is the strategy, it must be named a strategy, not a price list.
+
+**Accepted for planning:** A $9k, B $28k, C $48k + $12k/year. Prices are hypotheses, verified by interviews, but **the structure and the sales order are a decision**.
+
+---
+
+## 8. The dispute about the witness price is closed by the figures: 11–12 days
+
+This was the main open question from the previous round (a spread of 9–30 days).
+
+| Channel | №1 | №2 | №3 | №4 | Median |
+|---|---|---|---|---|---|
+| Network tap | 5 | 3 | 4 | 5 | **4.5** |
+| DB digest | 4 | 3 | 3 | 6 | **3.5** |
+| Identity | 3 | 3 | 3 | 4 | **3** |
+| Package stitching | — | — | 1 | — | 1 |
+| **Total** | **12** | **9** | **11** | **15** | **11.5** |
+
+**Planning value: 12 person-days, 5 days wall-clock with parallel work on the channels.**
+
+The previous estimate of "30 days" (the only response with a breakdown by channel in the previous round) was not confirmed: the figures from four independent sources give 11–12. That response was not maliciously inflated but counted a different scope — probably including fixing observability issues and the client granting access. That is a separate line: **+2–5 calendar days for waiting on access, not person-days.**
+
+**Consequence: my decision "phase 1 = 45 days" was based on a single number and turned out to be wrong.**
 
 ```
-корпус 5 + оракул 8 + witness 12 + прогоны 4 + перепроверка 2 + verifier/агрегатор 3 = 34 дня
+corpus 5 + oracle 8 + witness 12 + runs 4 + re-check 2 + verifier/aggregator 3 = 34 days
 ```
 
-**Фаза 1 = 5 недель (35 дней), не 45.** Откатываю предыдущее решение.
+**Phase 1 = 5 weeks (35 days), not 45.** I roll back the previous decision.
 
 ---
 
-## 9. Доказательство медиатора: 24 дня, и 40% из них — proof-fixing
+## 9. The mediator proof: 24 days, and 40% of them are proof-fixing
 
-| Этап | №1 | №2 | №3 | №4 | План (max) |
+| Stage | №1 | №2 | №3 | №4 | Plan (max) |
 |---|---|---|---|---|---|
-| Спецификация | 4 | 3 | 3 | 5 | 5 |
-| Аннотации | 8 | 4 | 6 | 7 | 8 |
+| Specification | 4 | 3 | 3 | 5 | 5 |
+| Annotations | 8 | 4 | 6 | 7 | 8 |
 | **Proof-fixing** | 10 | 6 | 10 | 9 | **10** |
-| Приёмка | 3 | 2 | 3 | 3 | 3 |
-| **Итого** | 25 | 15 | 22 | 24 | **26** |
+| Acceptance | 3 | 2 | 3 | 3 | 3 |
+| **Total** | 25 | 15 | 22 | 24 | **26** |
 
-Медиана 23, план 26. Главное: **proof-fixing — 40% и он наименее предсказуем**. Это та статья, из-за которой бюджеты формальной верификации взрываются, и ни один ответ не смог дать по ней узкий диапазон (6–10 дней при оценке в 500 строк).
+Median 23, plan 26. The main point: **proof-fixing is 40% and it is the least predictable**. This is the line item because of which formal verification budgets explode, and no response was able to give a narrow range for it (6–10 days for an estimate of 500 lines).
 
-Практический вывод: **доказательство нельзя продавать по фиксированной цене**, только как SKU с потолком бюджета и правилом остановки. №2 единственный сослался на исследование Dafny-кейсов: стоимость спецификации и верификации сопоставима с реализацией и тестированием. Это подтверждает порядок: 24 дня на доказательство против ~5 дней на реализацию 500 строк — соотношение ~1:5.
+Practical conclusion: **a proof cannot be sold at a fixed price**, only as an SKU with a budget ceiling and a stop rule. №2 is the only one that referenced a study of Dafny cases: the cost of specification and verification is comparable to implementation and testing. This confirms the order of magnitude: 24 days for the proof versus ~5 days for implementing 500 lines — a ratio of ~1:5.
 
 ---
 
-## 10. Условие «не продавать»: 4/4 об одном, метрика у одного
+## 10. The "do not sell" condition: 4/4 about one thing, a metric in one
 
-| | Условие |
+| | Condition |
 |---|---|
-| №1 | >1 неучтённого входа, который клиент не включает и не закрывает |
-| №2 | за 6 недель клиент не может предоставить полный перечень путей изменения состояния |
-| №3 | аудит находит неучтённого writer'а у ≥3 из 5 клиентов |
-| №4 | доля денежных мутаций без подписанного `Allow`-события > 0 и не устраняется за 5 дней |
+| №1 | >1 unaccounted ingress that the client neither includes nor closes |
+| №2 | within 6 weeks the client cannot provide a complete list of state-changing paths |
+| №3 | the audit finds an unaccounted writer at ≥3 of 5 clients |
+| №4 | the share of money mutations without a signed `Allow` event > 0 and is not eliminated within 5 days |
 
-Все четыре — про одно: **если границу нельзя перечислить, гарантию продавать нельзя**. №4 дал то, чего не хватало: **измеримую метрику**.
+All four are about one thing: **if the boundary cannot be enumerated, the guarantee cannot be sold**. №4 supplied what was missing: a **measurable metric**.
 
-**Сведённое условие:**
+**Merged condition:**
 
-> Гарантия не продаётся, если предпродажный аудит (≤6 недель) находит хотя бы один путь изменения состояния, не внесённый в реестр и не закрытый в течение 5 рабочих дней. Метрика: `мутации без Allow-события / все мутации` должна быть **ровно 0** до подписания. Если у ≥3 из 5 клиентов это не достигается — продукт в текущем виде не масштабируется.
+> The guarantee is not sold if the pre-sales audit (≤6 weeks) finds at least one state-changing path that is not entered in the registry and is not closed within 5 working days. Metric: `mutations without an Allow event / all mutations` must be **exactly 0** before signing. If this is not achieved at ≥3 of 5 clients, the product in its current form does not scale.
 
 ---
 
-## 11. Что меняется в принятых ранее решениях
+## 11. What changes in previously accepted decisions
 
-| Решение | Было | Стало |
+| Decision | Was | Became |
 |---|---|---|
-| Фаза 1 (оракулы, три класса) | 45 дней | **35 дней** (§8) |
-| Witness-плоскость | 20 дней, план | **12 дней факт, 5 дней wall-clock** |
-| Единица работы | находка | **поток + гарантия** |
-| Класс «вне гарантии» для restore/CI | рассматривался | **отклонён**: restore запрещён как прямой путь, CI не имеет кредов данных |
-| Медиатор | проверка, которую вызывают | **`Permit` как непередаваемый тип** — обход становится ошибкой типизации |
-| Пилот flow-продукта | не был спланирован | **45 дней / 24 человеко-дня, 4/4** |
-| SKU | диагностика → патчи | **диагностика → миграция к M → гарантия** |
-| Подписи Z | 1–3 без разделения | **4 подписи: product owner, infra owner, security lead, verifier** |
+| Phase 1 (oracles, three classes) | 45 days | **35 days** (§8) |
+| Witness plane | 20 days, plan | **12 days actual, 5 days wall-clock** |
+| Unit of work | a finding | **flow + guarantee** |
+| "Out of guarantee" class for restore/CI | under consideration | **rejected**: restore is forbidden as a direct path, CI has no data credentials |
+| Mediator | a check that is called | **`Permit` as a non-transferable type** — bypass becomes a typing error |
+| Flow-product pilot | was not planned | **45 days / 24 person-days, 4/4** |
+| SKU | diagnostics → patches | **diagnostics → migration to M → guarantee** |
+| Z signatures | 1–3 without separation | **4 signatures: product owner, infra owner, security lead, verifier** |
 
 ---
 
-## 12. Итог: что можно строить
+## 12. Bottom line: what can be built
 
-**Готово к реализации без дальнейших вопросов:**
+**Ready to implement without further questions:**
 
-- Z из 12 элементов + артефакт из 8 полей + 4 подписи + правило 3 дней;
-- контракт медиатора с `Permit`-типом и гибридным размещением;
-- 5 политик с ценами (14 дней на две для пилота, 35 на все);
-- решения по 7 путям (4 медиировать, 3 «запретить + компенсация»);
-- witness 12 человеко-дней;
-- доказательство 24 дня с обязательным бюджетным потолком;
-- пилот 45/24;
-- условие отказа с метрикой.
+- Z of 12 elements + an artifact of 8 fields + 4 signatures + the 3-day rule;
+- the mediator contract with the `Permit` type and hybrid placement;
+- 5 policies with prices (14 days for the two needed for the pilot, 35 for all of them);
+- decisions on 7 paths (4 to mediate, 3 "forbid + compensation");
+- witness 12 person-days;
+- the proof 24 days with a mandatory budget ceiling;
+- the pilot 45/24;
+- the refusal condition with a metric.
 
-**Осталось гипотезами:** цены (нужны интервью), proof-fixing на чужом коде (нужен замер: 100 строк за 3 дня), доля клиентов, способных перечислить границу.
+**Remaining as hypotheses:** prices (interviews are needed), proof-fixing on someone else's code (a measurement is needed: 100 lines in 3 days), the share of clients able to enumerate the boundary.
 
-**Что это значит по существу.** Четыре независимых ответа спланировали пилот одинаково — 45 дней, 24 человеко-дня. Это перестало быть оценкой. Продукт «гарантия на поток» теперь имеет: определённую единицу работы, проверяемое замыкание, доказываемый медиатор с типовой защитой от обхода, семь решённых путей, цену в днях и условие остановки. Дальше — не вопросы, а первый клиент с денежным потоком и подписью владельца инфраструктуры.
+**What this means in substance.** Four independent responses planned the pilot identically — 45 days, 24 person-days. This has ceased to be an estimate. The product "guarantee for a flow" now has: a defined unit of work, a verifiable closure, a provable mediator with type-level protection against bypass, seven resolved paths, a price in days and a stop condition. What follows is not questions but the first client with a money flow and a signature from the infrastructure owner.

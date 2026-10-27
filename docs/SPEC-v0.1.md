@@ -1,62 +1,62 @@
-# SPEC v0.1 — flowguard (открытое ядро)
+# SPEC v0.1 — flowguard (open core)
 
-**Статус:** первая версия, проектная спецификация. Подготовлена к циклам критики.
-**Метки достоверности:** `[Д]` — доказано машинной проверкой · `[И]` — измерено/воспроизведено · `[Г]` — гипотеза, требует проверки.
-**Что это:** спецификация минимального вертикального среза, который можно реализовать силами 3–4 человек за 12–16 недель и который уже полезен публике.
-**Чего это не является:** обещанием безопасности. v0.1 выдаёт проверяемое утверждение с явной границей, а не «система защищена».
+**Status:** first version, design specification. Prepared for criticism cycles.
+**Confidence tags:** `[PROVED]` — proved by machine verification · `[MEASURED]` — measured/reproduced · `[HYPOTHESIS]` — hypothesis, requires verification.
+**What this is:** a specification of the minimal vertical slice that 3–4 people can implement in 12–16 weeks and that is already useful to the public.
+**What this is not:** a security promise. v0.1 issues a verifiable claim with an explicit boundary, not "the system is secure".
 
 ---
 
-## 1. Рамка: зачем именно так и что входит
+## 1. Frame: why exactly this way and what is included
 
-### 1.1. Контекст, из которого следует приоритет
+### 1.1. The context from which the priority follows
 
-Массовые атаки с помощью агентов меняют экономику защиты: найти дефект стало дешевле, чем его починить, а «список возможных уязвимостей» перестал быть сигналом. Единственное, что сохраняет ценность, — **проверяемое утверждение с границей**. Поэтому первым выпускается не сканер и не гарантия, а **публично проверяемая машинерия**: формат утверждения, его верификатор и три инварианта, которые можно проверить на чужом контракте без разрешения.
+Mass attacks by agents change the economics of defence: finding a defect has become cheaper than fixing it, and "a list of possible vulnerabilities" has ceased to be a signal. The only thing that retains value is **a verifiable claim with a boundary**. That is why the first release is neither a scanner nor a guarantee, but **publicly verifiable machinery**: a claim format, its verifier, and three invariants that can be checked on someone else's contract without permission.
 
-### 1.2. Ключевое следствие для v0.1 (меняет план)
+### 1.2. Key consequence for v0.1 (changes the plan)
 
-**On-chain поток не требует микроVM.** EVM-среда (`anvil`) — обычный процесс, работает на macOS, Linux и Windows. Значит полный цикл «инвентаризация → инварианты → 10 атак → бандл → verify → replay» **исполняется на ноутбуке**, без KVM, без железа, без NDA.
+**The on-chain flow does not require a microVM.** The EVM environment (`anvil`) is an ordinary process and runs on macOS, Linux and Windows. Hence the full cycle "inventory → invariants → 10 attacks → bundle → verify → replay" **runs on a laptop**, without KVM, without hardware, without an NDA.
 
-Отсюда решение: **v0.1 — целиком про on-chain (escrow), end-to-end, локально.** Legacy в v0.1 — только статическая инвентаризация и проверка политики, без динамики.
+Hence the decision: **v0.1 is entirely about on-chain (escrow), end-to-end, locally.** Legacy in v0.1 is static inventory and policy checking only, without dynamics.
 
-### 1.3. Что входит в v0.1
+### 1.3. What is included in v0.1
 
-| Входит | Не входит (позже) |
+| Included | Not included (later) |
 |---|---|
-| `flowguard.yml` (нормативная схема) | Legacy-динамика: witness, eBPF, DB-триггер |
-| `scan` для escrow-контрактов: пути движения средств, роли, прокси | Медиатор и `Permit` (v0.2) |
-| `scan` статический для репозиториев: writer'ы, IaC, OpenAPI | Verus-доказательство медиатора (v0.3) |
-| `check`: политика → SMT (Z3), инварианты → Foundry/Halmos | Certora (v0.4, коммерческий бэкенд) |
-| `attack`: 10 сценариев на `anvil`-форке | Автовыплаты и эскроу (v0.5, коммерческое) |
-| `attest`: сборка бандла, подписи Ed25519 | Мультичейн за пределами L1+L2 |
-| `verify`, `replay`, `diff`, `badge` | Браузерный UI |
-| 3 инварианта escrow + 10 атак + финальность | Legacy Z из 12 элементов в полном объёме |
+| `flowguard.yml` (normative schema) | Legacy dynamics: witness, eBPF, DB trigger |
+| `scan` for escrow contracts: fund-flow paths, roles, proxy | Mediator and `Permit` (v0.2) |
+| static `scan` for repositories: writers, IaC, OpenAPI | Verus proof of the mediator (v0.3) |
+| `check`: policy → SMT (Z3), invariants → Foundry/Halmos | Certora (v0.4, commercial backend) |
+| `attack`: 10 scenarios on an `anvil` fork | Automatic payouts and escrow (v0.5, commercial) |
+| `attest`: bundle assembly, Ed25519 signatures | Multichain beyond L1+L2 |
+| `verify`, `replay`, `diff`, `badge` | Browser UI |
+| 3 escrow invariants + 10 attacks + finality | Legacy Z of 12 elements in full |
 
-### 1.4. Чего v0.1 не обещает — прямым текстом
+### 1.4. What v0.1 does not promise — in plain words
 
-- Не находит «все уязвимости» и не является аудитом.
-- Не гарантирует отсутствие атак вне объявленного замыкания `Z`.
-- Не работает на целях, у которых нельзя получить bytecode и состояние.
-- Не даёт юридической гарантии: подпись в v0.1 — техническая, не договорная.
-- Не покрывает: мосты, оракулы, MEV, upgrade-пути, оставленные активными (это `INVALID`-условие, а не «покрыто»).
+- Does not find "all vulnerabilities" and is not an audit.
+- Does not guarantee the absence of attacks outside the declared closure `Z`.
+- Does not work on targets for which bytecode and state cannot be obtained.
+- Does not provide a legal guarantee: the signature in v0.1 is technical, not contractual.
+- Does not cover: bridges, oracles, MEV, upgrade paths left active (this is an `INVALID` condition, not "covered").
 
 ---
 
-## 2. Доменная модель
+## 2. Domain model
 
-Семь сущностей. Всё остальное — производные.
+Seven entities. Everything else is derived.
 
-| # | Сущность | Определение | Инвариант существования |
+| # | Entity | Definition | Existence invariant |
 |---|---|---|---|
-| 1 | **Flow** | защищаемый поток: ресурс, который движется от входа к выходу | имеет `flow_id`, домен и владельца |
-| 2 | **Resource** | адресуемая ценность: баланс эскроу, строка леджера, токен | адресуется через `StateProvider`, не «таблицей» и не «контрактом» |
-| 3 | **Subject** | кто инициирует действие | идентифицируется только из проверенного источника, никогда из тела запроса |
-| 4 | **Policy P** | что субъекту разрешено с ресурсом | выражается в DSL; deny-beats-allow; default deny |
-| 5 | **Closure Z** | множество путей, по которым ресурс может измениться | полный перечень; **непустое множество неизвестных путей запрещает `PROVEN`** |
-| 6 | **EnforcementPoint M** | единственная точка решения | каждый путь из Z проходит через M, либо объявлен вне гарантии |
-| 7 | **Attestation** | подписанный бандл: утверждение + доказательства + границы | проверяется офлайн без доверия к издателю |
+| 1 | **Flow** | the protected flow: a resource that moves from input to output | has a `flow_id`, a domain and an owner |
+| 2 | **Resource** | an addressable value: an escrow balance, a ledger row, a token | is addressed through a `StateProvider`, not by a "table" and not by a "contract" |
+| 3 | **Subject** | who initiates an action | identified only from a verified source, never from the request body |
+| 4 | **Policy P** | what the subject is permitted to do with the resource | expressed in a DSL; deny-beats-allow; default deny |
+| 5 | **Closure Z** | the set of paths along which the resource can change | exhaustive enumeration; **a non-empty set of unknown paths forbids `PROVEN`** |
+| 6 | **EnforcementPoint M** | the single decision point | every path in Z passes through M, or is declared outside the guarantee |
+| 7 | **Attestation** | a signed bundle: claim + proofs + boundaries | verified offline without trusting the issuer |
 
-**Правило домена.** Любое поле, зависящее от домена, живёт в `subject`, а не в корне бандла:
+**Domain rule.** Any domain-dependent field lives in `subject`, not at the root of the bundle:
 
 ```json
 {"kind": "chain.escrow", "chain_id": 1, "address": "0x…", "code_hash": "0x…",
@@ -67,15 +67,15 @@
 
 ---
 
-## 3. Формат `flowguard.yml` (нормативно)
+## 3. `flowguard.yml` format (normative)
 
-Ключевые слова: **MUST** — обязательно, **MUST NOT** — запрещено, **DEFAULT** — значение по умолчанию. Неизвестные поля в секциях `policy`, `closure`, `enforcement`, `evidence` — **MUST** отклоняться (fail-closed), чтобы опечатка не расширяла границу молча.
+Keywords: **MUST** — mandatory, **MUST NOT** — forbidden, **DEFAULT** — default value. Unknown fields in the `policy`, `closure`, `enforcement`, `evidence` sections **MUST** be rejected (fail-closed), so that a typo does not silently widen the boundary.
 
 ```yaml
 schema_version: "1.0"            # MUST, ^1\.\d+$
 
 flow:
-  id: "escrow.payout"            # MUST, immutable, входит в хеш
+  id: "escrow.payout"            # MUST, immutable, included in the hash
   domain: onchain                # MUST: onchain | legacy
   assets:                        # MUST, ≥1
     - kind: token                # MUST: token | money | data | access
@@ -84,98 +84,98 @@ flow:
 
 subject:                         # MUST
   kind: chain.escrow             # MUST: chain.escrow | chain.contract | legacy.flow
-  chain_id: 1                    # MUST для chain.*
+  chain_id: 1                    # MUST for chain.*
   address: "0x…"                 # MUST
   code_hash: "0x…"               # MUST, runtime bytecode hash
   proxy:                         # MUST
     type: none                   # MUST: none | transparent | uups | beacon
-    implementation: null         # MUST если type != none
-    admin: null                  # MUST если применимо; активный admin ⇒ INVALID
+    implementation: null         # MUST if type != none
+    admin: null                  # MUST if applicable; active admin ⇒ INVALID
 
 policy:
   id: "escrow-release-v1"        # MUST
   version: 1                     # MUST
-  fail_closed: true              # MUST; false запрещён для аттестации
-  invariants:                    # MUST, ≥1, из каталога §8.2
+  fail_closed: true              # MUST; false is forbidden for attestation
+  invariants:                    # MUST, ≥1, from the catalogue §8.2
     - id: "INV-1"
-  rules_file: null               # опционально для legacy
+  rules_file: null               # optional for legacy
 
 closure:
-  declared_paths: [ … ]          # MUST, ≥1; пустой список запрещён
-  excluded:                      # опционально
+  declared_paths: [ … ]          # MUST, ≥1; empty list is forbidden
+  excluded:                      # optional
     - path: "bridge"
-      reason: "вне гарантии"     # MUST, если path указан
-  unknown_behavior: INCONCLUSIVE # MUST, фиксированное значение
+      reason: "outside the guarantee"     # MUST, if path is specified
+  unknown_behavior: INCONCLUSIVE # MUST, fixed value
 
 enforcement:
   mode: onchain_guard            # MUST: in_process | single_writer | onchain_guard
-  mediator_hash: "0x…"           # MUST для in_process/single_writer
-  permit:                        # опционально
+  mediator_hash: "0x…"           # MUST for in_process/single_writer
+  permit:                        # optional
     algorithm: Ed25519           # DEFAULT Ed25519
     max_ttl_seconds: 900         # DEFAULT 900
     nonce_required: true         # DEFAULT true
-    audience_required: true      # DEFAULT true; false запрещён
+    audience_required: true      # DEFAULT true; false is forbidden
 
 evidence:
   observation_channels: [chain_event, chain_state]   # MUST, ≥1
-  finality_rule: l1_finalized    # MUST для onchain: l1_finalized | l2_optimistic | l2_zk
-  finality_min: null             # DEFAULT по правилу; число блоков как единственный критерий — MUST NOT
-  reorg_behavior: INVALID        # MUST, фиксированное значение
+  finality_rule: l1_finalized    # MUST for onchain: l1_finalized | l2_optimistic | l2_zk
+  finality_min: null             # DEFAULT per the rule; a block count as the sole criterion — MUST NOT
+  reorg_behavior: INVALID        # MUST, fixed value
   prover_backend: [foundry, halmos]                  # MUST, ≥1
   require_replay: true           # DEFAULT true
 
 attestation:
   expires_after_seconds: 86400   # DEFAULT 86400
   signatures_required: 4         # DEFAULT 4
-  signer_roles:                  # MUST, ≥4, все разные
+  signer_roles:                  # MUST, ≥4, all different
     - product_owner
-    - custody_quorum             # заменяет infra_owner для on-chain
+    - custody_quorum             # replaces infra_owner for on-chain
     - security_lead
     - verifier
   bundle_format: "fg-bundle/1"   # MUST
 
-limits:                          # опционально
+limits:                          # optional
   max_compute_seconds: 1800      # DEFAULT 1800
   max_source_bytes: 5000000      # DEFAULT 5 MB
   max_contract_size_bytes: 24576 # DEFAULT 24 KB (EIP-170)
 
-# FORBIDDEN (валидатор MUST отвергнуть):
-# - secrets / private_keys / api_tokens / passwords в любом виде
-# - подпись verifier, совпадающая с другой ролью
-# - "PROVEN" как входное значение
-# - wildcard-доверие адресам или ролям
-# - excluded без reason
-# - active proxy admin без явного объявления в closure.excluded
+# FORBIDDEN (the validator MUST reject):
+# - secrets / private_keys / api_tokens / passwords in any form
+# - a verifier signature matching another role
+# - "PROVEN" as an input value
+# - wildcard trust in addresses or roles
+# - excluded without reason
+# - active proxy admin without explicit declaration in closure.excluded
 ```
 
 ---
 
-## 4. Бандл аттестации (нормативно)
+## 4. Attestation bundle (normative)
 
 ```
 bundle/
-├── manifest.json            # хеши всех файлов, JCS-канон, SHA-256
+├── manifest.json            # hashes of all files, JCS canon, SHA-256
 ├── flowguard.yml
-├── subject.json             # домен, адрес, code_hash, proxy, block
+├── subject.json             # domain, address, code_hash, proxy, block
 ├── chain/
 │   ├── block.json           # number, hash, state_root, chain_id, timestamp
-│   ├── finality.json        # правило, источник, checkpoint/proof
-│   ├── state.json           # слоты: роли, owner, proxy impl, балансы
+│   ├── finality.json        # rule, source, checkpoint/proof
+│   ├── state.json           # slots: roles, owner, proxy impl, balances
 │   └── privileged-paths.json
 ├── closure/
-│   ├── declaration.json     # Z: пути, исключения, unknown_behavior
-│   └── reachability.json    # что проверено, что нет
+│   ├── declaration.json     # Z: paths, exclusions, unknown_behavior
+│   └── reachability.json    # what has been checked, what has not
 ├── policy/
-│   └── invariants.json      # предикаты, домены, ожидаемые свойства
+│   └── invariants.json      # predicates, domains, expected properties
 ├── proof/
-│   ├── results.json         # бэкенд, версия, статус, хеш доказательства
-│   ├── counterexamples/     # если найдены
-│   └── assumptions.json     # ledger допущений + TCB
+│   ├── results.json         # backend, version, status, proof hash
+│   ├── counterexamples/     # if any were found
+│   └── assumptions.json     # assumptions ledger + TCB
 ├── attacks/
-│   └── results.json         # 10 сценариев: результат, трасса, replay_cmd
+│   └── results.json         # 10 scenarios: result, trace, replay_cmd
 ├── replay/
-│   └── manifest.json        # пины, seed, команда, окружение
-├── verdict.json             # статус, причина, policy_hash, expiry
+│   └── manifest.json        # pins, seed, command, environment
+├── verdict.json             # status, reason, policy_hash, expiry
 └── signatures/
     ├── product_owner.sig
     ├── custody_quorum.sig
@@ -183,269 +183,269 @@ bundle/
     └── verifier.sig
 ```
 
-| Файл | Обязательные поля | Кто подписывает |
+| File | Mandatory fields | Who signs |
 |---|---|---|
 | `manifest.json` | `bundle_id`, `schema`, `created_at`, `file_hashes[]`, `merkle_root` | verifier |
 | `subject.json` | `kind`, `chain_id`, `address`, `code_hash`, `proxy`, `block` | verifier |
 | `chain/finality.json` | `rule`, `source`, `checkpoint_ref`, `status ∈ {FINAL, PROVISIONAL}` | verifier |
 | `closure/declaration.json` | `declared_paths`, `discovered_paths`, `diff`, `excluded[]`, `unknown_behavior` | security_lead |
-| `policy/invariants.json` | `id`, `predicate`, `domain`, `expected` | автор доказательства |
+| `policy/invariants.json` | `id`, `predicate`, `domain`, `expected` | author of the proof |
 | `proof/assumptions.json` | `assumptions[]`, `tcb[]` | verifier |
 | `attacks/results.json` | `attack_id`, `expected`, `observed`, `replay_cmd` | security_lead + verifier |
 | `verdict.json` | `status`, `reason_code`, `policy_hash`, `finality`, `expires_at` | verifier |
-| `signatures/*` | `role`, `key_id`, `signed_digest` | соответствующая роль |
+| `signatures/*` | `role`, `key_id`, `signed_digest` | the corresponding role |
 
-**Правило подписи:** подпись покрывает **канонический digest всего бандла** (JCS → SHA-256 → Ed25519), а не только `verdict.json`. Иначе можно перенести вердикт в другой бандл.
+**Signature rule:** the signature covers **the canonical digest of the whole bundle** (JCS → SHA-256 → Ed25519), not just `verdict.json`. Otherwise the verdict could be transplanted into another bundle.
 
 ---
 
-## 5. Вердикт: формальное правило
+## 5. Verdict: the formal rule
 
-Четыре значения, без «в целом нормально»:
+Four values, no "generally fine":
 
-| Значение | Условие |
+| Value | Condition |
 |---|---|
-| `PROVEN` | все пять предикатов ниже истинны |
-| `NOT_PROVEN` | инвариант опровергнут контрпримером |
-| `INCONCLUSIVE` | доказательств недостаточно: неизвестный путь, недоступный bytecode, `PROVISIONAL`-финальность, таймаут |
-| `INVALID` | свидетельство бито: код не совпал, реорг, подпись неверна, `address`/`chain_id` не совпали |
+| `PROVEN` | all five predicates below are true |
+| `NOT_PROVEN` | an invariant has been refuted by a counterexample |
+| `INCONCLUSIVE` | insufficient evidence: unknown path, unreachable bytecode, `PROVISIONAL` finality, timeout |
+| `INVALID` | the evidence is broken: code mismatch, reorg, bad signature, `address`/`chain_id` mismatch |
 
 ```
 PROVEN(x) ⟺
-      attacks_all_blocked(x)          # 10/10 атак дали BLOCKED
-    ∧ invariants_discharged(x)        # каждый инвариант: proved ИЛИ offered+passed
+      attacks_all_blocked(x)          # 10/10 attacks yielded BLOCKED
+    ∧ invariants_discharged(x)        # every invariant: proved OR offered+passed
     ∧ closure_complete(x)             # unknown_paths(x) = ∅
-    ∧ witness_intact(x)               # все каналы подписаны, nonce сошёлся
-    ∧ finality_is_final(x)            # не PROVISIONAL
-    ∧ policy_matches(x)               # policy_hash совпадает с подписанным
+    ∧ witness_intact(x)               # all channels signed, nonce matched
+    ∧ finality_is_final(x)            # not PROVISIONAL
+    ∧ policy_matches(x)               # policy_hash matches the signed one
 
 closure_complete(x) ⟺ ∃p ∈ discovered_paths(x): p ∉ declared_paths(x) = ∅
 ```
 
-**Правило, которое поддержали все пять рецензентов и которое здесь становится формальным:** неизвестный путь даёт `INCONCLUSIVE`, а не `PROVEN`. Молчаливое расширение границы — самый опасный дефект, поэтому `unknown_paths ≠ ∅` **блокирует** аттестацию, а не «предупреждает».
+**The rule that all five reviewers supported and that becomes formal here:** an unknown path yields `INCONCLUSIVE`, not `PROVEN`. Silent widening of the boundary is the most dangerous defect, therefore `unknown_paths ≠ ∅` **blocks** attestation rather than "warning".
 
-`PROVISIONAL` — не отдельный вердикт, а поле `finality`. Аттестация с `finality: PROVISIONAL` не может использоваться для освобождения денег, но валидна как отчёт.
+`PROVISIONAL` is not a separate verdict but a field of `finality`. An attestation with `finality: PROVISIONAL` cannot be used to release money, but is valid as a report.
 
 ---
 
-## 6. CLI: команды, поведение, коды возврата
+## 6. CLI: commands, behaviour, return codes
 
-| Команда | Что делает | Коды возврата |
+| Command | What it does | Return codes |
 |---|---|---|
-| `flowguard init [--template escrow]` | создаёт `flowguard.yml` с черновиком | 0 |
-| `flowguard scan` | инвентаризация: пути движения средств, роли, прокси, writer'ы | 0 |
-| `flowguard check` | инварианты и политика: Z3 / Foundry / Halmos; печатает контрпримеры | 0 ok · 1 violation · 3 usage |
-| `flowguard attack` | 10 сценариев на `anvil`-форке | 0 all blocked · 1 any passed |
-| `flowguard attest` | собирает бандл, считает manifest, просит подписи | 0 |
-| `flowguard verify <bundle>` | офлайн-проверка | **0 PROVEN · 1 NOT_PROVEN · 2 INCONCLUSIVE · 4 INVALID** · 3 usage |
-| `flowguard replay <bundle>` | воспроизводит с нуля на pinned block | 0 совпало · 5 расхождение |
-| `flowguard diff <a> <b>` | что изменилось между аттестациями | 0 |
-| `flowguard badge <bundle>` | SVG для README | 0 |
+| `flowguard init [--template escrow]` | creates `flowguard.yml` with a draft | 0 |
+| `flowguard scan` | inventory: fund-flow paths, roles, proxy, writers | 0 |
+| `flowguard check` | invariants and policy: Z3 / Foundry / Halmos; prints counterexamples | 0 ok · 1 violation · 3 usage |
+| `flowguard attack` | 10 scenarios on an `anvil` fork | 0 all blocked · 1 any passed |
+| `flowguard attest` | assembles the bundle, computes the manifest, requests signatures | 0 |
+| `flowguard verify <bundle>` | offline verification | **0 PROVEN · 1 NOT_PROVEN · 2 INCONCLUSIVE · 4 INVALID** · 3 usage |
+| `flowguard replay <bundle>` | reproduces from scratch at the pinned block | 0 matched · 5 mismatch |
+| `flowguard diff <a> <b>` | what changed between attestations | 0 |
+| `flowguard badge <bundle>` | SVG for the README | 0 |
 
-Коды возврата — часть контракта: в CI `flowguard verify` с кодом 2 и 4 должен останавливать сборку так же, как 1.
-
----
-
-## 7. Движок
-
-### 7.1. `scan` — инвентаризация
-
-**On-chain.** Источники: ABI, runtime bytecode (EOF/legacy), storage slots, event-логи, реестры keeper'ов.
-Метод: `slither` (AST + модификаторы) → `cast` (чтение слотов EIP-1967) → `evm disassembler` (опкоды `DELEGATECALL`, `SELFDESTRUCT`, `CALL` с value) → перечисление ролей через `RoleGranted`-логи.
-Выход: `privileged-paths.json` — список с полями `path_id`, `kind`, `evidence`, `discoverable_by`, `gaps[]`.
-
-**Legacy (только статика).** `semgrep` (SQL-записи, вызовы), `terraform/k8s`-парсеры, OpenAPI-парсер, извлечение правил авторизации через AST.
-Выход: `writers.json` — `(сервис, кред, ресурс, тип записи)`.
-
-**Правило честности:** каждый найденный путь несёт `gaps[]` — «что этот метод не видит». Путь без `gaps` считается дефектом анализатора.
-
-### 7.2. `check` — политика и инварианты
-
-- Legacy: YAML → SMT-LIB → Z3. `deny-beats-allow` кодируется как `allow ∧ ¬deny`. `unsat` = противоречий нет, `sat` = контрпример с конкретными значениями.
-- On-chain: инвариант кодируется в Foundry invariant-тест + Halmos символическую проверку. `halmos --function check_INV_1` даёт `pass`/`fail`/таймаут; таймаут → `INCONCLUSIVE`, никогда не `PROVEN`.
-
-### 7.3. `attack` — 10 сценариев
-
-Исполняемые скрипты, не агенты. Каждый: `(setup, action, expected=BLOCKED, replay_cmd)`. Прогон на `anvil` с форком на pinned block. Провал атаки = **провал аттестации**, а не «замечание».
-
-### 7.4. `prove` — доказательство
-
-Интерфейс `Prover` (порт): `prove(invariant, artifact) → {status, certificate, assumptions[], tcb[]}`.
-Бэкенды v0.1: Foundry (property/invariant), Halmos (символика). v0.4 — Certora (коммерческий).
-Правило: `assumptions ≠ ∅` допустимо, но каждая попадает в `assumptions.json` с полем `what_breaks_if_false`.
+Return codes are part of the contract: in CI, `flowguard verify` with code 2 or 4 must stop the build just as 1 does.
 
 ---
 
-## 8. Первая цель: escrow
+## 7. Engine
 
-### 8.1. Почему escrow (3 из 5 ответов)
+### 7.1. `scan` — inventory
 
-Малый TCB (250–500 строк), машина состояний из трёх состояний, публичные референс-реализации, и — решающее — **escrow является первым потребителем нашей же автовыплаты**. Мы проверяем механизм на продукте, который сами продаём. `[Г]` что это даст достаточный коммерческий спрос.
+**On-chain.** Sources: ABI, runtime bytecode (EOF/legacy), storage slots, event logs, keeper registries.
+Method: `slither` (AST + modifiers) → `cast` (reading EIP-1967 slots) → `evm disassembler` (the `DELEGATECALL`, `SELFDESTRUCT` and value-bearing `CALL` opcodes) → role enumeration via `RoleGranted` logs.
+Output: `privileged-paths.json` — a list with the fields `path_id`, `kind`, `evidence`, `discoverable_by`, `gaps[]`.
 
-### 8.2. Три инварианта (сведены из трёх независимых наборов)
+**Legacy (static only).** `semgrep` (SQL writes, calls), `terraform/k8s` parsers, an OpenAPI parser, extraction of authorisation rules via AST.
+Output: `writers.json` — `(service, cred, resource, write type)`.
 
-| ID | Предикат | Что ловит | Доказуемость |
+**Honesty rule:** every discovered path carries `gaps[]` — "what this method does not see". A path without `gaps` counts as an analyser defect.
+
+### 7.2. `check` — policy and invariants
+
+- Legacy: YAML → SMT-LIB → Z3. `deny-beats-allow` is encoded as `allow ∧ ¬deny`. `unsat` = no contradictions, `sat` = a counterexample with concrete values.
+- On-chain: the invariant is encoded into a Foundry invariant test + a Halmos symbolic check. `halmos --function check_INV_1` yields `pass`/`fail`/timeout; a timeout → `INCONCLUSIVE`, never `PROVEN`.
+
+### 7.3. `attack` — 10 scenarios
+
+Executable scripts, not agents. Each one: `(setup, action, expected=BLOCKED, replay_cmd)`. Run on `anvil` with a fork at the pinned block. A failed attack = **a failed attestation**, not a "remark".
+
+### 7.4. `prove` — proof
+
+The `Prover` interface (port): `prove(invariant, artifact) → {status, certificate, assumptions[], tcb[]}`.
+v0.1 backends: Foundry (property/invariant), Halmos (symbolic). v0.4 — Certora (commercial).
+Rule: `assumptions ≠ ∅` is acceptable, but each one lands in `assumptions.json` with a `what_breaks_if_false` field.
+
+---
+
+## 8. First target: escrow
+
+### 8.1. Why escrow (3 of 5 answers)
+
+A small TCB (250–500 lines), a state machine of three states, public reference implementations, and — decisively — **escrow is the first consumer of our own automatic payout**. We test the mechanism on a product we sell ourselves. `[HYPOTHESIS]` that this will yield sufficient commercial demand.
+
+### 8.2. Three invariants (consolidated from three independent sets)
+
+| ID | Predicate | What it catches | Provability |
 |---|---|---|---|
-| **INV-1** Сохранение | `∀a: balanceOf(escrow,a) ≥ Σ_{e∈{LOCKED,DISPUTED}} amount[e][a]` и `totalDeposited = totalReleased + totalRefunded + Σlocked` | дренаж, скрытый mint/burn, обход учёта | арифметика над storage, индукция по `deposit/release/refund` `[Г]` 3–5 ч-дней |
-| **INV-2** Монотонность | `released[e] + refunded[e] ≤ deposited[e]`; переходы только `CREATED→LOCKED→{RELEASED|REFUNDED|DISPUTED}`, без обратных | двойная выплата, refund после release | автомат из 3 состояний, все переходы через один guard `[Г]` 2–4 ч-дня |
-| **INV-3** Предусловие выпуска | `release(e) ⇒ status[e]=LOCKED ∧ att_PROVEN ∧ att.subject=e.subject ∧ att.recipient=e.recipient ∧ att.amount=e.amount ∧ final(att.block)` | выплата по чужому/нефинальному/поддельному акту | один переход + сравнение полей `[Г]` 3–5 ч-дней |
+| **INV-1** Conservation | `∀a: balanceOf(escrow,a) ≥ Σ_{e∈{LOCKED,DISPUTED}} amount[e][a]` and `totalDeposited = totalReleased + totalRefunded + Σlocked` | drainage, hidden mint/burn, bypass of accounting | arithmetic over storage, induction over `deposit/release/refund` `[HYPOTHESIS]` 3–5 person-days |
+| **INV-2** Monotonicity | `released[e] + refunded[e] ≤ deposited[e]`; transitions only `CREATED→LOCKED→{RELEASED|REFUNDED|DISPUTED}`, with no reverse ones | double payout, refund after release | a 3-state automaton, all transitions through a single guard `[HYPOTHESIS]` 2–4 person-days |
+| **INV-3** Release precondition | `release(e) ⇒ status[e]=LOCKED ∧ att_PROVEN ∧ att.subject=e.subject ∧ att.recipient=e.recipient ∧ att.amount=e.amount ∧ final(att.block)` | payout against someone else's / non-final / forged attestation | a single transition + field comparison `[HYPOTHESIS]` 3–5 person-days |
 
-**Оговорка, которую нельзя терять:** INV-1 в форме `≥` верна только для токенов без rebasing и fee-on-transfer. Для таких токенов нужна отдельная модель; без неё инвариант даёт `INCONCLUSIVE`.
+**A caveat that must not be lost:** INV-1 in the `≥` form holds only for tokens without rebasing and fee-on-transfer. Such tokens require a separate model; without it the invariant yields `INCONCLUSIVE`.
 
-### 8.3. Привилегированные пути (минимальный перечень)
+### 8.3. Privileged paths (minimal enumeration)
 
-| Путь | Как находится | Инструмент | Что пропускает |
+| Path | How it is found | Tool | What it misses |
 |---|---|---|---|
-| owner / admin / роли | AST-модификаторы + `RoleGranted`-логи + чтение слотов | slither, cast | самописная авторизация (`tx.origin`, подпись админа) |
-| upgrade-прокси | EIP-1967 слоты, `slither-check-upgradeability` | cast, slither | нестандартные прокси, diamond без loupe |
-| `delegatecall` | опкод-скан + taint цели | disassembler, slither | цель, вычисляемая в рантайме |
-| `selfdestruct` | опкод-скан implementation | bytecode scan | поведение после EIP-6780 |
-| внешние value-вызовы | `CALL` с value, `transfer/approve/permit` | static + 4byte-декод | динамически собранный calldata |
-| keeper / callback | интерфейсы automation, реестры | interface detection | офчейн-keeper без ончейн-роли |
-| sweep / rescue-функции | ABI: функции, двигающие произвольный токен | ABI-скан | «админский» rescue под ролью |
+| owner / admin / roles | AST modifiers + `RoleGranted` logs + slot reads | slither, cast | hand-rolled authorisation (`tx.origin`, admin signature) |
+| upgrade proxy | EIP-1967 slots, `slither-check-upgradeability` | cast, slither | non-standard proxies, a diamond without loupe |
+| `delegatecall` | opcode scan + target taint | disassembler, slither | a target computed at runtime |
+| `selfdestruct` | opcode scan of the implementation | bytecode scan | behaviour after EIP-6780 |
+| external value calls | value-bearing `CALL`, `transfer/approve/permit` | static + 4byte decoding | dynamically assembled calldata |
+| keeper / callback | automation interfaces, registries | interface detection | an off-chain keeper without an on-chain role |
+| sweep / rescue functions | ABI: functions that move an arbitrary token | ABI scan | an "admin" rescue under a role |
 
-**Активный `proxy admin` ⇒ `INVALID`**, а не «покрыто»: если реализацию можно сменить, аттестация относится к другой логике через минуту.
+**An active `proxy admin` ⇒ `INVALID`**, not "covered": if the implementation can be replaced, the attestation refers to different logic a minute later.
 
-### 8.4. Финальность
+### 8.4. Finality
 
-| Сеть | Правило | Что даёт `verify` |
+| Network | Rule | What `verify` yields |
 |---|---|---|
-| Ethereum L1 | `finalized` checkpoint (≈2 эпохи, ~12.8 мин). Счётчик блоков как единственный критерий — **MUST NOT** | `FINAL` только для блока ≤ finalized head |
-| L2 optimistic | публикация batch + финализация L1-анкора + истёкший challenge-период | до анкора — `PROVISIONAL` |
-| L2 zk | proof верифицирован на L1 и L1-блок финализирован | `FINAL` |
-| Реорг между прогоном и подписью | повторный запрос блока по номеру, сверка `block_hash` | расхождение → `INVALID` |
+| Ethereum L1 | `finalized` checkpoint (≈2 epochs, ~12.8 min). A block counter as the sole criterion — **MUST NOT** | `FINAL` only for a block ≤ finalized head |
+| L2 optimistic | batch publication + L1 anchor finalisation + expired challenge period | `PROVISIONAL` until the anchor |
+| L2 zk | the proof is verified on L1 and the L1 block is finalised | `FINAL` |
+| Reorg between the run and the signature | re-fetch the block by number, compare `block_hash` | mismatch → `INVALID` |
 
-В бандл: `chain_id`, `block_number`, `block_hash`, `state_root`, `finality_proof`, `code_hash`, `tx_hash` (если был).
+In the bundle: `chain_id`, `block_number`, `block_hash`, `state_root`, `finality_proof`, `code_hash`, `tx_hash` (if there was one).
 
-### 8.5. Десять атак для escrow
+### 8.5. Ten attacks for escrow
 
-| # | Атака | Ожидание | Провал |
+| # | Attack | Expectation | Failure |
 |---|---|---|---|
-| A1 | `release` от неавторизованного адреса | revert | выпуск прошёл |
-| A2 | двойной `release` одного эскроу | revert | двойная выплата |
-| A3 | `release` до истечения условия/дедлайна | revert | выпуск раньше |
-| A4 | `release` с аттестацией от другого эскроу (replay `subject`) | revert | чужой акт принят |
-| A5 | `release` с аттестацией на `PROVISIONAL`-блоке | revert | нефинальный блок принят |
-| A6 | `refund` после `release` | revert | возврат после выплаты |
-| A7 | вывод токена через `sweep`/`rescue` вне `Z` | revert или запись в `unknown_paths` | вывод прошёл |
-| A8 | эскалация роли (`grantRole` себе) | revert | роль выдана |
-| A9 | подмена implementation через прокси | `INVALID` | код не совпал с `code_hash` |
-| A10 | drain через внешний вызов / реентранси / permit-злоупотребление | revert | средства ушли |
+| A1 | `release` from an unauthorised address | revert | the release went through |
+| A2 | double `release` of the same escrow | revert | double payout |
+| A3 | `release` before the condition/deadline has elapsed | revert | release too early |
+| A4 | `release` with an attestation from another escrow (replaying `subject`) | revert | a foreign attestation accepted |
+| A5 | `release` with an attestation on a `PROVISIONAL` block | revert | a non-final block accepted |
+| A6 | `refund` after `release` | revert | refund after payout |
+| A7 | token withdrawal through `sweep`/`rescue` outside `Z` | revert or an entry in `unknown_paths` | the withdrawal went through |
+| A8 | role escalation (`grantRole` to self) | revert | the role was granted |
+| A9 | implementation substitution through the proxy | `INVALID` | the code did not match `code_hash` |
+| A10 | drain through an external call / reentrancy / permit abuse | revert | the funds left |
 
 ---
 
-## 9. Legacy в v0.1: только статика
+## 9. Legacy in v0.1: static only
 
-Поддерживается: `scan` (writer'ы из кода, IaC, OpenAPI), `check` (правила авторизации → Z3), `plan` (черновик Z из 12 элементов).
-Не поддерживается: witness, eBPF, DB-триггер, `Permit`, динамические атаки. Всё это даёт `INCONCLUSIVE` с причиной `dynamic_not_available`, и это **явно печатается**, а не замалчивается.
+Supported: `scan` (writers from code, IaC, OpenAPI), `check` (authorisation rules → Z3), `plan` (a draft Z of 12 elements).
+Not supported: witness, eBPF, DB trigger, `Permit`, dynamic attacks. All of this yields `INCONCLUSIVE` with the reason `dynamic_not_available`, and this is **printed explicitly**, not hushed up.
 
 ---
 
-## 10. Детерминизм и воспроизводимость
+## 10. Determinism and reproducibility
 
-| Требование | Как обеспечено |
+| Requirement | How it is ensured |
 |---|---|
-| Один вход → один выход | JCS-канонизация, SHA-256, сортировка ключей и списков |
-| Пиннинг окружения | `chain_id` + `block_number` + `block_hash`; версии `slither`, `foundry`, `halmos` в manifest |
-| Отсутствие времени в хеше | `created_at` вне подписываемого digest; `expires_at` — отдельным подписанным полем |
-| Версионирование формата | `fg-bundle/1`; `verify` поддерживает **все** прошлые версии вечно |
-| Запрет скрытой недетерминированности | нет обращений к сети при `verify`; `replay` работает на локальном RPC/форке |
+| One input → one output | JCS canonicalisation, SHA-256, sorting of keys and lists |
+| Environment pinning | `chain_id` + `block_number` + `block_hash`; versions of `slither`, `foundry`, `halmos` in the manifest |
+| No time in the hash | `created_at` outside the signed digest; `expires_at` as a separate signed field |
+| Format versioning | `fg-bundle/1`; `verify` supports **all** past versions forever |
+| No hidden non-determinism | no network access during `verify`; `replay` works on a local RPC/fork |
 
-**Гейт релиза:** `flowguard attest` + `flowguard replay` на эталонном escrow дают **байт-в-байт** одинаковый бандл на второй прогон. Красный гейт — релиз не выходит.
+**Release gate:** `flowguard attest` + `flowguard replay` on the reference escrow produce a **byte-for-byte** identical bundle on the second run. A red gate means the release does not ship.
 
 ---
 
-## 11. Безопасность самого инструмента
+## 11. Security of the tool itself
 
-| Угроза | Мера |
+| Threat | Measure |
 |---|---|
-| Подмена входных данных (чужой repo/адрес) | proof-of-control: OAuth read-only / подпись адреса / commit-челлендж |
-| Подмена бандла | signature over весь digest; `verify` не читает ничего вне бандла |
-| Атака через содержимое цели (prompt injection в комментариях) | в v0.1 LLM не участвует в вердикте вообще; анализ детерминированный |
-| Атака через `flowguard.yml` | неизвестные поля отклоняются; `PROVEN` нельзя задать входом; нет `eval` |
-| Supply chain самого инструмента | подписанные релизы, SBOM, воспроизводимая сборка |
-| Утечка приватного репо | анализатор не пишет код в логи; бандл не содержит исходников, только хеши |
+| Input substitution (someone else's repo/address) | proof-of-control: OAuth read-only / address signature / commit challenge |
+| Bundle substitution | signature over the whole digest; `verify` reads nothing outside the bundle |
+| Attack through the target's content (prompt injection in comments) | in v0.1 the LLM takes no part in the verdict at all; the analysis is deterministic |
+| Attack through `flowguard.yml` | unknown fields are rejected; `PROVEN` cannot be set by an input; there is no `eval` |
+| Supply chain of the tool itself | signed releases, SBOM, reproducible build |
+| Leakage of a private repo | the analyser does not write code to logs; the bundle contains no sources, only hashes |
 
 ---
 
-## 12. Критерии приёмки v0.1
+## 12. v0.1 acceptance criteria
 
-Десять проверяемых пунктов. Всё остальное — «сделано, если зелёное».
+Ten verifiable items. Everything else is "done if green".
 
-1. `flowguard scan` на эталонном escrow находит **все** 7 классов путей из §8.3, каждый — с непустым `gaps[]`.
-2. `flowguard check` доказывает INV-1..3 на эталонном escrow и находит контрпример в намеренно сломанной версии.
-3. `flowguard attack` даёт `BLOCKED` на всех 10 сценариях для эталонного и ≥7/10 `PASSED` для сломанной версии.
-4. `flowguard verify` возвращает 0 на валидном бандле и **4 на бандле с подменённым `code_hash`**.
-5. `flowguard replay` воспроизводит бандл байт-в-байт на чистой машине.
-6. Аттестация на блоке выше `finalized head` даёт `finality: PROVISIONAL` и код возврата 2, а не 0.
-7. Симуляция реорга (смена `block_hash` в кэше RPC) даёт `INVALID`.
-8. Активный `proxy admin` даёт `INVALID` без возможности обойти флагом.
-9. `flowguard.yml` с неизвестным полем в `closure` отвергается с кодом 3.
-10. Весь цикл на эталонном escrow исполняется на macOS и Linux, без KVM, ≤30 минут.
+1. `flowguard scan` on the reference escrow finds **all** 7 path classes from §8.3, each with a non-empty `gaps[]`.
+2. `flowguard check` proves INV-1..3 on the reference escrow and finds a counterexample in a deliberately broken version.
+3. `flowguard attack` yields `BLOCKED` on all 10 scenarios for the reference one and ≥7/10 `PASSED` for the broken version.
+4. `flowguard verify` returns 0 on a valid bundle and **4 on a bundle with a substituted `code_hash`**.
+5. `flowguard replay` reproduces the bundle byte-for-byte on a clean machine.
+6. An attestation on a block above the `finalized head` yields `finality: PROVISIONAL` and return code 2, not 0.
+7. A reorg simulation (changing `block_hash` in the RPC cache) yields `INVALID`.
+8. An active `proxy admin` yields `INVALID` with no way to bypass it with a flag.
+9. `flowguard.yml` with an unknown field in `closure` is rejected with code 3.
+10. The whole cycle on the reference escrow runs on macOS and Linux, without KVM, in ≤30 minutes.
 
 ---
 
-## 13. Дорожная карта
+## 13. Roadmap
 
-| Версия | Срок `[Г]` | Содержание |
+| Version | Timeline `[HYPOTHESIS]` | Content |
 |---|---|---|
-| **v0.1** | 12–16 нед | on-chain escrow end-to-end на ноутбуке; legacy static |
-| **v0.2** | +8 нед | legacy-динамика: `anvil`-аналог для репо не нужен, но нужен микроVM + eBPF + witness |
-| **v0.3** | +8 нед | медиатор + `Permit` + PL/pgSQL-триггер + Verus |
-| **v0.4** | +6 нед | Certora-бэкенд, 5 политик, формат `fg-bundle/1` заморожен |
-| **v0.5** | +8 нед | автовыплата с эскроу, диспут-окно, бонды |
+| **v0.1** | 12–16 weeks | on-chain escrow end-to-end on a laptop; legacy static |
+| **v0.2** | +8 weeks | legacy dynamics: no `anvil` analogue is needed for repos, but a microVM + eBPF + witness is |
+| **v0.3** | +8 weeks | mediator + `Permit` + PL/pgSQL trigger + Verus |
+| **v0.4** | +6 weeks | Certora backend, 5 policies, the `fg-bundle/1` format frozen |
+| **v0.5** | +8 weeks | automatic payout with escrow, dispute window, bonds |
 
 ---
 
-## 14. Известные слабости (свод из пяти независимых оценок)
+## 14. Known weaknesses (a synthesis of five independent assessments)
 
-Раздел обязательный: это не сноска, а перечень утверждений, которые скорее всего окажутся неверными.
+This section is mandatory: it is not a footnote but a list of claims that are likely to turn out to be wrong.
 
-| # | Слабость | Механизм | Горизонт | Ранний признак |
+| # | Weakness | Mechanism | Horizon | Early signal |
 |---|---|---|---|---|
-| **W1** | **Неполнота перечня путей** (5/5 рецензентов) | путь через самописную авторизацию, офчейн-keeper или внешний админ-ключ не находится автоматикой | первые 3–10 реальных целей | инцидент на `PROVEN`-цели с путём вне `Z` |
-| **W2** | **Бюджет доказательства** (4/5) | моделирование зависимостей, настройка prover, proof-fixing съедают бюджет быстрее, чем появляется переиспользуемый конвейер | первые 5 целей | медиана трудозатрат > плана; ре-аттестация > 15 мин |
-| **W3** | **Экономика автовыплат** (3/5) | бонд и потолок малы для крупных сделок; коррелированные ошибки верификатора дают серию клоубэков | 6–12 мес | резерв уходит в минус на первой серии |
-| **W4** | **Шум witness / инфляция `INCONCLUSIVE`** (2/5) | нестабильные каналы, расхождения провайдеров по финальности | пилот | медиана `PROVEN` < 2 из-за технических `INCONCLUSIVE`, а не нарушений |
-| **W5** | **Дрейф замыкания после хотфикса** (3/5) | новый endpoint/роль появляется вне окна ре-аттестации | 30–90 дней после пилота | `code_hash` расходится, путь отсутствует в `declaration.json` |
-| **W6** | **Финальность L2** (2/5) | приём состояния до надёжного L1-анкора | первые 2 недели | диспут со ссылкой на нефинальный блок |
-| **W7** | **Монорепо/полиглот ломают автоматизацию** (2/5) | растёт доля ручных исключений и стоимость | 60–90 дней после старта продаж | >30% сканов требуют ручного вмешательства |
+| **W1** | **Incompleteness of the path enumeration** (5/5 reviewers) | a path through hand-rolled authorisation, an off-chain keeper or an external admin key is not found by automation | the first 3–10 real targets | an incident on a `PROVEN` target with a path outside `Z` |
+| **W2** | **Proof budget** (4/5) | dependency modelling, prover setup and proof-fixing eat the budget faster than a reusable pipeline appears | the first 5 targets | median effort > plan; re-attestation > 15 min |
+| **W3** | **Economics of automatic payouts** (3/5) | the bond and the cap are small for large deals; correlated verifier errors produce a run of clawbacks | 6–12 months | the reserve goes negative on the first run |
+| **W4** | **Witness noise / `INCONCLUSIVE` inflation** (2/5) | unstable channels, provider disagreement on finality | the pilot | median `PROVEN` < 2 because of technical `INCONCLUSIVE`s rather than violations |
+| **W5** | **Closure drift after a hotfix** (3/5) | a new endpoint/role appears outside the re-attestation window | 30–90 days after the pilot | `code_hash` diverges, the path is absent from `declaration.json` |
+| **W6** | **L2 finality** (2/5) | accepting state before a reliable L1 anchor | the first 2 weeks | a dispute citing a non-final block |
+| **W7** | **Monorepos/polyglot break automation** (2/5) | the share of manual exceptions and the cost grow | 60–90 days after sales start | >30% of scans require manual intervention |
 
-**Решение по W1, принятое до кода:** правило `unknown_paths ≠ ∅ ⇒ INCONCLUSIVE` уже закрывает половину риска. Вторая половина — публичный список классов путей, которые анализатор **не видит**, в каждом бандле.
-
----
-
-## 15. Лицензия, управление, версионирование
-
-- **Код:** Apache-2.0.
-- **Спецификация формата:** CC-BY-4.0, чтобы формат могли реализовать другие. Это не потеря: чем больше независимых реализаций, тем ценнее подпись.
-- **Версионирование:** `fg-bundle/MAJOR`; MAJOR меняется только при несовместимом изменении; `verify` поддерживает все версии вечно.
-- **Управление:** BDFL на старте, публичный RFC для изменений формата, ломающие изменения — только с миграционным тестом.
-- **Чего нельзя:** закрывать верификатор, требовать наш сервер для `verify`, менять смысл `PROVEN` задним числом.
+**The decision on W1, taken before any code:** the rule `unknown_paths ≠ ∅ ⇒ INCONCLUSIVE` already closes half the risk. The other half is a public list, in every bundle, of the path classes the analyser **does not see**.
 
 ---
 
-## Приложение A. Глоссарий
+## 15. Licence, governance, versioning
 
-| Термин | Значение |
+- **Code:** Apache-2.0.
+- **Format specification:** CC-BY-4.0, so that others can implement the format. This is not a loss: the more independent implementations, the more valuable the signature.
+- **Versioning:** `fg-bundle/MAJOR`; MAJOR changes only on an incompatible change; `verify` supports all versions forever.
+- **Governance:** BDFL at the start, a public RFC for format changes, breaking changes only with a migration test.
+- **What is not allowed:** closing the verifier, requiring our server for `verify`, changing the meaning of `PROVEN` retroactively.
+
+---
+
+## Appendix A. Glossary
+
+| Term | Meaning |
 |---|---|
-| `Z` (замыкание) | множество всех путей изменения ресурса, объявленных и обнаруженных |
-| `M` (медиатор) | единственная точка решения, через которую проходит путь |
-| `Permit` | подписанный непередаваемый токен права, привязанный к объекту, версии и политике |
-| `PROVEN` | все пять предикатов §5 истинны; не означает «безопасно» |
-| `PROVISIONAL` | валидно, но не финально; не годится для выплат |
-| `unknown_path` | обнаруженный, но не объявленный путь; блокирует `PROVEN` |
-| `assumptions ledger` | список допущений, при ложности которых утверждение не действует |
+| `Z` (closure) | the set of all resource-change paths, declared and discovered |
+| `M` (mediator) | the single decision point through which a path passes |
+| `Permit` | a signed non-transferable token of authority, bound to the object, version and policy |
+| `PROVEN` | all five predicates of §5 are true; does not mean "secure" |
+| `PROVISIONAL` | valid but not final; not suitable for payouts |
+| `unknown_path` | a discovered but undeclared path; blocks `PROVEN` |
+| `assumptions ledger` | the list of assumptions whose falsity voids the claim |
 
-## Приложение B. Чек-лист ревьюера бандла
+## Appendix B. Bundle reviewer checklist
 
-1. `manifest` сходится побайтово? (пересчитать)
-2. `code_hash` совпадает с байткодом на `block`?
+1. Does `manifest` match byte-for-byte? (recompute)
+2. Does `code_hash` match the bytecode at `block`?
 3. `finality.status = FINAL`?
-4. `closure.declaration.diff` пуст (нет неизвестных путей)?
-5. Все 10 атак `BLOCKED`?
-6. Каждый инвариант: `proved` или `offered+passed`? Таймаут помечен как `INCONCLUSIVE`?
-7. `assumptions.json`: каждое допущение имеет `what_breaks_if_false`?
-8. Активного `proxy admin` нет?
-9. Четыре подписи от четырёх разных ключей?
-10. `expires_at` в будущем и не продлён «молча»?
+4. Is `closure.declaration.diff` empty (no unknown paths)?
+5. All 10 attacks `BLOCKED`?
+6. Every invariant: `proved` or `offered+passed`? Is a timeout marked as `INCONCLUSIVE`?
+7. `assumptions.json`: does every assumption have `what_breaks_if_false`?
+8. Is there no active `proxy admin`?
+9. Four signatures from four different keys?
+10. Is `expires_at` in the future and not extended "silently"?

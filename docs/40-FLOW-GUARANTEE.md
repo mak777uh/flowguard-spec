@@ -1,162 +1,162 @@
-# 40. Защищаемые потоки: единица работы — не находка, а гарантия на поток
+# 40. Protected flows: the unit of work is not a finding but a guarantee per flow
 
-> Предложение: считать ответственностью продукта не «поиск уязвимостей», а **защиту важных потоков** — деньги, PII, трафик, доступ к хранилищу — от входа до выхода, а «обвязку» объявить вне зоны ответственности. Высший грид — формально проверяемая защита потока.
+> Proposal: treat the product's responsibility not as "vulnerability discovery" but as the **protection of important flows** — money, PII, traffic, storage access — from entry to exit, and declare the "glue" out of scope. The highest grid is a formally checkable protection of a flow.
 >
-> Оценка: направление верное и сильнее текущего. Но формулировка «невзламываемо» — юридическая и инженерная ловушка. Ниже — как сделать её точной и при этом более продаваемой.
+> Assessment: the direction is right and stronger than the current one. But the wording "unbreakable" is a legal and engineering trap. Below is how to make it precise and, at the same time, more sellable.
 
 ---
 
-## 1. Почему это лучше, чем «искать баги»
+## 1. Why this is better than "hunting for bugs"
 
-Один аргумент, и он решающий. Все пять рецензентов второго круга независимо назвали механизм смерти продукта: **голод `PROVEN`** — находок слишком мало, чтобы клиент платил и продлевал. Причина не в агенте, а в **единице работы**: «найди дефекты» — это отрицательное, неограниченное и всегда частичное утверждение. Из него нельзя сделать положительный деливерабл, поэтому «ничего не нашли» неотличимо от «сломанного сканера».
+One argument, and it is decisive. All five second-round reviewers independently named the product's death mechanism: **`PROVEN` starvation** — too few findings for the client to pay and renew. The cause is not the agent but the **unit of work**: "find the defects" is a negative, unbounded, and always partial claim. No positive deliverable can be made from it, which is why "we found nothing" is indistinguishable from "a broken scanner".
 
-Поток меняет это:
+A flow changes this:
 
-| | «Найди дефекты» | «Защити поток» |
+| | "Find the defects" | "Protect the flow" |
 |---|---|---|
-| Единица | находка | поток + политика |
-| Утверждение | «мы не нашли» (отрицательное) | «поток проходит через медиатор, обход в замыкании Z невозможен» (**положительное**) |
-| Ограниченность | неограниченная, всегда неполная | ограничена объявленным замыканием |
-| Что продаётся при нулевом результате | ничего | архитектура + доказательство |
-| Кто виноват при инциденте | мы («не нашли») | становится видно, был ли инцидент вне замыкания |
-| Отношение к «обвязке» | она тоже в скоупе, значит в шуме | вне скоупа, и это **заявлено** |
+| Unit | a finding | a flow + a policy |
+| Claim | "we found nothing" (negative) | "the flow passes through the mediator, a bypass within closure Z is impossible" (**positive**) |
+| Boundedness | unbounded, always incomplete | bounded by the declared closure |
+| What is sold on a zero result | nothing | architecture + proof |
+| Who is to blame on an incident | we are ("we found nothing") | it becomes visible whether the incident was outside the closure |
+| Relation to the "glue" | it is in scope too, hence in the noise | out of scope, and this is **declared** |
 
-Это ответ на вопрос, который все пять рецензентов оставили открытым: покупатель не принимает отрицательное утверждение (рецензент №5, «покрытие без покупки»). Гарантия на поток — принимает, потому что она проверяема.
-
----
-
-## 2. Ловушка формулировки
-
-«Формально проверяемо без возможности взлома» — это обещание, которое нельзя выполнить, а значит нельзя продать без безлимитной ответственности. Три поправки:
-
-1. **Не «система», а медиатор.** Доказуемо не приложение, а **точка принятия решения** и её соответствие политике. Приложение остаётся «обвязкой» и может быть дырявым — это допустимо, если оно не может обойти медиатор.
-2. **Не «невзламываемо», а «обход невозможен в замыкании Z».** Всегда с условием. Формально: свойство условное, и условие — часть поставляемого артефакта.
-3. **Не «доказано», а «доказано + измерено».** Замыкание доказывается частично, а частично ломается красной командой. Обе части идут в отчёт.
-
-Правильная формулировка продукта:
-
-> **Для объявленного потока F и политики P: выделен медиатор M, доказано, что M реализует P, и доказано (или продемонстрировано красной командой), что в замыкании Z нет пути в обход M. Вне Z гарантия не действует.**
-
-Это точная, проверяемая и ограниченная ответственность. И она сильнее, чем «мы нашли 12 багов».
+This answers the question all five reviewers left open: the buyer does not accept a negative claim (reviewer No. 5, "coverage without a purchase"). A guarantee per flow does, because it is checkable.
 
 ---
 
-## 3. Три уровня, из которых доказуемы только два
+## 2. The trap of the wording
 
-**Уровень A — политика (что разрешено).** Кто, какой ресурс, при каком условии. Доказуемо: политика непротиворечива, не имеет неявных разрешений, не эскалируется (нет цикла делегирования), deny побеждает allow. Это ровно то, что делает SMT-анализ IAM-политик в промышленном виде (AWS Zelkova — публично описанный пример), и это уже доказуемо без всякой формальной верификации кода. **Дёшево. Продаётся сразу.**
+"Formally verifiable with no possibility of compromise" is a promise that cannot be kept, and therefore cannot be sold without unlimited liability. Three corrections:
 
-**Уровень B — медиатор (что он делает).** Код, который принимает решение. Доказуемо: медиатор рефайнит политику (refinement), нет обхода через ошибку в коде, нет TOCTOU. Здесь работают Verus/Creusot/Dafny/SPARK; в пределе — seL4-подобный подход (верифицированное ядро как TCB). Медиатор маленький (сотни строк), поэтому доказательство реально. **Дорого, но ограничено. Это и есть «высший грид», который имеет смысл.**
+1. **Not the "system" but the mediator.** What is provable is not the application but the **decision point** and its conformance to the policy. The application remains "glue" and may be leaky — that is acceptable as long as it cannot bypass the mediator.
+2. **Not "unbreakable" but "a bypass is impossible within closure Z".** Always with a condition. Formally: the property is conditional, and the condition is part of the delivered artifact.
+3. **Not "proven" but "proven + measured".** The closure is partly proven and partly broken by the red team. Both parts go into the report.
 
-**Уровень C — замыкание (что мимо медиатора ничего не идёт).** **Вот здесь всё и ломается.** Полное посредничество (complete mediation) — свойство *системы*, а не кода: нужно доказать, что нет ни одного пути в обход. Формально это доказуемо только для закрытых систем (микроядро, изолированный процесс с единственной точкой входа). В обычном облачном приложении — **не доказуемо, а только проверяемо**:
+The correct product statement:
 
-- перечисление всех входов (ingress, batch, cron, queue, admin, backup, restore, миграции, отладка) — аудит, не доказательство;
-- запрет ambient authority: нет долгоживущих кредов, нет прямого доступа к БД в обход, egress deny-all, единый ingress;
-- красная команда, которая пытается обойти и **проваливает** попытку.
+> **For a declared flow F and policy P: a mediator M is isolated, it is proven that M implements P, and it is proven (or demonstrated by the red team) that within closure Z there is no path bypassing M. Outside Z the guarantee does not apply.**
 
-Так что честная архитектура: **A и B — доказательство, C — измерение.** Не смешивать.
-
----
-
-## 4. Формальная постановка (чтобы не изобретать заново)
-
-Идея — это классическое **разделение привилегий через reference monitor** плюс **information-flow security**:
-
-- **Reference monitor** (Anderson, 1972): три свойства — полное посредничество (complete mediation), защищённость от изменения (tamper-proof), проверяемость (verifiable). Наша формулировка — ровно эти три, только свойство №1 мы честно называем «измеримым», а не «доказанным».
-- **Noninterference** (Goguen–Meseguer, 1982): формальный смысл «поток защищён» — действия субъекта с высоким уровнем не влияют на наблюдения субъекта с низким. Это то, что на самом деле значит «утечки нет», и это доказуемо для медиатора, но не для приложения.
-- **Object-capability**: предпочтительнее проверок, потому что «нет права — нет интерфейса» не требует доказательства: обход невозможен по построению. Для потоков это означает: у компонента нет ambient authority, только выданные capability.
-- **seL4 / IronFleet** — эталоны: «доказать ядро и протокол» реально, «доказать всё приложение» — нет.
-
-Продукт не изобретает теорию. Он **продаёт её применение к конкретному потоку клиента**, с артефактами.
+That is a precise, checkable and bounded responsibility. And it is stronger than "we found 12 bugs".
 
 ---
 
-## 5. Как это меняет лестницу R0–R5
+## 3. Three levels, of which only two are provable
 
-Высший грид переопределяется: это больше не «переписать парсер на Rust».
+**Level A — policy (what is permitted).** Who, which resource, under what condition. Provable: the policy is consistent, has no implicit permits, does not escalate (no delegation cycle), deny beats allow. This is exactly what SMT analysis of IAM policies does in industrial form (AWS Zelkova is a publicly described example), and it is already provable without any formal verification of code. **Cheap. Sells immediately.**
 
-| R | Было | Стало для потока |
+**Level B — mediator (what it does).** The code that makes the decision. Provable: the mediator refines the policy (refinement), there is no bypass through an error in the code, there is no TOCTOU. Verus/Creusot/Dafny/SPARK work here; at the limit, a seL4-like approach (a verified kernel as the TCB). The mediator is small (hundreds of lines), so the proof is realistic. **Expensive but bounded. This is the "highest grid" that makes sense.**
+
+**Level C — closure (that nothing goes past the mediator).** **This is where it all breaks.** Complete mediation is a property of the *system*, not of the code: one must prove that there is not a single bypass path. Formally this is provable only for closed systems (a microkernel, an isolated process with a single entry point). In an ordinary cloud application it is **not provable, only checkable**:
+
+- enumeration of all entry points (ingress, batch, cron, queue, admin, backup, restore, migrations, debugging) — an audit, not a proof;
+- prohibition of ambient authority: no long-lived credentials, no direct DB access in bypass, egress deny-all, a single ingress;
+- a red team that attempts a bypass and **fails** the attempt.
+
+So the honest architecture: **A and B are proof, C is measurement.** Do not mix them.
+
+---
+
+## 4. Formal statement (so as not to reinvent it)
+
+The idea is the classic **separation of privilege through a reference monitor** plus **information-flow security**:
+
+- **Reference monitor** (Anderson, 1972): three properties — complete mediation, tamper-proof, verifiable. Our formulation is exactly these three, except that we honestly call property No. 1 "measurable" rather than "proven".
+- **Noninterference** (Goguen–Meseguer, 1982): the formal meaning of "the flow is protected" — the actions of a high-level subject do not affect the observations of a low-level subject. This is what "there is no leak" actually means, and it is provable for the mediator but not for the application.
+- **Object-capability**: preferable to checks, because "no right — no interface" requires no proof: a bypass is impossible by construction. For flows this means: the component has no ambient authority, only issued capabilities.
+- **seL4 / IronFleet** — the benchmarks: "prove the kernel and the protocol" is realistic, "prove the whole application" is not.
+
+The product does not invent the theory. It **sells its application to a specific client flow**, with artifacts.
+
+---
+
+## 5. How this changes the R0–R5 ladder
+
+The highest grid is redefined: it is no longer "rewrite the parser in Rust".
+
+| R | Was | Became for a flow |
 |---|---|---|
-| R0 | митигация | инвентаризация потока, отзыв лишних прав, запрет одного обходного пути |
-| R1 | патч | закрыть конкретный обход (shadow endpoint, batch-джобу, дебаг-порт) |
-| R2 | hardening/детектор | запрет ambient authority: короткоживущие креды, egress deny-all, единый ingress |
-| R3 | рефакторинг | **ввести медиатор**: все обращения к ресурсу идут через него |
-| R4 | memory-safe | медиатор на безопасном языке, capability-модель вместо проверок |
-| **R5** | верифицированное ядро | **доказать политику (A) + доказать медиатор (B) + измерить замыкание (C)** |
+| R0 | mitigation | inventory of the flow, revocation of excess rights, prohibition of one bypass path |
+| R1 | patch | close a specific bypass (shadow endpoint, batch job, debug port) |
+| R2 | hardening/detector | prohibition of ambient authority: short-lived credentials, egress deny-all, a single ingress |
+| R3 | refactoring | **introduce a mediator**: all access to the resource goes through it |
+| R4 | memory-safe | a mediator in a safe language, a capability model instead of checks |
+| **R5** | verified kernel | **prove the policy (A) + prove the mediator (B) + measure the closure (C)** |
 
-Так R5 становится не «академическим проектом для авиации», а **товаром для любого сервиса, у которого есть деньги или PII на потоке**. Это резко расширяет премиум-сегмент: раньше он был только для регулируемых, теперь — для финтеха, платёжек, любого маркетплейса.
-
----
-
-## 6. Где «обвязка» мстит
-
-«Обвязка как угодно» — это и есть место, где происходят реальные утечки. Семь путей обхода, которые нужно закрыть или явно вынести:
-
-1. **Batch / cron / ETL** — тот же ресурс, но мимо API.
-2. **Админ-консоль и support-доступ** — легитимный, но не медиируемый.
-3. **Бэкапы и restore** — копия потока без политики.
-4. **Мобильное/партнёрское API** — второй ingress.
-5. **Прямой доступ к БД** из другого сервиса (общий кред).
-6. **Логи и аналитика** — копия PII в другом хранилище, вне политики.
-7. **Supply chain и CI** — доступ к секретам в момент деплоя.
-
-Каждый из них — либо внутри замыкания (и тогда он должен быть медиирован), либо явно объявлен вне гарантии. **Третьего нет**, и именно здесь продукт должен быть безжалостен: «вне замыкания» — это не оправдание, а заявленный риск с ценой.
+Thus R5 becomes not "an academic project for aviation" but **a commodity for any service that has money or PII in a flow**. This sharply widens the premium segment: previously it was only for regulated companies, now for fintech, payment providers, any marketplace.
 
 ---
 
-## 7. Экономика: ловушка и выход
+## 6. Where the "glue" takes its revenge
 
-**Плюс.** Положительный деливерабл → нет проблемы пустого отчёта → нет голода `PROVEN`. Цена выше: это архитектура + доказательство, а не скан.
+"Glue however you like" is exactly where real leaks happen. Seven bypass paths that must be closed or explicitly excluded:
 
-**Минус, и он серьёзный.** «Ввести медиатор и доказать его» — это **дизайн и миграция**, то есть консалтинг с маржой 35–45% (как R3/R4 в нашем же анализе). Продукт превращается в проект с полугодовым циклом.
+1. **Batch / cron / ETL** — the same resource, but past the API.
+2. **Admin console and support access** — legitimate, but not mediated.
+3. **Backups and restore** — a copy of the flow without a policy.
+4. **Mobile/partner API** — a second ingress.
+5. **Direct DB access** from another service (a shared credential).
+6. **Logs and analytics** — a copy of the PII in another store, outside the policy.
+7. **Supply chain and CI** — access to secrets at deployment time.
 
-**Выход — продукт-компонент.** Медиатор должен быть **развёртываемым артефактом**, а не работой на заказ: шлюз/библиотека с политикой в декларативном виде, доказательство которой генерируется автоматически для типовых политик. Тогда:
+Each of them is either inside the closure (and then it must be mediated) or explicitly declared outside the guarantee. **There is no third option**, and this is exactly where the product must be ruthless: "outside the closure" is not an excuse but a declared risk with a price.
+
+---
+
+## 7. Economics: the trap and the way out
+
+**Plus.** A positive deliverable → no empty-report problem → no `PROVEN` starvation. The price is higher: this is architecture + proof, not a scan.
+
+**Minus, and it is serious.** "Introduce a mediator and prove it" is **design and migration**, that is, consulting with a 35–45% margin (like R3/R4 in our own analysis). The product turns into a project with a six-month cycle.
+
+**The way out is a product component.** The mediator must be a **deployable artifact**, not custom work: a gateway/library with the policy in declarative form, whose proof is generated automatically for standard policies. Then:
 
 ```
-лицензия на медиатор + подписка на доказательство и его свежесть
-+ разовая миграция (консалтинг, но с предсказуемым объёмом)
+mediator license + subscription to the proof and its freshness
++ one-time migration (consulting, but with a predictable scope)
 ```
 
-Это ровно тот путь, который во втором круге назвали «переиспользуемый proof-харнесс»: если он покрывает 3–5 типовых политик (tenant isolation, ownership check, amount limit, PII classification, state machine), маржа поднимается с 45% до 65%+, а повторный клиент приходит на ревизию, а не на новый проект.
+This is exactly the path that the second round called a "reusable proof harness": if it covers 3–5 standard policies (tenant isolation, ownership check, amount limit, PII classification, state machine), the margin rises from 45% to 65%+, and a repeat client comes for a revision rather than for a new project.
 
 ---
 
-## 8. Пилот: один поток, 30 дней
+## 8. Pilot: one flow, 30 days
 
-Не «докажем всё». Один поток, один медиатор, одно замыкание.
+Not "we will prove everything". One flow, one mediator, one closure.
 
-| Дни | Что |
+| Days | What |
 |---|---|
-| 1–4 | выбрать поток (деньги или PII), нарисовать все 7 путей из §6, зафиксировать, что входит в Z |
-| 5–10 | политика P в декларативной форме + SMT-проверка (уровень A: противоречия, неявные allow, циклы) |
-| 11–18 | медиатор M: рефайнит P; capability вместо проверок; медиатор — единственный путь к ресурсу |
-| 19–24 | закрыть обходы из §6, применить egress deny-all, короткоживущие креды |
-| 25–27 | доказательство B (контракты медиатора; Verus/Dafny/SPARK по классу) |
-| 28–30 | красная команда: 3 попытки обхода; публикация доказанного + измеренного + негативного скоупа |
+| 1–4 | choose the flow (money or PII), draw all 7 paths from §6, fix what is included in Z |
+| 5–10 | policy P in declarative form + SMT check (level A: contradictions, implicit allows, cycles) |
+| 11–18 | mediator M: refines P; capabilities instead of checks; the mediator is the only path to the resource |
+| 19–24 | close the bypasses from §6, apply egress deny-all, short-lived credentials |
+| 25–27 | proof of B (mediator contracts; Verus/Dafny/SPARK depending on the class) |
+| 28–30 | red team: 3 bypass attempts; publication of the proven + measured + negative scope |
 
-**Критерий провала:** красная команда нашла хотя бы один путь в обход медиатора **внутри объявленного Z**, либо политика P не проверяется автоматически (значит A-уровень не работает), либо медиатор не доказан и не может быть доказан за бюджет.
+**Failure criterion:** the red team found at least one path bypassing the mediator **within the declared Z**, or policy P is not checked automatically (which means level A does not work), or the mediator is not proven and cannot be proven within budget.
 
 ---
 
-## 9. Что это меняет в уже принятом
+## 9. What this changes in what has already been decided
 
-| Решение | Изменение |
+| Decision | Change |
 |---|---|
-| Три класса оракулов (SQLi/BOLA/traversal) | **не отменяются, но меняют роль**: они не товар, а **диагностика** — доказательство, что текущий поток ещё не медиирован. Продают миграцию |
-| Аттестация покрытия | становится **гарантией на поток** — положительным утверждением вместо «не нашли» |
-| K6 (голод `PROVEN`) | перестаёт быть смертельным: деливерабл не зависит от числа находок |
-| R5 как «R&D для авиации» | становится **товаром для любого сервиса с деньгами/PII на потоке** |
-| I3 (негативный скоуп) | усиливается: замыкание Z — обязательный, договорный, публичный артефакт |
-| Смертельный риск | смещается с «мало находок» на **«не удаётся объявить замыкание честно»** — то есть на дисциплину, а не на технологию |
+| Three classes of oracles (SQLi/BOLA/traversal) | **are not cancelled but change role**: they are not the commodity but **diagnostics** — proof that the current flow is not yet mediated. They sell the migration |
+| Coverage attestation | becomes a **guarantee per flow** — a positive claim instead of "we found nothing" |
+| K6 (`PROVEN` starvation) | stops being fatal: the deliverable does not depend on the number of findings |
+| R5 as "R&D for aviation" | becomes **a commodity for any service with money/PII in a flow** |
+| I3 (negative scope) | is strengthened: closure Z is a mandatory, contractual, public artifact |
+| The fatal risk | shifts from "too few findings" to **"being unable to declare the closure honestly"** — that is, to discipline rather than to technology |
 
 ---
 
-## 10. Итог
+## 10. Conclusion
 
-Идея верна как **смена единицы работы** и как **ответ на главный механизм смерти** продукта. Она неверна ровно в одном слове — «невзламываемо». Замените его на «медиатор + доказанная политика + объявленное замыкание», и получится:
+The idea is right as a **change of the unit of work** and as an **answer to the main death mechanism** of the product. It is wrong in exactly one word — "unbreakable". Replace it with "mediator + proven policy + declared closure", and you get:
 
-- положительный деливерабл (решает пустой отчёт);
-- ограниченная ответственность (решает юридический риск);
-- товар для широкого рынка, а не только для авиации;
-- и честная граница: **что доказано, что измерено, что вне гарантии** — те же три колонки, которые мы уже требуем от любого вердикта.
+- a positive deliverable (solves the empty report);
+- bounded liability (solves the legal risk);
+- a commodity for a broad market, not only for aviation;
+- and an honest boundary: **what is proven, what is measured, what is outside the guarantee** — the same three columns that we already require of any verdict.
 
-Слабое место ровно одно и оно не техническое: **честно объявить замыкание**. Всё остальное — инженерия, которая уже делалась (seL4, Zelkova, IronFleet) и которую LLM сейчас впервые делает доступной по цене.
+There is exactly one weak spot and it is not technical: **declaring the closure honestly**. Everything else is engineering that has already been done (seL4, Zelkova, IronFleet) and that LLMs are now, for the first time, making available at a price.

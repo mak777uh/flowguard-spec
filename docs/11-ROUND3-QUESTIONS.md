@@ -1,141 +1,141 @@
-# 11. Третий круг: вопросы про то, что осталось неопределённым
+# 11. Round three: questions about what remains undetermined
 
-> **Что изменилось против второго круга.** Блок A закрыт (5/5) — вопросов про продуктовую модель больше нет. Блок Г закрыт (три независимых свода дали одно и то же) — про срез v1 не спрашиваем. Блок Б в прежней формулировке сломан (разброс 65× показал, что «стоимость находки» неизмерима).
-> Осталось **пять мест, где никто ничего не специфицировал**, и все они решаются моделью, а не покупателем. Это и есть третий круг.
-
----
-
-# ЧАСТЬ 1. ПРОМПТ ДЛЯ МОДЕЛЕЙ (копировать целиком, не менять между прогонами)
-
-## Роль
-
-Ты — инженер-проектировщик, а не рецензент. Продуктовые решения приняты; обсуждать их не нужно. От тебя требуется **спроектировать пять конкретных механизмов** так, чтобы их можно было реализовать по твоему тексту.
-
-## Правила
-
-1. Каждый ответ — **готовый артефакт**, а не рассуждение: контракт, таблица, список, схема. Если просят контракт — пиши контракт, который можно вставить в код.
-2. **Не более 150 слов** на ответ, кроме мест, где явно требуется таблица или контракт (там — по необходимости, но без воды).
-3. **Запрещено** оспаривать принятые решения (см. «Уже решено»), предлагать новые архитектуры, ссылаться на бенчмарки без источника.
-4. **Запрещено** «зависит от контекста» без указания условия в одну строку.
-5. Если не знаешь — пиши `не знаю` + **чем бы проверил и за сколько дней**. Это полноценный ответ.
-6. Числа помечай `[оценка]`. Метрики — с определением, а не словом.
-
-## Уже решено (не оспаривать, не пересматривать)
-
-**Продукт.** Агент в микроVM анализирует репозиторий; находка существует только как `PROVEN` — воспроизведённый в песочнице эффект с тройным контролем **C** (без payload — эффекта нет) / **T** (полный триггер — эффект есть) / **N** (семантическая мутация — эффекта нет). Отчёт подписывает человек. Гипотезы (`HYPOTHESIS`) живут отдельно и не биллятся.
-
-**v1 — узкий:**
-- три класса уязвимостей с готовыми запечатанными оракулами;
-- уровни исправлений только **R0** (митигация) и **R1** (точечный патч);
-- шесть компонентов: микроVM · C/T/N · запечатанный оракул · evidence plane · replay kit · named signatory;
-- verifier исполняется **процессом вне VM агента**; canary-nonce — приёмочный тест witness-плоскости;
-- поставка: SaaS с ephemeral runner; гибридный runner — второй релиз;
-- размещение по умолчанию — гибрид как архитектурное требование, но не как поставка v1.
-
-**Экономика — режим A:** находок 3–7 (план 4), `repro rate` ≥95%, `fix-acceptance` 60–70%, цена ангажемента $7,5–12k, маржа R1 ~65%. Себестоимость держится за счёт **ревью ≤15 минут на находку**; без этого маржа обнуляется (режим B — $25k и глубокая проверка — не наш v1).
-
-**Смертельный механизм (5/5):** голод `PROVEN` из-за отсутствия машинных оракулов. Индикаторы: `PROVEN/engagement < 2` десять ангажементов подряд, `HYPOTHESIS/PROVEN > 10`, конверсия пилот→оплата <20%.
-
-**Принятые инварианты:**
-- **I1** — «проверено» производится детерминированным кодом, не моделью;
-- **I2** — воспроизводимо **в пределах заявленного fingerprint**; вне его — `HYPOTHESIS`;
-- **I3** — любое утверждение ограничено негативным скоупом.
+> **What has changed against round two.** Block A is closed (5/5) — there are no more questions about the product model. Block D is closed (three independent syntheses gave the same result) — we are not asking about the v1 slice. Block B in its previous formulation is broken (a 65× spread showed that "the cost of a finding" is unmeasurable).
+> What remains is **five places where nobody has specified anything**, and all of them are decided by the model, not by the buyer. That is the third round.
 
 ---
 
-## БЛОК 1 — Оракул (главное горлышко, 4/5 рецензентов)
+# PART 1. PROMPT FOR MODELS (copy in full, do not change between runs)
 
-**1.1. Контракт оракула.** Напиши интерфейс запечатанного оракула на псевдокоде так, чтобы по нему двое инженеров независимо реализовали совместимые версии. Обязательные части: что агент поставляет, что оракул получает извне (witness), что возвращает, какие поля входят в подписываемый хеш, как версионируется. Формат: сигнатура + 5–8 строк контракта. `[контракт]`
+## Role
 
-**1.2. Три класса.** Дана матрица кандидатов: SQLi · обход авторизации (IDOR/BOLA) · path traversal · SSRF · небезопасная десериализация · XSS · секреты в коде · известные CVE в зависимостях · гонки (TOCTOU) · бизнес-логика. Выбери **ровно три** для v1 по критерию: разрешимость оракула × распространённость × готовность платить. Формат: таблица `класс | оракул разрешим? (да/частично/нет) | почему именно он | что теряем, отложив`. `[таблица]`
+You are a design engineer, not a reviewer. The product decisions have been made; there is no need to discuss them. You are required to **design five concrete mechanisms** in such a way that they can be implemented from your text.
 
-**1.3. Human-sealed оракул.** Для классов, где машинного предиката нет, оракул пишет человек. Опиши операционку: сколько человеко-дней на один оракул, сколько находок он покрывает прежде чем окупится, кто его валидирует, что происходит, когда клиент оспаривает вердикт. Формат: 5 строк + одна цифра «дней на оракул». `[оценка]`
+## Rules
 
-**1.4. Как тестировать сам оракул.** C8 требует «мутационного тестирования оракула», но метода нет. Спроектируй: какие мутанты подаются (минимум 5 типов), что считается провалом теста, каков критерий приёмки оракула в библиотеку, как это автоматизируется в CI. Формат: список мутантов + критерий приёмки одним предложением. `[список]`
+1. Every answer is a **finished artifact**, not a discussion: a contract, a table, a list, a schema. If a contract is requested, write a contract that can be pasted into code.
+2. **No more than 150 words** per answer, except where a table or a contract is explicitly required (there — as much as needed, but without padding).
+3. It is **forbidden** to dispute the decisions taken (see "Already decided"), to propose new architectures, or to cite benchmarks without a source.
+4. "It depends on the context" is **forbidden** without stating the condition in one line.
+5. If you do not know, write `I don't know` + **how you would check and in how many days**. That is a full answer.
+6. Mark numbers as `[estimate]`. Metrics — with a definition, not a word.
 
----
+## Already decided (do not dispute, do not revisit)
 
-## БЛОК 2 — Witness и невозможность подделки (2 вопроса)
+**Product.** An agent in a microVM analyzes a repository; a finding exists only as `PROVEN` — an effect reproduced in the sandbox under triple control **C** (without the payload — no effect) / **T** (full trigger — the effect is present) / **N** (semantic mutation — no effect). The report is signed by a human. Hypotheses (`HYPOTHESIS`) live separately and are not billed.
 
-**2.1. Минимальный witness-set.** Агент контролирует всё внутри своей VM. Перечисли **минимальный** набор каналов наблюдения, при котором он не может сфабриковать `PROVEN` для класса «обход авторизации», и для каждого канала: что он ловит, что **не** ловит, стоимость в инженерных днях. Формат: таблица `канал (сетевой tap / DB-дайджест / overlay-diff ФС / граф процессов / …) | от чего защищает | чего не защищает | дни`. `[таблица]`
+**v1 — narrow:**
+- three vulnerability classes with ready sealed oracles;
+- fix levels only **R0** (mitigation) and **R1** (point patch);
+- six components: microVM · C/T/N · sealed oracle · evidence plane · replay kit · named signatory;
+- the verifier is executed **by a process outside the agent's VM**; the canary-nonce is the acceptance test of the witness plane;
+- delivery: SaaS with an ephemeral runner; the hybrid runner is the second release;
+- default deployment is hybrid as an architectural requirement, but not as the v1 delivery.
 
-**2.2. Приёмочный тест witness-плоскости.** Canary-nonce принят как **тест**, а не компонент. Напиши, что именно тест утверждает: какая атака симулируется, что должно произойти, чтобы тест считался проваленным. Формат: 4–6 строк «дано / когда / тогда». `[тест]`
+**Economics — mode A:** 3–7 findings (plan 4), `repro rate` ≥95%, `fix-acceptance` 60–70%, engagement price $7.5–12k, R1 margin ~65%. The cost base holds only through **review of ≤15 minutes per finding**; without that the margin goes to zero (mode B — $25k and deep verification — is not our v1).
 
----
+**Fatal mechanism (5/5):** starvation of `PROVEN` because there are no machine oracles. Indicators: `PROVEN/engagement < 2` for ten engagements in a row, `HYPOTHESIS/PROVEN > 10`, pilot→paid conversion <20%.
 
-## БЛОК 3 — Карточка ревью (критический путь маржи)
-
-**3.1. Что видит assessor за 15 минут.** Спроектируй одностраничную карточку, по которой человек подписывает `PROVEN` за ≤15 минут. Перечисли **ровно 7 элементов** и для каждого — почему он необходим, а не приятен. Формат: нумерованный список с обоснованием в одну строку. `[7 элементов]`
-
-**3.2. Что нельзя ужимать.** Назови **три** вещи, которые в эту карточку войти не могут, и объясни, какой именно класс ошибок проскочит, если их убрать. Формат: 3 пункта × 2 строки. `[3 пункта]`
-
----
-
-## БЛОК 4 — Границы продукта (2 вопроса)
-
-**4.1. Контракт валидируемости.** Приняты требования: воспроизводимая сборка, lock-файлы, команда тестов или health-оракул, образ без секретов. Оцени: **какая доля реальных репозиториев** проходит этот фильтр — отдельно для (а) open-source, (б) средний продукт компании 50–500 человек, (в) enterprise legacy. Формат: три числа с `[оценка]` + одна строка «что это делает с TAM». `[числа]`
-
-**4.2. Позитивная аттестация покрытия.** Покупатель не принимает «мы ничего не нашли» (отрицательное утверждение). Сформулируй **позитивное**: что именно утверждается, на основании какого артефакта, и какая фраза в отчёте делает это утверждение проверяемым. Формат: одна формулировка (≤40 слов) + перечень артефактов + что она **не** утверждает. `[формулировка]`
-
----
-
-## БЛОК 5 — Фальсификация (2 вопроса)
-
-**5.1. Тест на 30 дней.** Предложи **один** эксперимент, который за 30 дней и ≤2 человеко-недель либо подтверждает, либо убивает гипотезу «библиотека оракулов на 3 класса даёт ≥4 `PROVEN` на типовом репозитории». Укажи: что делаем, на каком корпусе, какой результат считается провалом. Формат: 5 строк. `[план]`
-
-**5.2. Убийственное условие.** Назови одно наблюдаемое условие, при котором этот продукт **не надо строить вообще** (не «трудно», а «не надо»). Формат: одно предложение + как это условие обнаружить за месяц. `[условие]`
+**Accepted invariants:**
+- **I1** — "verified" is produced by deterministic code, not by a model;
+- **I2** — reproducible **within the declared fingerprint**; outside it — `HYPOTHESIS`;
+- **I3** — every claim is bounded by a negative scope.
 
 ---
 
-# ЧАСТЬ 2. КАК СВОДИТЬ (моделям не показывать)
+## BLOCK 1 — Oracle (the main bottleneck, 4/5 reviewers)
 
-## 2.1. Что считается сильным ответом
+**1.1. Oracle contract.** Write the interface of the sealed oracle in pseudocode so that two engineers can independently implement compatible versions from it. Mandatory parts: what the agent delivers, what the oracle receives from outside (witness), what it returns, which fields enter the signed hash, how it is versioned. Format: signature + 5–8 lines of contract. `[contract]`
 
-| Блок | Сильный | Слабый (ответ не засчитывается) |
+**1.2. Three classes.** The matrix of candidates is given: SQLi · authorization bypass (IDOR/BOLA) · path traversal · SSRF · insecure deserialization · XSS · secrets in code · known CVEs in dependencies · races (TOCTOU) · business logic. Choose **exactly three** for v1 by the criterion: oracle decidability × prevalence × willingness to pay. Format: table `class | oracle decidable? (yes/partially/no) | why this one | what we lose by deferring`. `[table]`
+
+**1.3. Human-sealed oracle.** For classes where there is no machine predicate, a human writes the oracle. Describe the operations: how many person-days per oracle, how many findings it covers before it pays for itself, who validates it, what happens when the client disputes the verdict. Format: 5 lines + one figure for "days per oracle". `[estimate]`
+
+**1.4. How to test the oracle itself.** C8 requires "mutation testing of the oracle", but there is no method. Design it: which mutants are fed in (at least 5 types), what counts as a test failure, what the acceptance criterion for an oracle entering the library is, how this is automated in CI. Format: list of mutants + acceptance criterion in one sentence. `[list]`
+
+---
+
+## BLOCK 2 — Witness and the impossibility of forgery (2 questions)
+
+**2.1. Minimum witness-set.** The agent controls everything inside its own VM. List the **minimum** set of observation channels under which it cannot fabricate `PROVEN` for the "authorization bypass" class, and for each channel: what it catches, what it does **not** catch, the cost in engineering days. Format: table `channel (network tap / DB digest / filesystem overlay-diff / process graph / …) | what it protects against | what it does not protect against | days`. `[table]`
+
+**2.2. Acceptance test of the witness plane.** The canary-nonce is accepted as a **test**, not as a component. Write exactly what the test asserts: which attack is simulated, what must happen for the test to be considered failed. Format: 4–6 lines "given / when / then". `[test]`
+
+---
+
+## BLOCK 3 — Review card (the critical path of the margin)
+
+**3.1. What the assessor sees in 15 minutes.** Design a one-page card from which a human signs `PROVEN` in ≤15 minutes. List **exactly 7 elements** and for each — why it is necessary rather than merely agreeable. Format: numbered list with a one-line justification. `[7 elements]`
+
+**3.2. What cannot be compressed.** Name **three** things that cannot enter this card, and explain exactly which class of error will slip through if they are removed. Format: 3 items × 2 lines. `[3 items]`
+
+---
+
+## BLOCK 4 — Product boundaries (2 questions)
+
+**4.1. Validatability contract.** The following requirements are accepted: a reproducible build, lock files, a test command or a health oracle, an image without secrets. Estimate: **what share of real repositories** passes this filter — separately for (a) open-source, (b) the average product of a company of 50–500 people, (c) enterprise legacy. Format: three numbers with `[estimate]` + one line on "what this does to TAM". `[numbers]`
+
+**4.2. Positive attestation of coverage.** The buyer does not accept "we found nothing" (a negative claim). Formulate a **positive** one: what exactly is asserted, on the basis of which artifact, and which phrase in the report makes this claim checkable. Format: one formulation (≤40 words) + list of artifacts + what it does **not** assert. `[formulation]`
+
+---
+
+## BLOCK 5 — Falsification (2 questions)
+
+**5.1. A 30-day test.** Propose **one** experiment that, in 30 days and ≤2 person-weeks, either confirms or kills the hypothesis "a library of oracles for 3 classes yields ≥4 `PROVEN` on a typical repository". State: what we do, on which corpus, which result counts as failure. Format: 5 lines. `[plan]`
+
+**5.2. The killer condition.** Name one observable condition under which this product **should not be built at all** (not "hard", but "should not"). Format: one sentence + how to detect this condition within a month. `[condition]`
+
+---
+
+# PART 2. HOW TO SYNTHESIZE (do not show to the models)
+
+## 2.1. What counts as a strong answer
+
+| Block | Strong | Weak (answer is not counted) |
 |---|---|---|
-| 1.1 контракт | можно реализовать, не задавая вопросов | описание словами «оракул проверяет» |
-| 1.2 классы | ровно три + что теряем | список из 6 «самых важных» |
-| 1.3 human-sealed | цифра дней + кто валидирует | «зависит от сложности» |
-| 1.4 тест оракула | конкретные мутанты + критерий | «нужно тестировать» |
-| 2.1 witness | таблица с «чего не защищает» | перечисление без границ |
-| 2.2 приёмочный тест | формула «дано/когда/тогда» | «добавить canary» |
-| 3.1 карточка | ровно 7 элементов | 12 элементов «на всякий случай» |
-| 3.2 что нельзя ужимать | 3 пункта + класс ошибок | «всё важно» |
-| 4.1 доли | три числа | «зависит от отрасли» |
-| 5.1 тест | корпус + порог провала | «сделать пилот» |
-| 5.2 не строить | одно наблюдаемое условие | «если не найдём PMF» |
+| 1.1 contract | can be implemented without asking questions | a description in words, "the oracle checks" |
+| 1.2 classes | exactly three + what we lose | a list of 6 "most important" ones |
+| 1.3 human-sealed | a figure in days + who validates | "it depends on complexity" |
+| 1.4 oracle test | concrete mutants + criterion | "it needs to be tested" |
+| 2.1 witness | a table with "what it does not protect against" | an enumeration without boundaries |
+| 2.2 acceptance test | the "given/when/then" formula | "add a canary" |
+| 3.1 card | exactly 7 elements | 12 elements "just in case" |
+| 3.2 what cannot be compressed | 3 items + the class of error | "everything is important" |
+| 4.1 shares | three numbers | "it depends on the industry" |
+| 5.1 test | corpus + failure threshold | "run a pilot" |
+| 5.2 not to build | one observable condition | "if we do not find PMF" |
 
-## 2.2. Правила свода (изменились против второго круга)
+## 2.2. Synthesis rules (changed against round two)
 
-Второй круг был про мнения — работало «4–5 из 5 → принимаем». Третий круг про артефакты, поэтому правило другое:
+Round two was about opinions — "4–5 out of 5 → we accept" worked. Round three is about artifacts, so the rule is different:
 
-- **Совместимость артефактов важнее голосов.** Два контракта оракула, которые нельзя реализовать вместе, — это не 2 голоса против 3, а сигнал, что контракт недоспецифицирован. Считаем «сколько моделей дали взаимно совместимые артефакты».
-- **Решение принимается по самому дешёвому к реализации совместимому набору**, а не по большинству. Если один ответ даёт механизм за 2 дня, а четыре — за 6 недель, берём первый и проверяем на нём.
-- **Расхождение в числах (4.1) не голосуется** — берём минимальное значение как планировочное (ошибка в сторону меньшего TAM дешевле).
-- **Блок 5 имеет право вето.** Если у ≥3 моделей совпадёт одно и то же условие «не строить» — это стоп-сигнал, приоритетнее любого консенсуса по механизмам.
+- **Compatibility of artifacts matters more than votes.** Two oracle contracts that cannot be implemented together are not 2 votes against 3 but a signal that the contract is underspecified. We count "how many models produced mutually compatible artifacts".
+- **The decision is made on the cheapest-to-implement compatible set**, not on the majority. If one answer gives a mechanism in 2 days and four give it in 6 weeks, we take the first and test on it.
+- **A divergence in the numbers (4.1) is not put to a vote** — we take the minimum value as the planning figure (an error towards a smaller TAM is cheaper).
+- **Block 5 has a right of veto.** If the same "do not build" condition coincides in ≥3 models, that is a stop signal, taking priority over any consensus on mechanisms.
 
-## 2.3. Красные флаги
+## 2.3. Red flags
 
-1. Ответ на 1.1 нельзя реализовать → контракт недоспецифицирован, переспросить только этот пункт.
-2. В 1.2 больше или меньше трёх классов → ответ не засчитан (не умеет резать).
-3. В 2.1 нет колонки «чего не защищает» → механизм не понят.
-4. В 3.1 больше 9 элементов → карточка не влезет в 15 минут, ответ не засчитан.
-5. В 5.2 «не строить» отсутствует → модель не умеет фальсифицировать; понизить доверие ко всему ответу.
-6. Числа в 4.1 без указания, откуда взяты (практика / оценка / литература) → вычеркнуть.
+1. The answer to 1.1 cannot be implemented → the contract is underspecified; re-ask this item only.
+2. In 1.2 there are more or fewer than three classes → the answer is not counted (it cannot cut).
+3. In 2.1 there is no "what it does not protect against" column → the mechanism is not understood.
+4. In 3.1 there are more than 9 elements → the card will not fit into 15 minutes; the answer is not counted.
+5. In 5.2 "do not build" is absent → the model cannot falsify; lower confidence in the whole answer.
+6. Numbers in 4.1 without an indication of where they come from (practice / estimate / literature) → strike them out.
 
-## 2.4. Что делаем с результатом
+## 2.4. What we do with the result
 
-| Исход | Действие |
+| Outcome | Action |
 |---|---|
-| Совместимый контракт оракула у ≥2 моделей | берём за основу, реализуем в первые 2 недели |
-| Три класса совпали у ≥3 моделей | фиксируем как v1-скоуп, остальное — roadmap |
-| Witness-set: пересечение таблиц | минимальный набор для реализации; разница — в бэклог |
-| Карточка ревью: пересечение 7 элементов | основа UI; расхождения — на усмотрение assessor'ов |
-| Доля проходящих фильтр (4.1) | пересчитываем TAM и цену ангажемента |
-| Условие «не строить» повторилось ≥3 раз | **останавливаемся и проверяем его в первую очередь**, до всякой разработки |
+| A compatible oracle contract in ≥2 models | take as the basis, implement in the first 2 weeks |
+| The three classes coincide in ≥3 models | fix as the v1 scope, the rest is roadmap |
+| Witness-set: the intersection of the tables | the minimum set for implementation; the difference goes to the backlog |
+| Review card: the intersection of the 7 elements | the basis of the UI; divergences are at the assessors' discretion |
+| The share passing the filter (4.1) | we recalculate TAM and the engagement price |
+| The "do not build" condition recurred ≥3 times | **we stop and check it first of all**, before any development |
 
-## 2.5. Когда третий круг закрыт
+## 2.5. When round three is closed
 
-Закрыт, когда есть: (а) один реализуемый контракт оракула, (б) фиксированные три класса, (в) минимальный witness-set с ценой в днях, (г) карточка ревью на ≤9 элементов, (д) три числа по TAM, (е) один 30-дневный эксперимент с порогом провала.
+It is closed when there are: (a) one implementable oracle contract, (b) the three fixed classes, (c) a minimum witness-set with a cost in days, (d) a review card of ≤9 elements, (e) three numbers on TAM, (f) one 30-day experiment with a failure threshold.
 
-После этого вопросы к моделям заканчиваются: остаётся код и интервью с покупателями.
+After that the questions to the models end: what remains is code and interviews with buyers.

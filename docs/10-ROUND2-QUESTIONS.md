@@ -1,170 +1,170 @@
-# 10. Второй круг: пакет вопросов для прогона по моделям
+# 10. Second round: a question pack for running across models
 
-> **Как пользоваться.** Ниже две части. Часть 1 — готовый промпт, вставляется целиком и одинаково во все модели. Часть 2 — как сводить ответы; моделям её не показывать, иначе начнут играть под рубрику.
-> Второй круг отличается от первого тем, что модели **не проектируют архитектуру заново**, а обязаны принять решения по нашей. Иначе получим ещё девять эссе и ноль сходимости.
-
----
-
-# ЧАСТЬ 1. ПРОМПТ ДЛЯ МОДЕЛЕЙ (копировать целиком)
-
-## Роль и правила
-
-Ты — не автор архитектуры. Ты рецензент, который обязан **принять решения**. Архитектура уже собрана из девяти независимых предложений; твоя работа — проверить её на прочность и закрыть открытые вопросы.
-
-Жёсткие правила ответа:
-
-1. **Запрещено** отвечать «зависит от контекста», «нужен баланс», «всё важно», «это сложный вопрос». Если выбор действительно зависит от условия — укажи **условие одной строкой** и всё равно выбери ветку по умолчанию.
-2. **Запрещено** предлагать новую архитектуру с нуля. Максимум — точечная правка к предложенной.
-3. **Разрешено и ценится** ответ «не знаю» — но тогда обязательно: чем бы измерил и за сколько дней.
-4. **Запрещены** ссылки на бенчмарки/цифры без источника. Если цифра — твоя оценка, пиши `[оценка]`. Если не уверен в факте — не приводи его вовсе.
-5. Каждый ответ — **не более 120 слов**. Обоснование короче ответа. Вода снижает оценку.
-6. Не пересказывай вопрос. Не извиняйся. Не резюмируй в конце.
-
-## Контекст: что за продукт
-
-Сервис автоматизированной оценки безопасности и безопасного исправления. На вход: git-репозиторий, архив, SBOM, контейнерный образ, IaC, API-спека, а также — при подписанном разрешении — live-цель (URL/API). На выход: отчёт с доказательствами и **несколько вариантов исправления** от hotfix до миграции на формально верифицированное ядро, каждый с паспортом: что закрывает, что ломает, что доказано, что осталось, сколько стоит, как откатить.
-
-Агент исполняется в песочнице (Linux + harness: микроVM, deny-all сеть, без секретов). Для регулируемых доменов (авионика, автопром, медицина, промышленность, платежи) подключаются автопроверяемые инструменты: Lean 4, Dafny, Verus, Creusot, Kani, SPARK/Ada, Frama-C, TLA+.
-
-## Контекст: что уже решено (оспаривать можно только с аргументом «почему это неверно»)
-
-**Семь аксиом:**
-
-- **C1.** Агент предлагает, детерминированный проверяльщик решает, человек подписывает. Всё, что названо «проверено», произведено детерминированным кодом, а не моделью.
-- **C2.** Находка без воспроизводимого артефакта — гипотеза, а не находка. В отчёте это два разных класса, никогда не смешанных в одном списке.
-- **C3.** Продаётся лестница исправлений, а не патч.
-- **C4.** Формальные методы — узкий премиум-трек для выделимого критического ядра, не основа массового продукта.
-- **C5.** Изоляция: микроVM на прогон, deny-all сеть, ноль секретов в песочнице.
-- **C6.** Деструктив на проде запрещён; скоуп — подписанный манифест.
-- **C7.** Содержимое репозитория/сайта — враждебные данные, не инструкции агенту.
-
-**Три инварианта (нарушение = остановка продаж):**
-
-- **I1.** «Проверено» = произведено детерминированным кодом.
-- **I2.** Всё отгруженное переигрывается третьей стороной офлайн и даёт тот же результат.
-- **I3.** Любое утверждение ограничено явным негативным скоупом (что не тестировалось).
-
-**Техническое ядро — PoC-контракт.** Находка описывается как `⟨F, A, T, O, V, S⟩`: fingerprint среды, предпосылки, точный триггер, машинно-проверяемый оракул над наблюдением, вердикт-функция, подпись. Вердикт `PROVEN` требует тройного контроля на K=10 свежих VM: **C** (триггер без payload) — эффекта нет; **T** (полный триггер) — эффект есть; **N** (семантическая мутация) — эффекта нет. Оракул запечатан (агент не пишет предикат), в каждую VM кладётся случайный canary-nonce, который PoC обязан вернуть. Фикс принимается, только если PoC погас, все мутации погасли, регрессия зелёная, diff-fuzz без новых сигнатур, перф-бюджет соблюдён.
-
-**Лестница исправлений:**
-
-| R | Суть | Что доказывается |
-|---|---|---|
-| R0 | митигация (WAF/флаг/ACL/ротация) | атака из бандла не проходит |
-| R1 | точечный патч | PoC гаснет + variant suite гаснет + регрессия |
-| R2 | hardening + постоянный детектор (санитайзеры, фаззинг) | нет срабатываний на корпусе за T CPU-часов |
-| R3 | рефакторинг модуля | нет UB на домене D + класс атаки недостижим |
-| R4 | memory-safe переписывание | no-UB + контракты + эквивалентность старому на D |
-| R5 | верифицированное ядро | инварианты + корректность + design-свойства + assumptions ledger |
-
-**Наша конфигурация (её и рецензируй):** первый релиз V1 (offense-gated, repo-only, SaaS) через 8–10 недель → V2 (root-cause graph, peer-генерация R0–R3, verifier farm вне write-scope агента, фронт Парето) через 4–6 месяцев → V3 (сертифицируемое изменение, on-prem, один класс свойств) через 9–15 месяцев. Размещение по умолчанию — гибрид (панель снаружи, runner в VPC клиента), с первого дня. Два параллельных трека в отчёте: Lane A (coverage, статус `HYPOTHESIS`, не биллится) и Lane B (доказанное, биллится). Подпись человека — 100% PROVEN в v1, с публикуемой метрикой `human_review_coverage`.
-
-**Семь открытых расхождений** (именно их и надо закрыть): где ров в первые 12 месяцев; offense-gated vs coverage-first; шесть уровней лестницы vs пять; реальная стоимость валидированной находки; сколько человека в контуре; R5 — продукт или R&D; продавать ли harness вместо находок.
-
-## БЛОК A — Принудительные решения (12)
-
-Формат каждого ответа: **буква + уверенность 0–100 + почему не альтернатива (одна фраза)**.
-
-- **A1. Что попадает в раздел «находки»?** (а) только `PROVEN`; (б) `PROVEN` + отдельное приложение «гипотезы»; (в) единый список с метками уверенности.
-- **A2. Кто подписывает отчёт в v1?** (а) наш named assessor; (б) инженер клиента; (в) никто, платформенное заявление.
-- **A3. Первый продаваемый вход?** (а) только репозиторий/архив; (б) репозиторий + контейнер/SBOM/IaC; (в) плюс live URL/API.
-- **A4. Где ров в первые 12 месяцев?** (а) подпись + приёмка артефакта аудитором; (б) evidence plane (воспроизводимость); (в) proof-харнесс; (г) capability обнаружения.
-- **A5. Модель цены v1?** (а) за скоуп; (б) за находку; (в) подписка на свежесть evidence; (г) за фикс.
-- **A6. `human_review_coverage` в v1?** (а) 100%; (б) risk-based 30–50%; (в) 0% с раскрытием.
-- **A7. Размещение по умолчанию?** (а) SaaS; (б) гибрид: панель снаружи, runner в VPC клиента; (в) on-prem.
-- **A8. Формальные методы в v1?** (а) нет; (б) один шаблонный кейс как референс; (в) полноценный трек.
-- **A9. Live-тестирование прод-цели в v1?** (а) никогда; (б) только read-only GET/HEAD; (в) с approval и rate-limit.
-- **A10. Что делать с PoC, который не воспроизвёлся у клиента?** (а) исход `NRE`, не биллить, публиковать с причиной; (б) выбросить молча; (в) отдать как гипотезу.
-- **A11. Кто владеет спецификацией для R5?** (а) мы; (б) клиент; (в) совместно, с обязательным независимым ревьюером.
-- **A12. Клиент требует в отчёте формулировку «уязвимостей не обнаружено».** (а) отказ от заказа; (б) дать с явными ограничениями рядом; (в) дать как просит.
-
-## БЛОК Б — Числа (10)
-
-Формат: **значение + способ, которым ты бы его измерил + 1 строка допущений**. Если не знаешь — «не знаю» + чем измерил бы и за сколько дней. Все числа помечай `[оценка]`.
-
-- **Б1.** Блендед-стоимость одной валидированной находки в v1 (repo-only, приложение среднего размера, 100–200 kLOC).
-- **Б2.** p90-стоимость находки класса «синтез динамического PoC» (stateful-приложение).
-- **Б3.** `time-to-first-validated`, p50 и p95.
-- **Б4.** Предел wall-clock на прогон, после которого прогон экономически мёртв.
-- **Б5.** Целевой `repro rate` в CI клиента.
-- **Б6.** Целевой `fix-acceptance` (доля патчей, принятых без семантических правок).
-- **Б7.** Цена S1: одно веб-приложение, ≤50 эндпоинтов.
-- **Б8.** Целевая валовая маржа для R1 и для R3.
-- **Б9.** Типичное число валидированных находок на ангажемент S1 — и почему именно столько.
-- **Б10.** Команда и срок до первого платящего клиента (человек × месяцы).
-
-## БЛОК В — Разбор нашей конфигурации (главное)
-
-- **В1.** **Пять мест, где эта конфигурация ломается фатально.** Для каждого: механизм отказа, самый дешёвый тест, который это обнаружит, и что именно надо изменить (одна правка). Не «риски», а конкретные механизмы.
-- **В2.** **Три правки, которые дают наибольший прирост качества на единицу усилий.** Для каждой: что меняем, что это стоит в человеко-неделях `[оценка]`, что мы теряем.
-- **В3.** **Одно утверждение из C1–C7 или I1–I3, которое ты считаешь неверным.** Объясни, почему оно неверно и что произойдёт, если мы будем держаться за него.
-
-## БЛОК Г — Что вырезать
-
-**Г1.** У тебя 8 недель и 3 инженера. Из списка ниже **вырежи семь пунктов** и объясни, что переживёт без них, а что умрёт. Оставь пять.
-
-`(1)` микроVM-песочница · `(2)` PoC-контракт с тройным контролем C/T/N · `(3)` запечатанный оракул · `(4)` canary-nonce · `(5)` evidence plane с hash-chain · `(6)` офлайн replay kit · `(7)` live DAST по URL · `(8)` root-cause graph · `(9)` peer-генерация вариантов R0–R5 · `(10)` verifier farm вне write-scope агента · `(11)` формальный трек · `(12)` named signatory / человеческий гейт.
-
-Формат: список пяти оставленных + по одному предложению «почему без этого продукт перестаёт быть продаваемым» + по одному «что мы теряем, вырезав это».
-
-## БЛОК Д — Предсказание смерти
-
-**Д1.** Через сколько месяцев и от какого механизма этот продукт умрёт, если команда будет делать всё «правильно» по этой спеке? Назови **один** главный механизм, месяц и **ранний индикатор**, который виден за месяц до смерти (метрика + порог).
-
-## БЛОК Е — Что мы забыли
-
-**Е1.** Один вопрос, которого нет в этом пакете, но который мы обязаны были задать. Сформулируй его и дай свой ответ.
+> **How to use this.** There are two parts below. Part 1 is a ready-made prompt; paste it whole and identically into every model. Part 2 is how to consolidate the answers; do not show it to the models, otherwise they will start playing to the rubric.
+> The second round differs from the first in that the models **do not design the architecture from scratch** but are obliged to make decisions about ours. Otherwise we get nine more essays and zero convergence.
 
 ---
 
-# ЧАСТЬ 2. КАК СВОДИТЬ ОТВЕТЫ (моделям не показывать)
+# PART 1. PROMPT FOR THE MODELS (copy in full)
 
-## 2.1. Что считается сильным ответом
+## Role and rules
 
-| Признак | Сильный | Слабый |
+You are not the author of the architecture. You are a reviewer who is obliged to **make decisions**. The architecture has already been assembled from nine independent proposals; your job is to stress-test it and close the open questions.
+
+Hard rules for the answer:
+
+1. **Forbidden** to answer "it depends on the context", "a balance is needed", "everything matters", "this is a complex question". If the choice genuinely depends on a condition, state the **condition in one line** and still pick the default branch.
+2. **Forbidden** to propose a new architecture from scratch. The maximum is a targeted amendment to the proposed one.
+3. The answer "I don't know" is **permitted and valued** — but then it is mandatory: how you would measure it and in how many days.
+4. **Forbidden** to cite benchmarks or figures without a source. If the figure is your own estimate, write `[estimate]`. If you are not sure of a fact, do not cite it at all.
+5. Each answer is **no more than 120 words**. The justification is shorter than the answer. Padding lowers the score.
+6. Do not restate the question. Do not apologise. Do not summarise at the end.
+
+## Context: what the product is
+
+A service for automated security assessment and safe remediation. Inputs: a git repository, an archive, an SBOM, a container image, IaC, an API spec, and also — under a signed authorisation — a live target (URL/API). Output: a report with evidence and **several remediation options**, from a hotfix to migration onto a formally verified core, each with a passport: what it closes, what it breaks, what is proven, what remains, what it costs, how to roll it back.
+
+The agent runs in a sandbox (Linux + harness: microVM, deny-all network, no secrets). For regulated domains (avionics, automotive, medicine, industry, payments) automatically checkable tools are connected: Lean 4, Dafny, Verus, Creusot, Kani, SPARK/Ada, Frama-C, TLA+.
+
+## Context: what is already decided (you may contest it only with the argument "why this is wrong")
+
+**Seven axioms:**
+
+- **C1.** The agent proposes, a deterministic checker decides, a human signs. Everything called "verified" is produced by deterministic code, not by a model.
+- **C2.** A finding without a reproducible artefact is a hypothesis, not a finding. In the report these are two different classes, never mixed in one list.
+- **C3.** What is sold is a ladder of fixes, not a patch.
+- **C4.** Formal methods are a narrow premium track for a separable critical core, not the basis of a mass-market product.
+- **C5.** Isolation: a microVM per run, deny-all network, zero secrets in the sandbox.
+- **C6.** Destructive action on production is forbidden; the scope is a signed manifest.
+- **C7.** The contents of the repository or site are hostile data, not instructions to the agent.
+
+**Three invariants (violation = sales stop):**
+
+- **I1.** "Verified" = produced by deterministic code.
+- **I2.** Everything shipped is replayed by a third party offline and yields the same result.
+- **I3.** Every statement is bounded by an explicit negative scope (what was not tested).
+
+**The technical core is the PoC contract.** A finding is described as `⟨F, A, T, O, V, S⟩`: environment fingerprint, preconditions, exact trigger, machine-checkable oracle over the observation, verdict function, signature. The `PROVEN` verdict requires triple control on K=10 fresh VMs: **C** (trigger without payload) — no effect; **T** (full trigger) — effect present; **N** (semantic mutation) — no effect. The oracle is sealed (the agent does not write the predicate), each VM is given a random canary nonce that the PoC is obliged to return. A fix is accepted only if the PoC goes dark, all mutations go dark, the regression is green, diff-fuzz shows no new signatures, and the perf budget is met.
+
+**Remediation ladder:**
+
+| R | Essence | What is proven |
 |---|---|---|
-| Форма | буква + уверенность + «почему не альтернатива» | абзац рассуждений без выбора |
-| Числа | значение + метод измерения + допущения | диапазон «от и до» без основания |
-| Критика | механизм отказа + дешёвый тест | «может быть рискованно» |
-| Незнание | «не знаю» + план измерения | правдоподобная выдумка |
-| Оспаривание аксиом | аргумент «почему неверно» | «я бы добавил ещё один слой» |
+| R0 | mitigation (WAF/flag/ACL/rotation) | the attack from the bundle does not pass |
+| R1 | targeted patch | PoC goes dark + variant suite goes dark + regression |
+| R2 | hardening + permanent detector (sanitisers, fuzzing) | no hits on the corpus over T CPU-hours |
+| R3 | module refactoring | no UB on domain D + the attack class is unreachable |
+| R4 | memory-safe rewrite | no-UB + contracts + equivalence to the old one on D |
+| R5 | verified core | invariants + correctness + design properties + assumptions ledger |
 
-## 2.2. Сводная таблица (заполнять по каждой модели)
+**Our configuration (this is what you review):** first release V1 (offense-gated, repo-only, SaaS) in 8–10 weeks → V2 (root-cause graph, peer generation of R0–R3, verifier farm outside the agent's write-scope, Pareto front) in 4–6 months → V3 (certifiable change, on-prem, one property class) in 9–15 months. Default placement is hybrid (panel outside, runner in the client's VPC), from day one. Two parallel lanes in the report: Lane A (coverage, status `HYPOTHESIS`, not billed) and Lane B (proven, billed). Human signature — 100% PROVEN in v1, with a published `human_review_coverage` metric.
 
-| Вопрос | Модель 1 | Модель 2 | Модель 3 | Модель 4 | Модель 5 | Консенсус | Разброс |
+**Seven open divergences** (these are exactly what has to be closed): where the moat is in the first 12 months; offense-gated vs coverage-first; six ladder levels vs five; the real cost of a validated finding; how much human is in the loop; R5 — product or R&D; whether to sell the harness instead of findings.
+
+## BLOCK A — Forced decisions (12)
+
+Format of each answer: **letter + confidence 0–100 + why not the alternative (one phrase)**.
+
+- **A1. What goes into the "findings" section?** (a) only `PROVEN`; (b) `PROVEN` + a separate "hypotheses" appendix; (c) a single list with confidence labels.
+- **A2. Who signs the report in v1?** (a) our named assessor; (b) the client's engineer; (c) nobody, a platform statement.
+- **A3. The first sellable input?** (a) repository/archive only; (b) repository + container/SBOM/IaC; (c) plus live URL/API.
+- **A4. Where is the moat in the first 12 months?** (a) signature + artefact acceptance by an auditor; (b) the evidence plane (reproducibility); (c) the proof harness; (d) detection capability.
+- **A5. The v1 pricing model?** (a) per scope; (b) per finding; (c) subscription to evidence freshness; (d) per fix.
+- **A6. `human_review_coverage` in v1?** (a) 100%; (b) risk-based 30–50%; (c) 0% with disclosure.
+- **A7. Default placement?** (a) SaaS; (b) hybrid: panel outside, runner in the client's VPC; (c) on-prem.
+- **A8. Formal methods in v1?** (a) no; (b) one template case as a reference; (c) a full track.
+- **A9. Live testing of a production target in v1?** (a) never; (b) read-only GET/HEAD only; (c) with approval and rate-limit.
+- **A10. What to do with a PoC that did not reproduce at the client?** (a) outcome `NRE`, do not bill, publish with the reason; (b) discard silently; (c) hand over as a hypothesis.
+- **A11. Who owns the specification for R5?** (a) us; (b) the client; (c) jointly, with a mandatory independent reviewer.
+- **A12. The client demands the wording "no vulnerabilities were found" in the report.** (a) refuse the order; (b) provide it with explicit limitations alongside; (c) provide it as asked.
+
+## BLOCK B — Numbers (10)
+
+Format: **value + the method by which you would measure it + 1 line of assumptions**. If you do not know — "I don't know" + what you would measure it with and in how many days. Mark every number `[estimate]`.
+
+- **B1.** Blended cost of one validated finding in v1 (repo-only, a mid-sized application, 100–200 kLOC).
+- **B2.** p90 cost of a finding in the "dynamic PoC synthesis" class (a stateful application).
+- **B3.** `time-to-first-validated`, p50 and p95.
+- **B4.** The wall-clock limit per run beyond which the run is economically dead.
+- **B5.** Target `repro rate` in the client's CI.
+- **B6.** Target `fix-acceptance` (the share of patches accepted without semantic edits).
+- **B7.** The price of S1: one web application, ≤50 endpoints.
+- **B8.** Target gross margin for R1 and for R3.
+- **B9.** The typical number of validated findings per S1 engagement — and why exactly that many.
+- **B10.** The team and the time to the first paying client (person × months).
+
+## BLOCK V — Analysis of our configuration (the main part)
+
+- **V1.** **Five places where this configuration breaks fatally.** For each: the failure mechanism, the cheapest test that will detect it, and what exactly must be changed (one amendment). Not "risks" but concrete mechanisms.
+- **V2.** **The three amendments that give the largest gain in quality per unit of effort.** For each: what we change, what it costs in person-weeks `[estimate]`, what we lose.
+- **V3.** **One statement from C1–C7 or I1–I3 that you consider wrong.** Explain why it is wrong and what will happen if we hold on to it.
+
+## BLOCK G — What to cut
+
+**G1.** You have 8 weeks and 3 engineers. From the list below **cut seven items** and explain what will survive without them and what will die. Leave five.
+
+`(1)` microVM sandbox · `(2)` PoC contract with triple control C/T/N · `(3)` sealed oracle · `(4)` canary nonce · `(5)` evidence plane with hash-chain · `(6)` offline replay kit · `(7)` live DAST by URL · `(8)` root-cause graph · `(9)` peer generation of R0–R5 variants · `(10)` verifier farm outside the agent's write-scope · `(11)` formal track · `(12)` named signatory / human gate.
+
+Format: a list of the five kept + one sentence each on "why without this the product stops being sellable" + one each on "what we lose by cutting it".
+
+## BLOCK D — Death prediction
+
+**D1.** In how many months and from what mechanism will this product die, if the team does everything "right" according to this spec? Name **one** main mechanism, the month and the **early indicator** that is visible one month before death (metric + threshold).
+
+## BLOCK E — What we forgot
+
+**E1.** One question that is not in this pack but that we were obliged to ask. Formulate it and give your own answer.
+
+---
+
+# PART 2. HOW TO CONSOLIDATE THE ANSWERS (do not show to the models)
+
+## 2.1. What counts as a strong answer
+
+| Attribute | Strong | Weak |
+|---|---|---|
+| Form | letter + confidence + "why not the alternative" | a paragraph of reasoning with no choice |
+| Numbers | value + measurement method + assumptions | a range "from and to" with no basis |
+| Criticism | failure mechanism + cheap test | "it might be risky" |
+| Not knowing | "I don't know" + a measurement plan | a plausible fabrication |
+| Contesting axioms | the argument "why it is wrong" | "I would add one more layer" |
+
+## 2.2. Summary table (fill in for each model)
+
+| Question | Model 1 | Model 2 | Model 3 | Model 4 | Model 5 | Consensus | Spread |
 |---|---|---|---|---|---|---|---|
 | A1 | | | | | | | |
 | A2 | | | | | | | |
 | … | | | | | | | |
 
-**Правила интерпретации:**
+**Interpretation rules:**
 
-- **Совпало 4–5 из 5 → принимаем как решение**, даже если противоречит нашему. Это самый дешёвый способ убрать предвзятость основателя.
-- **3/2 → решаем сами**, но фиксируем в спеке, что это спорно, и назначаем тест.
-- **Разброс 2/2/1 → вопрос плохо поставлен**, а не «модели глупые». Переформулировать или перевести в измеримый (Блок Б).
-- **Все «не знаю» → вопрос требует данных, а не мнений.** Уходит в пилот, не в спеку.
+- **4–5 of 5 agree → we adopt it as a decision**, even if it contradicts ours. That is the cheapest way to remove founder bias.
+- **3/2 → we decide ourselves**, but record in the spec that this is contested, and assign a test.
+- **A spread of 2/2/1 → the question is badly posed**, not "the models are stupid". Reformulate it or convert it into a measurable one (Block B).
+- **All "I don't know" → the question requires data, not opinions.** It goes into the pilot, not the spec.
 
-## 2.3. Красные флаги в ответах (обеспечивают ответ)
+## 2.3. Red flags in answers (they disqualify the answer)
 
-1. Дал числа без метода измерения → вычеркнуть число.
-2. Предложил новую архитектуру вместо решения → ответ по вопросу не засчитывается.
-3. Ответил «зависит» без условия → не засчитывается.
-4. Сослался на бенчмарк без источника → проверить; если не подтверждается, пометить как выдумку и **понизить доверие ко всему ответу**.
-5. В блоке Г оставил ≥9 компонентов из 12 → не умеет резать охват, его архитектурные суждения менее ценны.
-6. В блоке Д предсказал смерть «никогда» или «через 5 лет» → не смог назвать механизм.
+1. Gave numbers without a measurement method → strike out the number.
+2. Proposed a new architecture instead of a decision → the answer to the question does not count.
+3. Answered "it depends" with no condition → does not count.
+4. Cited a benchmark without a source → verify it; if it does not hold up, mark it as a fabrication and **lower trust in the whole answer**.
+5. In Block G left ≥9 components out of 12 → cannot cut scope, and their architectural judgements are less valuable.
+6. In Block D predicted death "never" or "in 5 years" → failed to name a mechanism.
 
-## 2.4. Что делать с результатом
+## 2.4. What to do with the result
 
-| Исход | Действие |
+| Outcome | Action |
 |---|---|
-| Консенсус по A1–A12 | переносим в спеку как `РЕШЕНО`, обновляем `00-SYNTHESIS.md` §3 |
-| Расхождение по A | назначаем дешёвый эксперимент (≤5 дней), который различает варианты |
-| Консенсус по Б | калибруем модель экономики, заменяем `[оценка]` на измеренное после пилота |
-| В1 (пять фатальных мест) | каждое становится задачей с приоритетом, если совпало у ≥3 моделей |
-| В3 (оспоренная аксиома) | если аргумент сильный — пересматриваем аксиому; это единственный законный способ её тронуть |
-| Г1 (срезанный список) | пересечение пяти моделей = реальный объём v1. Объединение = провал планирования |
-| Д1 (предсказание смерти) | ранние индикаторы → в дашборд, пороги → в kill criteria |
+| Consensus on A1–A12 | carry it into the spec as `DECIDED`, update `00-SYNTHESIS.md` §3 |
+| Divergence on A | assign a cheap experiment (≤5 days) that distinguishes the options |
+| Consensus on B | calibrate the economics model, replace `[estimate]` with the measured value after the pilot |
+| V1 (five fatal places) | each becomes a prioritised task if it matched in ≥3 models |
+| V3 (contested axiom) | if the argument is strong, we revise the axiom; this is the only legitimate way to touch it |
+| G1 (the cut list) | the intersection of five models = the real scope of v1. The union = a planning failure |
+| D1 (death prediction) | early indicators → into the dashboard, thresholds → into kill criteria |
 
-## 2.5. Один вопрос, который стоит задать после свода
+## 2.5. One question worth asking after consolidation
 
-Если у ≥3 моделей в блоке Д совпал **один и тот же** механизм смерти — это не гипотеза, а прогноз. Тогда единственный правильный следующий шаг — не третий круг вопросов, а **тест на этот механизм в первые 30 дней**, даже ценой задержки релиза.
+If in ≥3 models the **same** death mechanism matches in Block D, that is not a hypothesis but a forecast. Then the only correct next step is not a third round of questions, but **a test for that mechanism within the first 30 days**, even at the cost of delaying the release.

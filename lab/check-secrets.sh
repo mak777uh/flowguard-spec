@@ -16,7 +16,7 @@ hits=$(git log -p --all 2>/dev/null | grep -aEI "$PATTERNS" | head -20 || true)
 if [ -n "$hits" ]; then echo "LEAK: секретные паттерны в истории"; echo "$hits"; fail=1; else echo "ok"; fi
 
 echo "== local paths =="
-hits=$(git grep -nEI "$LOCALPATH" -- '*.md' '*.yml' '*.sh' '*.py' 2>/dev/null || true)
+hits=$(git grep -nEI "$LOCALPATH" -- '*.md' '*.yml' '*.sh' '*.py' ':!lab/check-secrets.sh' 2>/dev/null || true)
 if [ -n "$hits" ]; then echo "LEAK: локальные пути"; echo "$hits"; fail=1; else echo "ok"; fi
 
 echo "== .git/config =="

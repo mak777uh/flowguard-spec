@@ -1,44 +1,44 @@
-# FLOWGUARD — мастер-документ для внешнего ревью
+# FLOWGUARD — master document for external review
 
-**Что это.** Один самодостаточный файл: продукт, обе технические ветки, форматы, правила вердикта, экономика, доктрина цены, реестр утверждений для критики, ранжированные слабые места, список обязательных измерений и вопросы для следующего круга.
-**Как пользоваться.** Кидай целиком в модель. В конце — блок «что от тебя нужно», модель ответит сопоставимо с другими.
-**Метки достоверности:** `[Д]` доказано машинно · `[И]` измерено/воспроизведено · `[Г]` гипотеза, требует проверки.
-**Дата фиксации:** v1. Все числа `[Г]` — оценки для планирования, не факты.
-
----
-
-# 0. Продукт в шести предложениях
-
-1. Мы не ищем уязвимости. Мы доказываем, что в **объявленном замыкании** мимо единственной точки решения нельзя провести ценность — деньги, данные, доступ.
-2. Утверждение ограничено: вне замыкания гарантия **не действует**, и это записано в артефакте, а не в мелком шрифте.
-3. Утверждение **проверяемо офлайн** третьей стороной, без доверия к нам: верификатор и формат открыты навсегда.
-4. Продаётся лестница исправлений: от конфигурации до доказанного ядра, каждая ступень с паспортом — что закрывает, что ломает, что доказано, что осталось.
-5. Человек в контуре — четыре гейта по 10–30 минут; всё, что производит свидетельство, делает машина.
-6. Экономика строится так, чтобы цена **падала**, а качество росло; деньги на развитие берутся из сэкономленных человеко-часов, а не из роста цены.
-
-**Две ветки, одно ядро.** On-chain (escrow) — первая, потому что не требует микроVM и работает на ноутбуке. Legacy (сервис с БД) — вторая, потому что требует микроVM, eBPF и воспроизводимого деплоя.
+**What this is.** One self-contained file: the product, both technical branches, formats, verdict rules, economics, pricing doctrine, the register of claims for criticism, ranked weak points, the list of mandatory measurements, and questions for the next round.
+**How to use it.** Feed the whole thing to the model. At the end there is a block, "what is needed from you"; the model will answer in a way comparable with the others.
+**Confidence tags:** `[PROVED]` machine-proved · `[MEASURED]` measured/reproduced · `[HYPOTHESIS]` hypothesis, requires verification.
+**Fixation date:** v1. All `[HYPOTHESIS]` numbers are planning estimates, not facts.
 
 ---
 
-# 1. Общее ядро
+# 0. The product in six sentences
 
-## 1.1. Семь сущностей
+1. We do not hunt for vulnerabilities. We prove that within the **declared closure** value cannot be routed past the single decision point — money, data, access.
+2. The claim is bounded: outside the closure the guarantee **does not hold**, and this is written into the artifact, not into the fine print.
+3. The claim is **verifiable offline** by a third party, with no trust in us: the verifier and the format are open forever.
+4. What is sold is a ladder of fixes: from configuration to a proved core, each rung with a passport — what it closes, what it breaks, what is proved, what remains.
+5. The human in the loop is four gates of 10–30 minutes each; everything that produces evidence is done by the machine.
+6. The economics are built so that the price **falls** while quality grows; money for development comes from saved person-hours, not from a price increase.
 
-| Сущность | Смысл |
+**Two branches, one core.** On-chain (escrow) comes first, because it does not require a microVM and runs on a laptop. Legacy (a service with a database) comes second, because it requires a microVM, eBPF and reproducible deployment.
+
+---
+
+# 1. Common core
+
+## 1.1. Seven entities
+
+| Entity | Meaning |
 |---|---|
-| **Flow** | защищаемый поток: ресурс от входа к выходу |
-| **Resource** | адресуемая ценность: баланс эскроу, строка леджера, токен |
-| **Subject** | инициатор действия; идентифицируется только из проверенного источника |
-| **Policy P** | что разрешено; deny-beats-allow, default deny |
-| **Closure Z** | все пути изменения ресурса; **непустое множество неизвестных путей запрещает `PROVEN`** |
-| **EnforcementPoint M** | единственная точка решения; каждый путь либо через неё, либо объявлен вне гарантии |
-| **Attestation** | подписанный бандл: утверждение + доказательства + границы |
+| **Flow** | the protected flow: a resource from input to output |
+| **Resource** | addressable value: escrow balance, ledger row, token |
+| **Subject** | the initiator of an action; identified only from a verified source |
+| **Policy P** | what is permitted; deny-beats-allow, default deny |
+| **Closure Z** | all paths that modify the resource; **a non-empty set of unknown paths forbids `PROVEN`** |
+| **EnforcementPoint M** | the single decision point; every path either goes through it or is declared outside the guarantee |
+| **Attestation** | a signed bundle: claim + evidence + boundaries |
 
-Доменное различие изолируется полем `subject.kind`, а не отдельным форматом: `{"kind":"chain.escrow","chain_id":1,"address":"0x…","code_hash":"0x…","block":…,"finality":"FINAL"}` или `{"kind":"legacy.flow","repo":"…","commit":"…","build_cmd":"…","runtime":"…"}`.
+The domain distinction is isolated by the `subject.kind` field, not by a separate format: `{"kind":"chain.escrow","chain_id":1,"address":"0x…","code_hash":"0x…","block":…,"finality":"FINAL"}` or `{"kind":"legacy.flow","repo":"…","commit":"…","build_cmd":"…","runtime":"…"}`.
 
-Шесть портов для доменной независимости: `StateProvider`, `EnforcementPoint`, `ObservationChannel`, `Clock`, `Domain`, `Prover` — по два бэкенда на каждый.
+Six ports for domain independence: `StateProvider`, `EnforcementPoint`, `ObservationChannel`, `Clock`, `Domain`, `Prover` — two backends for each.
 
-## 1.2. Вердикт
+## 1.2. Verdict
 
 ```
 PROVEN ⟺ attacks_all_blocked ∧ invariants_discharged
@@ -48,355 +48,355 @@ PROVEN ⟺ attacks_all_blocked ∧ invariants_discharged
 closure_complete ⟺ unknown_paths = ∅
 ```
 
-| Значение | Условие |
+| Value | Condition |
 |---|---|
-| `PROVEN` | все конъюнкты истинны |
-| `NOT_PROVEN` | инвариант опровергнут контрпримером |
-| `INCONCLUSIVE` | доказательств недостаточно: неизвестный путь, недоступный bytecode, `PROVISIONAL`-финальность, таймаут |
-| `INVALID` | свидетельство бито: код не совпал, реорг, подпись неверна |
+| `PROVEN` | all conjuncts are true |
+| `NOT_PROVEN` | the invariant is refuted by a counterexample |
+| `INCONCLUSIVE` | insufficient evidence: an unknown path, unavailable bytecode, `PROVISIONAL` finality, timeout |
+| `INVALID` | the evidence is broken: code mismatch, reorg, invalid signature |
 
-`PROVISIONAL` — поле `finality`, не вердикт; не годится для выплат.
-Коды возврата CLI — часть контракта: `0 PROVEN · 1 NOT_PROVEN · 2 INCONCLUSIVE · 4 INVALID · 5 replay mismatch`.
+`PROVISIONAL` is a `finality` field, not a verdict; it is not fit for payouts.
+CLI exit codes are part of the contract: `0 PROVEN · 1 NOT_PROVEN · 2 INCONCLUSIVE · 4 INVALID · 5 replay mismatch`.
 
-## 1.3. Формат `flowguard.yml` (сокращённо, нормативно)
+## 1.3. Format of `flowguard.yml` (abridged, normative)
 
-Правило: неизвестные поля в `policy`/`closure`/`enforcement`/`evidence` **MUST** отклоняться (fail-closed).
+Rule: unknown fields in `policy`/`closure`/`enforcement`/`evidence` **MUST** be rejected (fail-closed).
 
 ```yaml
 schema_version: "1.0"
 flow: {id: "…", domain: onchain|legacy, assets: [{kind: token|money|data|access, id, criticality}]}
-subject: {kind: chain.escrow|chain.contract|legacy.flow, …доменные поля…}
+subject: {kind: chain.escrow|chain.contract|legacy.flow, …domain fields…}
 policy: {id, version, fail_closed: true, invariants: [id…]}
 closure: {declared_paths: […], excluded: [{path, reason}], unknown_behavior: INCONCLUSIVE}
 enforcement: {mode: in_process|single_writer|onchain_guard, mediator: {…}, permit: {algorithm: Ed25519, max_ttl_seconds, version_bound: true, domain_bound: true}}
 evidence: {observation_channels: […], finality_rule: l1_finalized|l2_optimistic|l2_zk, reorg_behavior: INVALID, prover_backend: […]}
 attestation: {expires_after_seconds, signatures_required: 4, signer_roles: […], bundle_format: "fg-bundle/1"}
-# FORBIDDEN: секреты; "PROVEN" как вход; wildcard-доверие; excluded без reason;
-#            active proxy admin без объявления; database_trigger.enabled=false при placement=library
+# FORBIDDEN: secrets; "PROVEN" as input; wildcard trust; excluded without reason;
+#            active proxy admin without declaration; database_trigger.enabled=false with placement=library
 ```
 
-## 1.4. Бандл аттестации
+## 1.4. Attestation bundle
 
-Один формат на оба домена. Подпись покрывает **канонический digest всего бандла** (JCS → SHA-256 → Ed25519), не только вердикт.
+One format for both domains. The signature covers **the canonical digest of the whole bundle** (JCS → SHA-256 → Ed25519), not just the verdict.
 
 ```
 manifest.json · flowguard.yml · subject.json
-chain/ (block, finality, state, privileged-paths)   ← только on-chain
+chain/ (block, finality, state, privileged-paths)   ← on-chain only
 closure/ (declaration, discovered_vs_declared, db_principals)
 policy/ (rules, invariants, counterexamples)
-enforcement/ (mediator source, trigger.sql)         ← только legacy
-witness/ (tap, db_digest, identity, acceptance/)    ← только legacy
-oracles/ · findings/ (proven.json, hypotheses.json) ← только legacy
+enforcement/ (mediator source, trigger.sql)         ← legacy only
+witness/ (tap, db_digest, identity, acceptance/)    ← legacy only
+oracles/ · findings/ (proven.json, hypotheses.json) ← legacy only
 proof/ (results, assumptions, counterexamples)
 attacks/ (results.json)
 replay/ (manifest.json) · verdict.json · signatures/
 ```
 
-**Жёсткие правила:** `findings/hypotheses.json` никогда не смешивается с `proven.json`; `assumptions.json` требует у каждого допущения поле `what_breaks_if_false`; бандл не содержит исходников цели, только хеши.
+**Hard rules:** `findings/hypotheses.json` is never mixed with `proven.json`; `assumptions.json` requires a `what_breaks_if_false` field on every assumption; the bundle contains no source code of the target, only hashes.
 
-## 1.5. Детерминизм
+## 1.5. Determinism
 
-`attest` + `replay` на эталонной цели дают **байт-в-байт** одинаковый бандл. Временные метки в подписываемый хеш не входят. `verify` не делает сетевых запросов. `verify` поддерживает все прошлые версии формата вечно.
+`attest` + `replay` on a reference target produce a **byte-for-byte** identical bundle. Timestamps do not enter the signed hash. `verify` makes no network requests. `verify` supports all past versions of the format, forever.
 
 ---
 
 # 2. On-chain: escrow
 
-**Почему escrow.** TCB 250–500 строк, три состояния, публичные референсы, и — решающее — escrow является первым потребителем нашей же автовыплаты (проверяем механизм на продукте, который продаём).
+**Why escrow.** A TCB of 250–500 lines, three states, public references, and — decisively — escrow is the first consumer of our own automatic payout (we test the mechanism on the product we sell).
 
-**Почему первым.** EVM-среда (`anvil`) — обычный процесс, работает на macOS/Linux/Windows. Полный цикл «инвентаризация → инварианты → 10 атак → бандл → verify → replay» исполняется **на ноутбуке**, без KVM и без NDA.
+**Why first.** The EVM environment (`anvil`) is an ordinary process and runs on macOS/Linux/Windows. The full cycle "inventory → invariants → 10 attacks → bundle → verify → replay" runs **on a laptop**, without KVM and without an NDA.
 
-## 2.1. Три инварианта
+## 2.1. Three invariants
 
-| ID | Предикат | Ловит |
+| ID | Predicate | Catches |
 |---|---|---|
-| **INV-1** | `∀a: balanceOf(escrow,a) ≥ Σ_{locked,disputed} amount[a]` и `deposited = released + refunded + Σlocked` | дренаж, скрытый mint/burn |
-| **INV-2** | `released[e] + refunded[e] ≤ deposited[e]`; переходы `CREATED→LOCKED→{RELEASED\|REFUNDED\|DISPUTED}`, без обратных | двойная выплата, refund после release |
-| **INV-3** | `release(e) ⇒ LOCKED ∧ att_PROVEN ∧ att.subject=e.subject ∧ recipient/amount match ∧ final(block)` | выплата по чужому/нефинальному акту |
+| **INV-1** | `∀a: balanceOf(escrow,a) ≥ Σ_{locked,disputed} amount[a]` and `deposited = released + refunded + Σlocked` | draining, hidden mint/burn |
+| **INV-2** | `released[e] + refunded[e] ≤ deposited[e]`; transitions `CREATED→LOCKED→{RELEASED\|REFUNDED\|DISPUTED}`, with no reverse transitions | double payout, refund after release |
+| **INV-3** | `release(e) ⇒ LOCKED ∧ att_PROVEN ∧ att.subject=e.subject ∧ recipient/amount match ∧ final(block)` | payout against a foreign or non-final attestation |
 
-**Оговорка:** INV-1 верна только для токенов без rebasing и fee-on-transfer. Для них — отдельная модель, иначе `INCONCLUSIVE`.
+**Caveat:** INV-1 holds only for tokens without rebasing and fee-on-transfer. For those there is a separate model; otherwise `INCONCLUSIVE`.
 
-## 2.2. Семь классов привилегированных путей
+## 2.2. Seven classes of privileged paths
 
-owner/admin/роли · upgrade-прокси (EIP-1967) · `delegatecall` · `selfdestruct` · внешние value-вызовы · keeper/callback · sweep/rescue-функции.
-Каждый несёт `gaps[]` — «что этот метод не видит». Путь без `gaps` считается дефектом анализатора.
-**Активный `proxy admin` ⇒ `INVALID`**, не «покрыто».
+owner/admin/roles · upgrade proxy (EIP-1967) · `delegatecall` · `selfdestruct` · external value calls · keeper/callback · sweep/rescue functions.
+Each carries `gaps[]` — "what this method does not see". A path without `gaps` is treated as an analyzer defect.
+**An active `proxy admin` ⇒ `INVALID`**, not "covered".
 
-## 2.3. Финальность
+## 2.3. Finality
 
-| Сеть | Правило |
+| Network | Rule |
 |---|---|
-| L1 | `finalized` checkpoint (≈2 эпохи, ~12.8 мин). Счётчик блоков как единственный критерий — **MUST NOT** |
-| L2 optimistic | публикация batch + финализация L1-анкора + истёкший challenge-период; до анкора — `PROVISIONAL` |
-| L2 zk | proof верифицирован на L1 и L1-блок финализирован |
-| Реорг между прогоном и подписью | сверка `block_hash`; расхождение → `INVALID` |
+| L1 | `finalized` checkpoint (≈2 epochs, ~12.8 min). A block counter as the sole criterion — **MUST NOT** |
+| L2 optimistic | publication of the batch + finalization of the L1 anchor + an expired challenge period; before the anchor — `PROVISIONAL` |
+| L2 zk | the proof is verified on L1 and the L1 block is finalized |
+| Reorg between the run and the signature | reconcile `block_hash`; a mismatch → `INVALID` |
 
-## 2.4. Десять атак
+## 2.4. Ten attacks
 
-A1 `release` от неавторизованного · A2 двойной `release` · A3 `release` до условия · A4 `release` с актом от другого эскроу · A5 `release` на `PROVISIONAL`-блоке · A6 `refund` после `release` · A7 вывод через `sweep`/`rescue` · A8 эскалация роли · A9 подмена implementation · A10 drain через внешний вызов/реентранси.
-Атаки — исполняемые скрипты, **не агент**: недетерминированная проверка не является проверкой.
+A1 `release` by an unauthorized party · A2 double `release` · A3 `release` before the condition · A4 `release` with an attestation from another escrow · A5 `release` on a `PROVISIONAL` block · A6 `refund` after `release` · A7 withdrawal via `sweep`/`rescue` · A8 role escalation · A9 implementation substitution · A10 drain via an external call/reentrancy.
+Attacks are executable scripts, **not an agent**: a non-deterministic check is not a check.
 
-## 2.5. Подписанты акта
+## 2.5. Signatories of the attestation
 
-product owner (мультисиг) · custody quorum (заменяет infra owner) · security lead · verifier. Разработчик подписывает только соответствие bytecode исходникам, не акт. Минимальные действия закрытия: роли → Timelock ≥48 ч, отзыв ролей у EOA, `renounce` ненужного, отмена allowances, проверка внешних value-вызовов.
+product owner (multisig) · custody quorum (replaces the infra owner) · security lead · verifier. The developer signs only that the bytecode matches the sources, not the attestation. Minimum closure actions: roles → Timelock ≥48 h, revoke roles from EOAs, `renounce` what is not needed, cancel allowances, verify external value calls.
 
 ---
 
-# 3. Legacy: сервис с БД
+# 3. Legacy: a service with a database
 
-**Почему второй.** Требует трёх дорогих вещей: микроVM с KVM на голом железе, динамический witness (12 человеко-дней на цель), воспроизводимый деплой приложения клиента.
+**Why second.** It requires three expensive things: a microVM with KVM on bare metal, a dynamic witness (12 person-days per target), and reproducible deployment of the client's application.
 
-## 3.1. Замыкание Z: 12 элементов
+## 3.1. Closure Z: 12 elements
 
-Девять обязательных: синхронные входы · batch/cron/ETL · админка/support/break-glass · бэкап/restore/репликация · все точки записи (включая хранимки и миграции) · реестр принципалов БД · очереди/ретраи/идемпотентность · конфигурация политики · CI/CD и секреты.
-Три структурных: **наблюдаемый слой** (без него нельзя отличить обход от сбоя) · **внешние зачисления и reconciliation провайдера** · **сам M с подписанной версией политики** (подмена M вне Z делает утверждение ложным).
+Nine mandatory: synchronous inputs · batch/cron/ETL · admin panel/support/break-glass · backup/restore/replication · all write points (including stored procedures and migrations) · registry of database principals · queues/retries/idempotency · policy configuration · CI/CD and secrets.
+Three structural: **the observable layer** (without it, a bypass cannot be distinguished from a failure) · **external credits and provider reconciliation** · **M itself with a signed policy version** (substituting M outside Z makes the claim false).
 
-## 3.2. Семь путей обхода и решения
+## 3.2. Seven bypass paths and decisions
 
-| Путь | Решение |
+| Path | Decision |
 |---|---|
-| batch/cron/ETL | медиировать |
-| админка/support | медиировать + двойной контроль |
-| **бэкап/restore** | **запретить прямой restore**: только подписанный снапшот + пост-сверка + перевыпуск акта |
-| партнёрское/мобильное API | медиировать, старые версии отключить |
-| **прямой доступ к БД** | **запретить**; write-креды только у M; break-glass с журналом |
-| логи/аналитика | **запретить запись** в денежный путь; копия PII — отдельный поток |
-| CI/supply chain | **запретить креды данных** + проверка хеша деплоя; целостность цепочки — вне гарантии |
+| batch/cron/ETL | mediate |
+| admin panel/support | mediate + dual control |
+| **backup/restore** | **forbid direct restore**: only a signed snapshot + post-check + reissue of the attestation |
+| partner/mobile API | mediate, disable old versions |
+| **direct database access** | **forbid**; write credentials only for M; break-glass with a log |
+| logs/analytics | **forbid writes** into the money path; a PII copy is a separate flow |
+| CI/supply chain | **forbid data credentials** + deployment hash check; chain integrity is outside the guarantee |
 
-**Итог: все семь внутри продукта. Вне гарантии ровно одно — компромисс цепочки поставки**, и это заявлено.
+**Result: all seven are inside the product. Exactly one thing is outside the guarantee — supply-chain compromise**, and that is declared.
 
-## 3.3. Медиатор, `Permit`, триггер
+## 3.3. Mediator, `Permit`, trigger
 
 ```
 authorize(subject: VerifiedSubject, action, resource: ResourceRef, store) -> Result<Permit, Deny>
 ```
-Правила: `subject` только из проверенного источника · владелец ресурса из доверенного хранилища · `deny-beats-allow`, default deny · привязка к версии (запрет TOCTOU) · решение журналируется до исполнения, отказ журнала → `Deny` · `Deny` для несуществующего объекта неотличим от `Deny` для чужого.
+Rules: `subject` only from a verified source · the resource owner from a trusted store · `deny-beats-allow`, default deny · version binding (TOCTOU prevention) · the decision is logged before execution, a log failure → `Deny` · `Deny` for a nonexistent object is indistinguishable from `Deny` for someone else's.
 
 `Permit := Ed25519 {subject_id, resource_id, resource_version, action, policy_hash, nonce, exp, domain_id}`.
-Утверждение: `∀ Permit ⟹ P(subject, resource, action)`.
+Claim: `∀ Permit ⟹ P(subject, resource, action)`.
 
-| Стек | Механизм непередаваемости | Сила |
+| Stack | Non-transferability mechanism | Strength |
 |---|---|---|
-| Rust | приватный конструктор, не `Clone` | компилятор |
-| Java/TS/Python | приватный конструктор + фабрика | дисциплина + линтер |
-| **все** | **PL/pgSQL `BEFORE UPDATE` триггер** | **физическая** |
+| Rust | private constructor, not `Clone` | compiler |
+| Java/TS/Python | private constructor + factory | discipline + linter |
+| **all** | **PL/pgSQL `BEFORE UPDATE` trigger** | **physical** |
 
-Триггер проверяет подпись `current_setting('app.permit')`, совпадение `resource_id` и `version`, `exp`; без этого — `RAISE EXCEPTION`. Приложение обязано в одной транзакции сделать `SET LOCAL app.permit = '<b64>'`.
+The trigger verifies the signature in `current_setting('app.permit')`, the match of `resource_id` and `version`, and `exp`; without that — `RAISE EXCEPTION`. The application must, in the same transaction, execute `SET LOCAL app.permit = '<b64>'`.
 
-**Размещение — гибрид:** принадлежность/тенант/переход состояния — in-process библиотека (нужна одна транзакция, малое ядро); лимит суммы и деньги — единственный сервис-writer. «Единственный» — логически, не физически: writer'ов много, но триггер не даст записать без `Permit`.
+**Placement is a hybrid:** membership/tenant/state transition — an in-process library (a single transaction is needed, small core); amount limit and money — a single service writer. "Single" is logical, not physical: there are many writers, but the trigger will not allow a write without a `Permit`.
 
-## 3.4. Восемь инвариантов
+## 3.4. Eight invariants
 
-I1 полное посредничество (сверка `pgaudit`-дельты с журналом `Allow`) · I2 capability (триггер) · I3 атомарность (инъекция сбоя) · I4 нет ambient authority (множество write-принципалов = {M}) · I5 подписанный деплой · I6 fail-closed audit (chaos-тест) · I7 version-bound (параллельный тест) · I8 процедура restore (6 шагов).
+I1 full mediation (reconciliation of the `pgaudit` delta with the `Allow` log) · I2 capability (trigger) · I3 atomicity (fault injection) · I4 no ambient authority (the set of write principals = {M}) · I5 signed deployment · I6 fail-closed audit (chaos test) · I7 version-bound (parallel test) · I8 restore procedure (6 steps).
 
-**Разделение, которое нельзя размывать:** I1, I6, I8 — **не доказательство, а тест**: для произвольной системы недоказуемы, проверяемы каждый прогон. В акте помечаются `[И]`.
+**A distinction that must not be blurred:** I1, I6, I8 are **not proof but a test**: for an arbitrary system they are unprovable, and they are checked on every run. In the attestation they are marked `[MEASURED]`.
 
-**Два инварианта, которые обязаны проверяться отдельно:** `∀ Permit ⟹ P` («медиатор не врёт») и `∀ мутация(леджер) ⟹ ∃ Permit ∧ ∃ Allow-событие` («мимо медиатора не прошли»). Без второго типовая защита остаётся библиотекой, которую можно не вызвать.
+**Two invariants that must be checked separately:** `∀ Permit ⟹ P` ("the mediator does not lie") and `∀ mutation(ledger) ⟹ ∃ Permit ∧ ∃ Allow event` ("nothing got past the mediator"). Without the second, the typical protection remains a library that can simply not be called.
 
-## 3.5. Witness: три канала, два теста
+## 3.5. Witness: three channels, two tests
 
-tap на хосте (реальные запросы/ответы) · DB-дайджест/`pgaudit` (фактические записи с указанием роли) · идентичность (token → principal). **12 человеко-дней**, wall-clock 5 дней при параллели.
+tap on the host (real requests/responses) · DB digest/`pgaudit` (actual writes, with the role recorded) · identity (token → principal). **12 person-days**, wall-clock 5 days in parallel.
 
-**Тест A** — целостность: поддельный/повторный witness → `INVALID`.
-**Тест B** — независимость: агент с root не может отключить канал; отключение → `INVALID`.
-**Поправка:** `nonce` ловит повтор, но **не доказывает независимость** — поэтому тестов два.
-Остаточная граница: witness не защищает при компрометации самого стенда или IdP — в негативный скоуп.
+**Test A** — integrity: a forged/replayed witness → `INVALID`.
+**Test B** — independence: an agent with root cannot disable the channel; disabling → `INVALID`.
+**Correction:** a `nonce` catches replay but **does not prove independence** — hence two tests.
+Residual boundary: the witness does not protect when the stand itself or the IdP is compromised — that goes into the negative scope.
 
-## 3.6. Оракулы и находки
+## 3.6. Oracles and findings
 
-Три класса с детерминированным предикатом: **SQLi** (canary-строка в DB-дайджесте) · **BOLA/IDOR** (A прочитал/изменил объект B) · **path traversal** (доступ к маркерному файлу вне корня).
-`PROVEN` требует `C=false ∧ T=true ∧ N=false` на K свежих VM. **K адаптивный: 3 по умолчанию, эскалация до 10 при неоднозначности**; K печатается в бандле.
-Оракул выдаёт только `PROVEN_CANDIDATE` по одному контролю; композицию собирает тупой детерминированный агрегатор.
-**Бизнес-логика без детерминированного оракула публично не продаётся** — только трек гипотез, бесплатно, без обещаний.
+Three classes with a deterministic predicate: **SQLi** (a canary string in the DB digest) · **BOLA/IDOR** (A read/modified B's object) · **path traversal** (access to a marker file outside the root).
+`PROVEN` requires `C=false ∧ T=true ∧ N=false` on K fresh VMs. **K is adaptive: 3 by default, escalating to 10 on ambiguity**; K is printed in the bundle.
+The oracle emits only `PROVEN_CANDIDATE` for a single check; a dumb deterministic aggregator assembles the composition.
+**Business logic without a deterministic oracle is not sold publicly** — only the hypothesis track, free, with no promises.
 
-## 3.7. Семь атак
+## 3.7. Seven attacks
 
-A1 прямая запись под общим кредом · A2 batch сверх лимита · A3 restore+replay · A4 старая версия партнёрского API · A5 деплой, меняющий лимит · A6 эскалация через админку · A7 повтор через очередь/ретрай.
+A1 direct write under a shared credential · A2 batch over the limit · A3 restore+replay · A4 old version of the partner API · A5 deployment that changes the limit · A6 escalation via the admin panel · A7 replay via a queue/retry.
 
-## 3.8. Акт: 8 полей, 4 подписи
+## 3.8. Attestation: 8 fields, 4 signatures
 
-Поля: `z_id`+хеш · поток F · реестр путей (`ресурс|путь|владелец|решение`) · хеш M (код, коммит, toolchain, хеш доказательства) · реестр принципалов БД на дату · метод построения реестра · список «вне гарантии» с причиной · результаты 7 атак.
+Fields: `z_id`+hash · flow F · path registry (`resource|path|owner|decision`) · hash of M (code, commit, toolchain, proof hash) · registry of database principals as of the date · method of building the registry · list of "outside the guarantee" with the reason · results of the 7 attacks.
 
-Четыре подписи, **две у клиента**: product owner (продуктовые входы) · **infra owner (batch, БД, CI, бэкап)** · security lead (креды) · наш verifier (хеши, доказательство, атаки). Два владельца — прямой ответ на «забыли ночную джобу».
+Four signatures, **two of them on the client side**: product owner (product inputs) · **infra owner (batch, DB, CI, backup)** · security lead (credentials) · our verifier (hashes, proof, attacks). Two owners is a direct answer to "you forgot the nightly job".
 
-**Правило трёх дней:** новый или изменённый путь — вне гарантии до перевыпуска акта, обязательного в течение 3 рабочих дней. На время окна — `DEGRADED`: новые пути `deny by default`, денежные — полный deny.
+**The three-day rule:** a new or changed path is outside the guarantee until the attestation is reissued, which is mandatory within 3 business days. During the window the state is `DEGRADED`: new paths are `deny by default`, money paths a full deny.
 
 ## 3.9. Break-glass
 
-Медиировать нельзя по определению. Аппаратный ключ (HSM/YubiKey) у CISO клиента, не в системе. DBA подписывает сырой SQL; БД принимает с флагом `is_emergency = true`; witness алертит; **гарантия суспендируется автоматически** до реконсиляции и акта инцидента.
+Mediation is impossible by definition. A hardware key (HSM/YubiKey) is held by the client's CISO, not inside the system. The DBA signs the raw SQL; the database accepts it with the `is_emergency = true` flag; the witness alerts; **the guarantee is suspended automatically** until reconciliation and an incident attestation.
 
-## 3.10. Контракт валидируемости
+## 3.10. Validability contract
 
-Воспроизводимая сборка · lock-файлы · команда тестов или health-оракул · окружение без секретов · фиксация runtime и конфигурации. Не проходит — только трек гипотез или отказ.
-Ломают автоматизацию: монорепо · полиглот · нет IaC · нет тестов · сгенерированный код >30% LOC.
+Reproducible build · lock files · a test command or a health oracle · an environment without secrets · pinning of the runtime and configuration. If it does not pass — the hypothesis track only, or a refusal.
+These break automation: monorepo · polyglot · no IaC · no tests · generated code >30% LOC.
 
 ---
 
-# 4. Экономика и доктрина цены
+# 4. Economics and pricing doctrine
 
 ## 4.1. SKU
 
-| # | SKU | Цена | Срок | Автоматизация |
+| # | SKU | Price | Term | Automation |
 |---|---|---|---|---|
-| 1 | Базовый анализ (карта потоков + противоречия в правилах) | $2–5k | 3–5 дн | 95% |
-| 2 | Патчи (пакет) | $5–10k | 2 нед | 80% |
-| 3 | Миграция к медиатору | $25–45k | 4–6 нед | 40% |
-| 4 | Гарантия + доказательство | `clamp(value_at_risk × k, $12k, $250k)` | 45 дн | 30% |
-| 5 | Ре-аттестация | входит в подписку | **15 мин** | 98% |
+| 1 | Basic analysis (flow map + contradictions in the rules) | $2–5k | 3–5 days | 95% |
+| 2 | Patches (package) | $5–10k | 2 weeks | 80% |
+| 3 | Migration to the mediator | $25–45k | 4–6 weeks | 40% |
+| 4 | Guarantee + proof | `clamp(value_at_risk × k, $12k, $250k)` | 45 days | 30% |
+| 5 | Re-attestation | included in the subscription | **15 min** | 98% |
 
-Порядок продажи строго 1 → 2 → 3 → 4. `k`: 0.60% до $10M, 0.30% до $100M, 0.15% выше. `value_at_risk` **MUST** определяться как суточный неотмитигированный поток, не капитализация.
+The sales order is strictly 1 → 2 → 3 → 4. `k`: 0.60% up to $10M, 0.30% up to $100M, 0.15% above. `value_at_risk` **MUST** be defined as the daily unmitigated flow, not as market capitalization.
 
-## 4.2. Доктрина: снижать цену и повышать качество одновременно
+## 4.2. Doctrine: lower the price and raise quality at the same time
 
-| # | Правило | Как проверяется снаружи |
+| # | Rule | How it is checked from outside |
 |---|---|---|
-| **P1** | **Никогда не цена за находку** — только за скоуп, изменение или подписку | публичный прайс; в договоре нет строки «за находку» |
-| **P2** | **Потолок маржи:** услуги ≤45%, подписка ≤70%; избыток — в снижение цены или публичный фонд | публикуемая отчётность раз в год |
-| **P3** | **Дивиденд автоматизации 50/50:** экономия человеко-минут делится половина в цену, половина в R&D | публикуемая `assessor_minutes_per_finding` |
-| **P4** | **Цена падает по расписанию:** тот же скоуп — не дороже, чем год назад минус 10% | публичный индекс цен с историей |
-| **P5** | **Никакой премии за страх:** после инцидента в отрасли прайс не меняется | сравнение до/после инцидента |
-| **P6** | **Критическая инфраструктура — по себестоимости или бесплатно** (больницы, ЖКХ, малые OSS) | публичный список и объём |
+| **P1** | **Never a price per finding** — only per scope, change or subscription | public price list; no "per finding" line in the contract |
+| **P2** | **Margin ceiling:** services ≤45%, subscription ≤70%; the surplus goes into price reductions or a public fund | published reporting once a year |
+| **P3** | **Automation dividend 50/50:** saved person-minutes are split half into price, half into R&D | published `assessor_minutes_per_finding` |
+| **P4** | **The price falls on a schedule:** the same scope is no more expensive than a year ago minus 10% | public price index with history |
+| **P5** | **No premium for fear:** after an industry incident the price does not change | a before/after incident comparison |
+| **P6** | **Critical infrastructure at cost or free** (hospitals, utilities, small OSS) | public list and volume |
 
-**Механизм (P3) в числах** `[Г]`: ревью 6 ч → 15 мин, 4 находки, $120/ч ⇒ `savings = (6 − 0.25) × 120 × 4 = $2 760` на ангажемент; половина в цену, половина в R&D. **Апгрейды финансируются из сэкономленных человеко-часов, а не из роста цены.**
+**The mechanism (P3) in numbers** `[HYPOTHESIS]`: a review of 6 h → 15 min, 4 findings, $120/h ⇒ `savings = (6 − 0.25) × 120 × 4 = $2 760` per engagement; half into price, half into R&D. **Upgrades are financed from saved person-hours, not from a price increase.**
 
-**Четыре источника денег на развитие:** дивиденд автоматизации (50% экономии) · фиксированные ≥30% выручки на R&D (в уставе) · гранты и публичное финансирование (миссия частично публичное благо) · предоплата 2–3 года (стабильный кэшфлоу без повышения цены). **Ни один не требует поднимать цену.**
+**Four sources of money for development:** the automation dividend (50% of the savings) · a fixed ≥30% of revenue for R&D (in the articles of association) · grants and public funding (the mission is partly a public good) · 2–3 year prepayment (stable cash flow without a price increase). **None of them requires raising the price.**
 
-**Условное обязательство (ключевое):**
-> Мы снижаем цену на 10% в год при том же скоупе **при условии, что `assessor_minutes_per_finding` снижается**. Публикуем это число ежеквартально. Если два квартала подряд оно не падает — публикуем это и **приостанавливаем обещание по цене**, вместо того чтобы тихо его нарушить.
+**A conditional commitment (the key one):**
+> We cut the price by 10% a year for the same scope **provided that `assessor_minutes_per_finding` declines**. We publish that number quarterly. If it fails to decline for two quarters in a row, we publish that and **suspend the price promise**, instead of quietly breaking it.
 
 ---
 
-# 5. Реестр утверждений для критики
+# 5. Register of claims for criticism
 
-**Протокол:** бей по номеру, вердикт один из трёх — `НЕВЕРНО` (ложно как сформулировано) · `НЕДОКАЗАНО` (может быть верно, но `[Г]` выдаёт себя за факт) · `НЕПОЛНО` (верно, но граница не там). Спорить с `[Д]` бессмысленно — только показывать, что доказано не то свойство.
+**Protocol:** strike by number; the verdict is one of three — `WRONG` (false as formulated) · `UNPROVEN` (may be true, but `[HYPOTHESIS]` passes itself off as fact) · `INCOMPLETE` (true, but the boundary is in the wrong place). Arguing with `[PROVED]` is pointless — the only move is to show that the property proved is not the one claimed.
 
-## 5.1. Ядро
+## 5.1. Core
 
-| ID | Утверждение | Метка | Что его ломает |
+| ID | Claim | Tag | What breaks it |
 |---|---|---|---|
-| S1 | Утверждается не «безопасно», а «в замыкании мимо единственной точки нельзя» | `[Г]` | клиент прочитает как «безопасно» |
-| S2 | Утверждение проверяемо офлайн третьей стороной | `[И]` | понадобится онлайн-проверка отзыва ключа |
-| S4 | Доменное различие изолируется полем `subject.kind` | `[Г]` | появится третье измерение, невыразимое в `subject` |
-| S5 | Шесть портов достаточны для обоих доменов | `[Г]` | понадобится порт, которого нет |
-| S7 | Подпись покрывает digest всего бандла | `[И]` | канонизация JCS не совпадёт у двух реализаций |
-| S9 | Формула `PROVEN` из шести конъюнктов верна | `[Г]` | один конъюнкт неверифицируем |
-| S10 | `unknown_paths ≠ ∅ ⇒ INCONCLUSIVE` | `[Г]` | анализатор не увидит путь и промолчит |
-| S14 | Байт-в-байт воспроизводимость бандла | `[Г]` | недетерминизм в анализаторах/версиях |
-| S17 | LLM не участвует в вердикте | `[Г]` | понадобится «объяснение», просочится в вердикт |
-| S18 | Бандл не содержит исходников цели | `[И]` | для legacy понадобится фрагмент кода в отчёте |
+| S1 | What is claimed is not "secure", but "inside the closure nothing can pass the single point" | `[HYPOTHESIS]` | the client will read it as "secure" |
+| S2 | The claim is verifiable offline by a third party | `[MEASURED]` | an online key-revocation check will be needed |
+| S4 | The domain distinction is isolated by the `subject.kind` field | `[HYPOTHESIS]` | a third dimension will appear that is inexpressible in `subject` |
+| S5 | Six ports are sufficient for both domains | `[HYPOTHESIS]` | a port will be needed that does not exist |
+| S7 | The signature covers the digest of the whole bundle | `[MEASURED]` | JCS canonicalization will not match across two implementations |
+| S9 | The `PROVEN` formula of six conjuncts is correct | `[HYPOTHESIS]` | one conjunct turns out to be unverifiable |
+| S10 | `unknown_paths ≠ ∅ ⇒ INCONCLUSIVE` | `[HYPOTHESIS]` | the analyzer will not see a path and will stay silent |
+| S14 | Byte-for-byte reproducibility of the bundle | `[HYPOTHESIS]` | non-determinism in analyzers/versions |
+| S17 | The LLM does not participate in the verdict | `[HYPOTHESIS]` | an "explanation" will be demanded and will leak into the verdict |
+| S18 | The bundle contains no source code of the target | `[MEASURED]` | for legacy a code fragment will be needed in the report |
 
 ## 5.2. On-chain
 
-| ID | Утверждение | Метка | Что его ломает |
+| ID | Claim | Tag | What breaks it |
 |---|---|---|---|
-| O1 | Escrow — правильная первая цель (TCB 250–500 строк) | `[Г]` | у реальных escrow больше веток, чем в референсе |
-| O3 | `INV-1` верна | `[Г]` | **fee-on-transfer и rebasing ломают формулу** |
-| O5 | `INV-3` покрывает предусловие выпуска | `[Г]` | понадобится частичный release |
-| O6 | Семь классов путей покрывают движение средств | `[Г]` | нестандартный прокси; офчейн-keeper |
-| O8 | Финальность L1 = `finalized` checkpoint | `[Г]` | RPC-провайдер отдаст неверный head |
-| O10 | Правило финальности L2 реализуемо одним предикатом | `[Г]` | у каждой L2 своя модель |
-| O11 | 10 атак полны для escrow | `[Г]` | 11-я найдётся на реальном контракте |
-| O13 | Атаки A3 и A5 не тавтологичны | `[Г]` | тест проходит и на сломанной версии |
-| O14 | Четыре подписанта применимы к on-chain | `[Г]` | у immutable-контракта нет custody quorum |
+| O1 | Escrow is the right first target (TCB of 250–500 lines) | `[HYPOTHESIS]` | real escrows have more branches than the reference |
+| O3 | `INV-1` is correct | `[HYPOTHESIS]` | **fee-on-transfer and rebasing break the formula** |
+| O5 | `INV-3` covers the precondition of release | `[HYPOTHESIS]` | a partial release will be needed |
+| O6 | Seven classes of paths cover the movement of funds | `[HYPOTHESIS]` | a non-standard proxy; an off-chain keeper |
+| O8 | L1 finality = `finalized` checkpoint | `[HYPOTHESIS]` | the RPC provider will return a wrong head |
+| O10 | The L2 finality rule is implementable as a single predicate | `[HYPOTHESIS]` | every L2 has its own model |
+| O11 | 10 attacks are complete for escrow | `[HYPOTHESIS]` | an 11th will be found on a real contract |
+| O13 | Attacks A3 and A5 are not tautological | `[HYPOTHESIS]` | the test also passes on a broken version |
+| O14 | Four signatories are applicable on-chain | `[HYPOTHESIS]` | an immutable contract has no custody quorum |
 
 ## 5.3. Legacy
 
-| ID | Утверждение | Метка | Что его ломает |
+| ID | Claim | Tag | What breaks it |
 |---|---|---|---|
-| G1 | 12 элементов Z необходимы и достаточны | `[Г]` | появится 13-й (сторонний SaaS с общим кредом) |
-| G4 | Все семь путей внутри продукта; вне гарантии только supply chain | `[Г]` | restore-процедура невыполнима в реальном IT |
-| G6 | `∀ Permit ⟹ P` доказывается в Verus на 200–500 строках | `[Г]` | контракты окажутся сложнее |
-| G7 | `Permit` в Java/TS/Python — дисциплина, не гарантия | `[И]` | клиент прочитает как гарантию |
-| G8 | Физическая гарантия — только триггер, и только для леджера | `[И]` | миграции и хранимки обходят триггер |
-| G9 | `∀ мутация ⟹ ∃ Permit ∧ Allow` проверяется сверкой `pgaudit` | `[Г]` | обходной writer пишет и `Allow`-событие тоже |
-| G11 | DB-level enforcement вместо event sourcing достаточен | `[Г]` | потребуется горизонтальное масштабирование записи |
-| G20 | I1/I6/I8 помечены `[И]`, а не `[Д]` | `[Г]` | маркетинг захочет «доказано» для всех |
-| G22 | Witness = 12 человеко-дней | `[Г]` | у одного рецензента 30 — расхождение 2.5× не объяснено |
-| G25 | Три класса дают ≥2 `PROVEN` на типовой цели | `[Г]` | **критерий смерти: медиана < 2** |
-| G26 | Адаптивный K (3→10) не теряет достоверность | `[Г]` | **K=3 даст ложные `PROVEN` на флакующем эффекте** |
-| G31 | Правило 3 дней выполнимо при непрерывном деплое | `[Г]` | окно `DEGRADED` будет открываться постоянно |
-| G32 | Расщепление Z на статическую и динамическую границы решает конфликт с CI/CD | `[Г]` | динамическая граница тоже потребует человека |
-| G33 | 100% ревью при 3–4 находках экономически выживаемо | `[Г]` | **если ревью > 15 мин, маржа SKU-1 → 0** |
-| G34 | Break-glass через HSM + автосуспензия закрывает вектор | `[Г]` | клиент откажется от автосуспензии |
-| G35 | Контракт валидируемости отсекает 85% рынка | `[Г]` | числа 25/15/3% взяты по минимуму, не измерены |
+| G1 | The 12 elements of Z are necessary and sufficient | `[HYPOTHESIS]` | a 13th will appear (a third-party SaaS with a shared credential) |
+| G4 | All seven paths are inside the product; only the supply chain is outside the guarantee | `[HYPOTHESIS]` | the restore procedure is unfeasible in real IT |
+| G6 | `∀ Permit ⟹ P` is proved in Verus in 200–500 lines | `[HYPOTHESIS]` | the contracts will turn out to be more complex |
+| G7 | `Permit` in Java/TS/Python is discipline, not a guarantee | `[MEASURED]` | the client will read it as a guarantee |
+| G8 | The only physical guarantee is the trigger, and only for the ledger | `[MEASURED]` | migrations and stored procedures bypass the trigger |
+| G9 | `∀ mutation ⟹ ∃ Permit ∧ Allow` is checked by `pgaudit` reconciliation | `[HYPOTHESIS]` | a bypass writer writes the `Allow` event as well |
+| G11 | DB-level enforcement instead of event sourcing is sufficient | `[HYPOTHESIS]` | horizontal write scaling will be required |
+| G20 | I1/I6/I8 are marked `[MEASURED]`, not `[PROVED]` | `[HYPOTHESIS]` | marketing will want "proved" for everything |
+| G22 | Witness = 12 person-days | `[HYPOTHESIS]` | one reviewer says 30 — a 2.5× discrepancy is left unexplained |
+| G25 | The three classes yield ≥2 `PROVEN` on a typical target | `[HYPOTHESIS]` | **death criterion: median < 2** |
+| G26 | Adaptive K (3→10) does not lose reliability | `[HYPOTHESIS]` | **K=3 will produce false `PROVEN` on a flaky effect** |
+| G31 | The 3-day rule is feasible under continuous deployment | `[HYPOTHESIS]` | the `DEGRADED` window will open constantly |
+| G32 | Splitting Z into a static and a dynamic boundary resolves the conflict with CI/CD | `[HYPOTHESIS]` | the dynamic boundary will require a human as well |
+| G33 | 100% review at 3–4 findings is economically survivable | `[HYPOTHESIS]` | **if review takes > 15 min, SKU-1 margin → 0** |
+| G34 | Break-glass via HSM + auto-suspension closes the vector | `[HYPOTHESIS]` | the client will refuse auto-suspension |
+| G35 | The validability contract cuts off 85% of the market | `[HYPOTHESIS]` | the numbers 25/15/3% are taken at the minimum, not measured |
 
-## 5.4. Экономика и цена
+## 5.4. Economics and pricing
 
-| ID | Утверждение | Метка | Что его ломает |
+| ID | Claim | Tag | What breaks it |
 |---|---|---|---|
-| E1 | Базовый анализ даёт маржу >80% | `[Г]` | ручные исключения съедят автоматизацию |
-| E3 | Цена гарантии `clamp(v×k, 12k, 250k)` работает на всех уровнях `v` | `[Г]` | разброс оценок 15×, данных нет |
-| E5 | Потолок автовыплаты $500 на старте | `[Г]` | делает автовыплату демо, не продуктом |
-| E6 | Бонд + диспут 72 ч + потолок закрывают риск ошибки оракула | `[Г]` | один баг → серия клоубэков → резерв в минусе |
-| E11 | On-chain v0.1 полностью работает на ноутбуке без KVM | `[И]` | RPC-зависимость и размер форка |
-| E12 | Legacy требует KVM, поэтому идёт вторым | `[И]` | gVisor даст достаточную изоляцию дешевле |
-| P-1 | Потолок маржи 45%/70% удерживается | `[Г]` | R3/R4 дают 35–40%; если ревью не сожмётся — недостижим |
-| P-2 | Дивиденд автоматизации 50/50 реален | `[Г]` | экономия уйдёт в ручные исключения |
-| P-3 | `assessor_minutes_per_finding` измерим и управляем | `[Г]` | метрика окажется шумной |
-| P-4 | Регрессия `k` не убивает экономику крупных сделок | `[Г]` | при $v>100M цена ниже себестоимости |
-| P-8 | ≥30% выручки на R&D закрепляемо в уставе | `[И]` | инвесторы не дадут |
-| P-10 | Грантовое финансирование применимо к коммерческой компании | `[Г]` | нужен некоммерческий рукав |
+| E1 | Basic analysis yields a margin >80% | `[HYPOTHESIS]` | manual exceptions will eat the automation |
+| E3 | The guarantee price `clamp(v×k, 12k, 250k)` works at all levels of `v` | `[HYPOTHESIS]` | a 15× spread in estimates, and there is no data |
+| E5 | The $500 automatic payout ceiling at launch | `[HYPOTHESIS]` | makes the automatic payout a demo, not a product |
+| E6 | Bond + 72 h dispute + ceiling close the risk of an oracle error | `[HYPOTHESIS]` | one bug → a series of clawbacks → the reserve goes negative |
+| E11 | On-chain v0.1 works entirely on a laptop without KVM | `[MEASURED]` | the RPC dependency and the size of the fork |
+| E12 | Legacy requires KVM, which is why it comes second | `[MEASURED]` | gVisor would provide sufficient isolation more cheaply |
+| P-1 | The 45%/70% margin ceiling holds | `[HYPOTHESIS]` | R3/R4 yield 35–40%; if review does not shrink, it is unattainable |
+| P-2 | The 50/50 automation dividend is real | `[HYPOTHESIS]` | the savings will go into manual exceptions |
+| P-3 | `assessor_minutes_per_finding` is measurable and manageable | `[HYPOTHESIS]` | the metric will turn out to be noisy |
+| P-4 | The regression of `k` does not kill the economics of large deals | `[HYPOTHESIS]` | at $v>100M the price is below cost |
+| P-8 | ≥30% of revenue for R&D can be locked into the articles of association | `[MEASURED]` | investors will not allow it |
+| P-10 | Grant funding is applicable to a commercial company | `[HYPOTHESIS]` | a non-profit arm is needed |
 
 ---
 
-# 6. Рейтинг слабых мест (куда бить первым)
+# 6. Ranking of weak points (where to strike first)
 
-По «вероятность ошибки × цена ошибки».
+By "probability of error × cost of error".
 
-| # | Что | Связанные ID |
+| # | What | Related IDs |
 |---|---|---|
-| 1 | **Неполнота перечня путей** — 5/5 рецензентов назвали первой, не лечится полностью | S10, O6, G1 |
-| 2 | **`INV-1` для fee-on-transfer / rebasing** — формула неверна для части токенов, а выглядит верной | O3 |
-| 3 | **Маржа ревью** — $500–1000 себестоимости на находку при 3–4 находках | G33, E1 |
-| 4 | **Цена гарантии** — разброс 15×, от неё зависит вся модель | E3, E4 |
-| 5 | **K=3 даёт ложные `PROVEN`** — адаптивный K компромисс, не решение | G26 |
-| 6 | **Правило 3 дней vs 20 деплоев/день** | G31, G32 |
-| 7 | **`Permit` в динамических языках** — выглядит гарантией, является дисциплиной | G7 |
-| 8 | **Финальность L2** — у каждой своя модель | O10 |
-| 9 | **Restore в реальной аварии** — клиент сделает напрямую | G4 |
-| 10 | **Склейка `proven` и `hypotheses` в UI** обесценивает разделение | — |
-| 11 | **Потолок автовыплаты $500** — демо, не продукт | E5 |
-| 12 | **Коррелированная ошибка верификатора** — бонд не спасает от серии | E6 |
-| 13 | **Смерть от технических `INCONCLUSIVE`**, а не от нарушений | G25, E10 |
-| 14 | **`verify` вечно поддерживает все версии** — стоимость растёт | S16 |
-| 15 | **Нет разделения ролей у клиента** — двух подписей может не быть | G30 |
+| 1 | **Incompleteness of the path list** — named first by 5/5 reviewers, not curable in full | S10, O6, G1 |
+| 2 | **`INV-1` for fee-on-transfer / rebasing** — the formula is wrong for some tokens, yet looks right | O3 |
+| 3 | **Review margin** — $500–1000 of cost per finding at 3–4 findings | G33, E1 |
+| 4 | **Guarantee price** — a 15× spread, and the whole model depends on it | E3, E4 |
+| 5 | **K=3 produces false `PROVEN`** — adaptive K is a compromise, not a solution | G26 |
+| 6 | **The 3-day rule vs 20 deployments/day** | G31, G32 |
+| 7 | **`Permit` in dynamic languages** — looks like a guarantee, is discipline | G7 |
+| 8 | **L2 finality** — each has its own model | O10 |
+| 9 | **Restore in a real outage** — the client will do it directly | G4 |
+| 10 | **Blending `proven` and `hypotheses` in the UI** devalues the separation | — |
+| 11 | **The $500 automatic payout ceiling** — a demo, not a product | E5 |
+| 12 | **Correlated verifier error** — a bond does not protect against a series | E6 |
+| 13 | **Death from technical `INCONCLUSIVE`**, not from violations | G25, E10 |
+| 14 | **`verify` supports all versions forever** — the cost grows | S16 |
+| 15 | **No separation of roles on the client side** — the two signatures may not exist | G30 |
 
 ---
 
-# 7. Что нельзя решить текстом — только измерением
+# 7. What cannot be resolved by text — only by measurement
 
-| # | Вопрос | Как мерить | Дней |
+| # | Question | How to measure | Days |
 |---|---|---|---|
-| M1 | Реальная неполнота `scan` | 20 целей: пути, найденные вручную vs пропущенные | 5 |
-| M2 | Стоимость ревью | минуты на 30 находках | 3 |
-| M3 | `proof-fixing` на незнакомом коде | 100 строк за 3 дня, экстраполяция | 3 |
-| M4 | Доля целей, проходящих контракт валидируемости | preflight на 3×50 репозиториев | 5 |
-| M5 | Медиана `PROVEN` на типовой цели | 12 целей, три класса | 15 |
-| M6 | Готовность платить | 10 интервью по триггерам | 10 |
-| M7 | Расхождение witness 12 vs 30 ч-дней | замер с разбивкой по дням | 5 |
+| M1 | The real incompleteness of `scan` | 20 targets: paths found manually vs missed | 5 |
+| M2 | The cost of review | minutes per 30 findings | 3 |
+| M3 | `proof-fixing` on unfamiliar code | 100 lines in 3 days, extrapolation | 3 |
+| M4 | The share of targets that pass the validability contract | preflight on 3×50 repositories | 5 |
+| M5 | The median `PROVEN` on a typical target | 12 targets, three classes | 15 |
+| M6 | Willingness to pay | 10 interviews by triggers | 10 |
+| M7 | The witness discrepancy, 12 vs 30 person-days | a measurement broken down by day | 5 |
 
-**Правило:** ни одно число из `[Г]` не попадает в коммерческий материал до закрытия соответствующего `M`.
-
----
-
-# 8. Что сознательно не включено
-
-UI, лендинг, биллинг, CRM · мосты, оракулы, MEV, аудит токеномики (публично вне продукта) · Windows-цели (отдельный трек, ETW) · мультиоблако и K8s-оператор · Certora как основной бэкенд (коммерческий, v0.4) · автопоиск новых атак агентом · страховка, юридическая ответственность, договор.
+**Rule:** no number from `[HYPOTHESIS]` goes into commercial material until the corresponding `M` is closed.
 
 ---
 
-# 9. Что от тебя нужно
+# 8. What is deliberately not included
 
-**Не пересказывай документ.** Ответь по разделам, коротко.
+UI, landing page, billing, CRM · bridges, oracles, MEV, tokenomics audit (publicly outside the product) · Windows targets (a separate track, ETW) · multi-cloud and the K8s operator · Certora as the primary backend (commercial, v0.4) · automatic discovery of new attacks by an agent · insurance, legal liability, contract.
 
-**A. Критика.** 7 утверждений, которые ты считаешь самыми слабыми. Формат: `ID | вердикт (НЕВЕРНО/НЕДОКАЗАНО/НЕПОЛНО) | в одну строку почему | что делать`. Приоритет — разделам 5 и 6.
+---
 
-**B. Пропущенное.** Один механизм отказа, которого нет ни в разделе 5, ни в разделе 6, но который тебя беспокоит больше всего. Формат: `механизм | на каком горизонте | как это будет видно`.
+# 9. What is needed from you
 
-**C. Числа.** Для трёх чисел из `[Г]` дай своё значение и способ проверки: `assessor_minutes_per_finding`, медиана `PROVEN` на типовой legacy-цели, доля целей, проходящих контракт валидируемости.
+**Do not retell the document.** Answer section by section, briefly.
 
-**D. Одно «неверно».** Что в этом документе скорее всего неверно настолько, что решение надо менять, а не уточнять.
+**A. Criticism.** 7 claims you consider the weakest. Format: `ID | verdict (WRONG/UNPROVEN/INCOMPLETE) | in one line why | what to do`. Priority to sections 5 and 6.
 
-**E. Одно «не строить».** Одно наблюдаемое условие, при котором продукт в этом виде не надо строить вообще. Не «трудно» — «не надо».
+**B. What is missing.** One failure mechanism that is in neither section 5 nor section 6, but which worries you most. Format: `mechanism | on what horizon | how it will show`.
 
-**Правила ответа:** не более 200 слов на пункт · запрещено «зависит от контекста» без условия в одну строку · разрешено и ценится «не знаю» + чем бы проверил · числа помечай `[оценка]` · не предлагай новых архитектур, только правки к этой.
+**C. Numbers.** For three numbers from `[HYPOTHESIS]`, give your own value and a way to check it: `assessor_minutes_per_finding`, the median `PROVEN` on a typical legacy target, the share of targets that pass the validability contract.
+
+**D. One "wrong".** What in this document is most likely wrong to the point that the decision must be changed, not refined.
+
+**E. One "do not build".** One observable condition under which the product in this form should not be built at all. Not "difficult" — "should not".
+
+**Answer rules:** no more than 200 words per item · "it depends on the context" is forbidden without a one-line condition · "I don't know" + what you would check it with is allowed and valued · mark numbers as `[estimate]` · do not propose new architectures, only corrections to this one.

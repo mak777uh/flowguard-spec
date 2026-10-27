@@ -1,55 +1,60 @@
-# FlowGuard — спецификация продукта и циклы внешнего ревью
+# FlowGuard — product specification and external review rounds
 
-**Что это.** Документы одного продукта: сервис, который доказывает не «система безопасна», а
-«в объявленном замыкании мимо единственной точки контроля пройти нельзя» — и выдаёт
-утверждение, которое можно проверить, не доверяя его издателю.
+> Russian mirror: [README.ru.md](README.ru.md). This file is canonical; where they disagree, this one wins.
 
-**Чего здесь нет.** Обещания безопасности. Вне объявленного замыкания гарантия не действует,
-и это записано в самом артефакте, а не в мелком шрифте.
+**What this is.** Documents for one product: a service that does not claim "the system is secure", but
+proves that **inside a declared closure no value can move past the single control point** — and issues a
+statement that can be verified without trusting its issuer.
 
-## Политика открытости
+**What it is not.** A safety promise. Outside the declared closure the guarantee does not apply, and that
+is written into the artifact itself, not into a footnote.
 
-Всё публикуется открыто по умолчанию — включая экономику, потолки маржи и внутренние оценки
-сроков, потому что доверие проверяется, а не декларируется. Исключение ровно одно: **секреты**.
+## Open-by-default policy
 
-Это не лозунг, а механизм: в репозитории стоит страж, который блокирует публикацию при
-обнаружении токенов, ключей, приватных ключей и локальных путей — в файлах **и во всей истории**.
+Everything is published openly by default — including economics, margin caps and internal schedule
+estimates — because trust is verified, not declared. There is exactly one exception: **secrets**.
+
+That is not a slogan but a mechanism: the repository carries a guard that blocks publication when it finds
+tokens, keys, private keys or local paths — in files **and across the whole history**.
 
 ```bash
-bash lab/check-secrets.sh    # токены, ключи, локальные пути: файлы + история
-python lab/check-links.py    # каждая относительная ссылка между документами существует
+bash lab/check-secrets.sh    # tokens, keys, local paths: files + history
+python lab/check-links.py    # every relative link between documents resolves
 ```
 
-Оба гоняются автоматически на каждый push и pull request (`.github/workflows/guards.yml`).
-Если кто-то однажды закоммитит токен, красным станет CI, а не репутация.
+Both run automatically on every push and pull request (`.github/workflows/guards.yml`). If someone ever
+commits a token, CI goes red instead of the reputation.
 
-## Что читать первым
+## Read first
 
-| Файл | Роль |
+| File | Role |
 |---|---|
-| [docs/FLOWGUARD-MASTER-v2.md](docs/FLOWGUARD-MASTER-v2.md) | **мастер-документ**: кидается в модель целиком для внешнего ревью |
-| [docs/SPEC-v0.1.md](docs/SPEC-v0.1.md) | деталь on-chain ветки: escrow, инварианты, атаки, приёмка |
-| [docs/SPEC-v0.2-LEGACY.md](docs/SPEC-v0.2-LEGACY.md) | деталь legacy ветки: замыкание, медиатор, триггер, witness, оракулы |
-| [docs/90-DEV-AND-NEXT-ROUND.md](docs/90-DEV-AND-NEXT-ROUND.md) | метод разработки, трезвая картина, вопросы следующего круга |
+| [docs/FLOWGUARD-MASTER-v2.md](docs/FLOWGUARD-MASTER-v2.md) | **master document**: paste it whole into a model for external review |
+| [docs/SPEC-v0.1.md](docs/SPEC-v0.1.md) | on-chain detail: escrow, invariants, attacks, acceptance |
+| [docs/SPEC-v0.2-LEGACY.md](docs/SPEC-v0.2-LEGACY.md) | legacy detail: closure, mediator, trigger, witness, oracles |
+| [docs/90-DEV-AND-NEXT-ROUND.md](docs/90-DEV-AND-NEXT-ROUND.md) | development method, sober assessment, next round's questions |
+| [docs/CLAIMS.md](docs/CLAIMS.md) | claim registry: evidence type and the strongest permitted wording |
+| [docs/eliminations.md](docs/eliminations.md) | what five rounds ruled out, and what would revive it |
 
-## Как устроен репозиторий
+## Repository map
 
-| Группа | Файлы |
+| Group | Files |
 |---|---|
-| Спека | [FLOWGUARD-MASTER-v2](docs/FLOWGUARD-MASTER-v2.md) · [v0.1](docs/SPEC-v0.1.md) · [v0.2](docs/SPEC-v0.2-LEGACY.md) · [реестр утверждений](docs/SPEC-CRITIQUE.md) |
-| Продукт и границы | [защищаемый поток](docs/40-FLOW-GUARANTEE.md) · [варианты](docs/01-VARIANTS.md) · [лестница исправлений](docs/02-GRID.md) |
-| Крипта | [в скоупе с первого дня](docs/61-CRYPTO-IN-SCOPE.md) · [крипта и автооплата](docs/60-CRYPTO-AND-AUTOPAY.md) |
-| Экономика | [SKU и сервисы](docs/70-SERVICE-TIERS.md) · [доктрина цены](docs/80-PRICING-DOCTRINE.md) |
-| Реализация | [стенд](docs/50-IMPLEMENTATION-STAND.md) · [харнесс](docs/51-HARNESS-BUILD.md) · [OSS-продукт](docs/52-OSS-PRODUCT.md) |
-| Разработка | [метод и следующий круг](docs/90-DEV-AND-NEXT-ROUND.md) · [eval и roadmap](docs/03-EVAL-ROADMAP.md) |
-| Циклы ревью | [свод 2](docs/00-SYNTHESIS.md) · [решения](docs/20-ROUND2-DECISIONS.md) · [свод 3](docs/30-ROUND3-SYNTHESIS.md) · [свод 4](docs/31-ROUND4-SYNTHESIS.md) |
-| Вопросы для прогона | [круг 2](docs/10-ROUND2-QUESTIONS.md) · [3](docs/11-ROUND3-QUESTIONS.md) · [4](docs/12-ROUND4-QUESTIONS.md) · [5](docs/13-ROUND5-QUESTIONS.md) |
+| Spec | [master v2](docs/FLOWGUARD-MASTER-v2.md) · [v0.1](docs/SPEC-v0.1.md) · [v0.2](docs/SPEC-v0.2-LEGACY.md) · [claim registry](docs/SPEC-CRITIQUE.md) |
+| Product and boundaries | [protected flow](docs/40-FLOW-GUARANTEE.md) · [variants](docs/01-VARIANTS.md) · [remediation ladder](docs/02-GRID.md) |
+| Crypto | [in scope from day one](docs/61-CRYPTO-IN-SCOPE.md) · [crypto and auto-payout](docs/60-CRYPTO-AND-AUTOPAY.md) |
+| Economics | [SKUs and services](docs/70-SERVICE-TIERS.md) · [pricing doctrine](docs/80-PRICING-DOCTRINE.md) |
+| Implementation | [the stand](docs/50-IMPLEMENTATION-STAND.md) · [the harness](docs/51-HARNESS-BUILD.md) · [OSS product](docs/52-OSS-PRODUCT.md) |
+| Development | [method and next round](docs/90-DEV-AND-NEXT-ROUND.md) · [evals and roadmap](docs/03-EVAL-ROADMAP.md) |
+| Review rounds | [synthesis 2](docs/00-SYNTHESIS.md) · [decisions](docs/20-ROUND2-DECISIONS.md) · [synthesis 3](docs/30-ROUND3-SYNTHESIS.md) · [synthesis 4](docs/31-ROUND4-SYNTHESIS.md) |
+| Question sets | [round 2](docs/10-ROUND2-QUESTIONS.md) · [3](docs/11-ROUND3-QUESTIONS.md) · [4](docs/12-ROUND4-QUESTIONS.md) · [5](docs/13-ROUND5-QUESTIONS.md) |
 
-## Правило, которое не обсуждается
+## The one rule that is not up for debate
 
-Ни одно число, помеченное `[Г]` (гипотеза), не попадает в коммерческий материал до закрытия
-соответствующего измерения `M`. Метки: `[Д]` доказано машинно, `[И]` измерено, `[Г]` гипотеза.
+No number marked as a hypothesis enters commercial material before the corresponding measurement closes.
+Evidence types and permitted wording live in [docs/CLAIMS.md](docs/CLAIMS.md): three words — `PROVEN`,
+`ENFORCED_TESTED`, `guarantee` — are allowed only with evidence type `proof` or `test`.
 
-## Лицензия
+## License
 
-Документы — [CC BY 4.0](LICENSE). Код, когда появится, — Apache-2.0.
+Documents — [CC BY 4.0](LICENSE). Code, when it appears, — Apache-2.0.
