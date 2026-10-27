@@ -100,6 +100,16 @@ def scenarios():
         m = manifest()
         return m, claim(excluded=[{"path_id": "wp_core0", "reason": "we decided it is fine"}]), None, None, 1
 
+    def t20():
+        # a catalogue that lists INSERT/UPDATE and a runtime witness that saw a DELETE
+        m = manifest(8, 2, kinds=("grants", "runtime"))
+        m["paths"].append({"path_id": "wp_obs1", "entry": "stmt:DELETE FROM bank.accounts",
+                           "kind": "observed_write", "control_point": "", "confidence": "runtime",
+                           "found_by": ["runtime-pg-v0.1"], "kinds": ["runtime"]})
+        m["paths"].append({"path_id": "wp_priv1", "entry": "role:app_rw table:bank.accounts",
+                           "kind": "privilege", "control_point": "", "confidence": "catalog",
+                           "detail": "INSERT", "found_by": ["grants-pg-v0.1"], "kinds": ["grants"]})
+        return m, claim(level="CONSISTENT_DECLARED", coverage=0.8), None, None, 1
     return [
         ("T1", "correct claim, full declared scope", t1,
          lambda c, o: o["verdict"] == "SCOPED_ASSURANCE" and not o["errors"]),
@@ -137,6 +147,11 @@ def scenarios():
         ("T13", "not_claimed is prose instead of vocabulary",
          lambda: (manifest(), claim(not_claimed=["results may vary"]), None, None, 1),
          lambda c, o: any(e["code"] == "REPORT_BUNDLE_INCONSISTENT" for e in o["errors"])),
+        ("T20", "an observed action that no catalogue path explains", t20,
+         lambda c, o: any(e["code"] == "UNENUMERABLE_PATH" for e in o["errors"])),
+        ("T21", "observed verbs all explained by the catalogue",
+         lambda: (manifest(8, 2), claim(level="CONSISTENT_DECLARED", coverage=0.8), None, None, 1),
+         lambda c, o: not any(e["code"] == "UNENUMERABLE_PATH" for e in o["errors"])),
         ("T18", "inventory has witnesses only, no denominator source",
          lambda: (manifest(kinds=("runtime",)), claim(level="CONSISTENT_DECLARED", coverage=0.0), None, None, 1),
          lambda c, o: any(e["code"] == "MISSING_EVIDENCE" and e["subject"] == "coverage_basis"

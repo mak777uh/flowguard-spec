@@ -33,6 +33,22 @@ DEFAULT_POLICY = {
 
 _NOT_CLAIMED_CACHE = {}
 
+_COV = {}
+
+def coverage_states(inventory) -> dict:
+    if "fn" not in _COV:
+        try:
+            spec = importlib.util.spec_from_file_location(
+                "fgc", Path(__file__).resolve().parent / "fg_coverage.py")
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            _COV["fn"] = mod.states
+        except Exception:  # noqa: BLE001
+            _COV["fn"] = None
+    if _COV["fn"] is None:
+        return {"counts": {}, "unenumerable": [], "note": "coverage module unavailable"}
+    return _COV["fn"](inventory)
+
 def load_not_claimed_registry() -> dict:
     """Read docs/NOT-CLAIMED.md: the code table and the required codes per level.
 
@@ -252,6 +268,18 @@ def main() -> int:
             "supply an inventory from an enumerator the agent does not control, or accept the capped verdict",
             False)
 
+    # ---- 6a2. three-state coverage: what was seen but never enumerated ----
+    # A single ratio cannot express "an event happened that the denominator cannot explain".
+    # If a verb was observed and no catalogue path mentions it, the denominator is already known to
+    # be incomplete, and no arithmetic over it means anything (E-M23, review round 8).
+    cov = coverage_states(inventory)
+    if cov.get("unenumerable"):
+        err("UNENUMERABLE_PATH", "coverage_states",
+            "every observed action must be explained by an enumerated path",
+            "observed but not enumerated: " + ", ".join(cov["unenumerable"]),
+            "the catalogue is incomplete for this target; extend the sources before claiming coverage",
+            False)
+
     # ---- 6b. weighted perimeter: counts are not risk --------------------
     # Round-7 review 4: fourteen paths outside the core may be one payment endpoint and thirteen
     # caches, or the reverse. The weights come from policies/risk-classes.json, never from a model.
@@ -312,6 +340,7 @@ def main() -> int:
         "core_paths": len(in_core),
         "outside_paths": len(outside),
         "coverage_basis_kinds": denominator_kinds,
+        "coverage_states": {k: cov.get(k) for k in ("covered", "unobserved", "unenumerable", "counts")},
         "outside_weighted_risk": risk.get("outside_weighted_risk"),
         "unclassified_paths": risk.get("unclassified_paths"),
         "risk_policy_digest": risk.get("policy_digest"),

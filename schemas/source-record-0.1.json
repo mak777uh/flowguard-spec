@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flowguard.dev/schemas/source-record-0.1.json",
+  "title": "FlowGuard SourceRecord",
+  "description": "What one enumerator contributes: paths, attributions, and - mandatory - what it does not cover. An empty blind_spots array is refused, because a source that claims to see everything is either mistaken or lying, and both are worse than a source that admits a limit.",
+  "type": "object",
+  "required": ["source_id", "kind", "tool", "run", "covers", "blind_spots", "paths", "completeness_claim"],
+  "additionalProperties": false,
+  "properties": {
+    "source_id": { "type": "string", "minLength": 3, "maxLength": 80 },
+    "kind": {
+      "enum": ["grants", "static", "routes", "runtime", "agent", "manual"],
+      "description": "A kind may be listed as a coverage denominator only after its enumerator exists and is measured (ADR-0011). runtime and agent are witnesses: they observe, they do not enumerate."
+    },
+    "tool": {
+      "type": "object",
+      "required": ["name", "version"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" },
+        "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+      }
+    },
+    "run": {
+      "type": "object",
+      "required": ["target_lock"],
+      "additionalProperties": false,
+      "properties": {
+        "target_lock": { "type": "string" },
+        "started": { "type": "string" },
+        "environment": { "type": "string" },
+        "scope": { "type": "string" }
+      }
+    },
+    "covers": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 8 } },
+    "blind_spots": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 8 } },
+    "paths": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path_id", "entry", "kind"],
+        "properties": {
+          "path_id": { "type": "string", "pattern": "^wp_[0-9a-f]{8,32}$" },
+          "entry": { "type": "string", "minLength": 3 },
+          "kind": { "type": "string" },
+          "control_point": { "type": "string" },
+          "confidence": { "enum": ["catalog", "runtime", "agent"] },
+          "detail": { "type": "string" },
+          "calls": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "attributions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["entry", "attributed_to", "method"],
+        "properties": {
+          "entry": { "type": "string" },
+          "attributed_to": { "type": "string" },
+          "method": { "enum": ["direct", "transitive"] },
+          "confidence": { "enum": ["catalog", "runtime", "agent"] }
+        }
+      }
+    },
+    "control_points": { "type": "array", "items": { "type": "string" } },
+    "completeness_claim": { "enum": ["exhaustive_within_covers", "partial", "sampled"] }
+  }
+}
