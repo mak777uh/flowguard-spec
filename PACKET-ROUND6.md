@@ -1,5 +1,9 @@
 # Пакет для внешнего ревью · круг 6
 
+> **PRE-PIVOT RECORD.** This packet describes a single-verdict product with a browser verifier. Two decisions
+> changed that afterwards: ADR-0003 (the unit is a flow and the core grows ring by ring) and ADR-0004 (the
+> consumer is an agent, not a human). Kept as a record; the current pack is `15-ROUND7-QUESTIONS.md`.
+
 *Самодостаточный документ: всё, что нужно для ревью, находится ниже. Внешних файлов нет — если чего-то не хватает, это дефект пакета, а не задача для читателя. Язык — русский, потому что пакет отправляется в чат как есть.*
 
 ---

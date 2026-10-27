@@ -1,4 +1,8 @@
-# Hackathon plan: Decentralize AI (HackerNoon × Nosana × Arweave × MEXC)
+# Hackathon plan: Decentralize AI
+
+> **PARTLY SUPERSEDED (2026-10-27).** A1 below puts a browser verifier first. ADR-0001 puts the
+> substitution test first, and ADR-0004 removes the browser entirely — the consumer of the tool is an agent.
+> Read A1 as "a static demo page", not as the primary artifact. (HackerNoon × Nosana × Arweave × MEXC)
 
 **Recorded:** 2026-10-27, before any code exists. **Owner's decision:** write it down now, build the code later.
 **Purpose:** a plan that survives the week, so the next session does not re-derive strategy from a FAQ.
