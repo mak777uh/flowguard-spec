@@ -1,0 +1,13 @@
+valid bundles: 30, false rejections: 0 (0.000)
+code             detected 17/17 = 1.000
+build            detected 17/17 = 1.000
+config           detected 17/17 = 1.000
+identity         detected 17/17 = 1.000
+pair             detected 17/17 = 1.000
+pair_consistent  detected 17/17 = 1.000
+
+D-1 combined detection: 1.000  (threshold >= 0.95)
+D-2 combined detection: 1.000  (threshold >= 0.9)
+false rejection:        0.000  (threshold <= 0.05)
+corpus: 102 mutants, 30 valid
+RESULT: PASS

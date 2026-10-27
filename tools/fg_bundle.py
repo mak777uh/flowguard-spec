@@ -94,7 +94,9 @@ def cmd_create(a) -> int:
     return 0
 
 
-def cmd_verify(a) -> int:
+def verify_bundle(a) -> tuple:
+    """Pure verification: returns (result document, exit code). No printing, so the corpus
+    harness can call it in-process (E-M10 needs ~130 verifications)."""
     b = Path(a.bundle)
     problems = []
 
@@ -107,16 +109,14 @@ def cmd_verify(a) -> int:
 
     bj = b / "bundle.json"
     if not bj.exists():
-        print(json.dumps({"verdict": "INVALID", "errors": [{"code": "MISSING_EVIDENCE", "subject": "bundle.json",
-                                                            "next_action": "bundle is not a bundle"}]}))
-        return 2
+        return {"verdict": "INVALID", "errors": [{"code": "MISSING_EVIDENCE", "subject": "bundle.json",
+                                                    "next_action": "bundle is not a bundle"}]}, 2
 
     try:
         bundle = json.loads(bj.read_text(encoding="utf-8"))
     except Exception as e:  # noqa: BLE001
-        print(json.dumps({"verdict": "INVALID", "errors": [{"code": "REPORT_BUNDLE_INCONSISTENT",
-                                                            "subject": "bundle.json", "observed": str(e)}]}))
-        return 2
+        return {"verdict": "INVALID", "errors": [{"code": "REPORT_BUNDLE_INCONSISTENT",
+                                                    "subject": "bundle.json", "observed": str(e)}]}, 2
 
     if bundle.get("bundle_version") != VERSION:
         problems.append(("REPORT_BUNDLE_INCONSISTENT", "bundle_version",
@@ -191,8 +191,13 @@ def cmd_verify(a) -> int:
         "signed_by": verified,
         "errors": [{"code": c, "subject": s, "expected": e, "observed": o} for c, s, e, o in problems[:3]],
     }
+    return out, (2 if problems else 0)
+
+
+def cmd_verify(a) -> int:
+    out, code = verify_bundle(a)
     print(json.dumps(out, indent=1, ensure_ascii=False))
-    return 2 if problems else 0
+    return code
 
 
 def cmd_substitute(a) -> int:

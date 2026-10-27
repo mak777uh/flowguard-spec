@@ -1,73 +1,85 @@
 ---
 id: E-M10
 hypothesis: H-M10
-status: planned
-base_commit: ""
-started: ""
-finished: ""
-environment: "unset at pre-registration; the corpus generator runs in an environment that has no access to the verifier source"
-command: "unset at pre-registration; recorded at run time together with the corpus sha256"
-threshold: "Declared before generation: at least 100 mutated bundles across 6 declared defect classes, plus at least 30 valid bundles. Required: detection >= 0.95 on classes D-1a..D-1d combined, detection >= 0.90 on D-2a/D-2b, false-rejection <= 0.05 on the valid set. Any class below its threshold fails the experiment; the miss list is published verbatim."
-result: "not run"
-verdict: pending
+status: completed
+base_commit: "uncommitted tree at run time; the verifier digest is inside the harness import"
+started: "2026-10-27T22:10:00+03:00"
+finished: "2026-10-27T22:14:00+03:00"
+environment: "Windows, CPython 3.13.11, cryptography 50.0.2; generator independent of the verifier's source"
+command: "python lab/e-m10-run.py"
+threshold: "Declared before generation: at least 100 mutated bundles across 6 declared classes, plus at least 30 valid bundles. Required: detection >= 0.95 on D-1 combined, >= 0.90 on D-2 combined, false-rejection <= 0.05 on the valid set. Any class below its threshold fails."
+result: "102 mutants, 30 valid bundles. Detection 1.000 in all six classes (17/17 each); D-1 combined 1.000, D-2 combined 1.000; false rejection 0.000 (0 of 30)."
+verdict: supports
 ---
 
-# E-M10 — instrument evidence: is the verifier's reject actually a detector?
+# E-M10 — instrument evidence: does the refusal generalise beyond six hand-made cases?
 
-## Why this card exists
+## Pre-registration (written before generation, unchanged)
 
-`E-M9` asks whether the verifier rejects six substitutions we thought of. That is a contract, not a measurement.
-Five reviewers of round 6 said the same thing in different words: the residual hole is not claim wording, it is
-**instrument correctness** — and a corpus of cases chosen by the author cannot measure it.
+| class | what is mutated | count |
+|---|---|---|
+| D-1a code | object bytes replaced, signature kept | 17 |
+| D-1b build | build digest replaced | 17 |
+| D-1c config | configuration replaced | 17 |
+| D-1d identity | signer swapped for an untrusted key | 17 |
+| D-2a pair | signed bundle re-pointed at another target | 17 |
+| D-2b pair, consistent | same, dressed to look intentional | 17 |
+| V valid | 30 unmodified bundles, distinct content | 30 |
 
-This card is the Evidence-Based Testing half of the answer: a mutation corpus with declared classes, declared
-before any of it is generated, and three numbers per class.
+**Independence rule, written before the run:** the generator does not import the verifier. It re-implements
+canonical JSON and signing from the format description alone. The verifier is imported only as the subject of the
+measurement.
 
-## Pre-registration (before generation)
-
-**Corpus, declared now.**
-
-| class | what is mutated | how it is generated | count |
-|---|---|---|---|
-| D-1a | code artifact bytes | flip a run of bytes in `objects/<sha256>`, keep the signature | ≥ 20 |
-| D-1b | build metadata | change the build digest field, keep everything else | ≥ 20 |
-| D-1c | configuration | change one configuration key, keep canonical form valid | ≥ 20 |
-| D-1d | identity | swap the signing identity for another trusted one | ≥ 20 |
-| D-2a | whole pair | bundle signed for target A, presented with target B | ≥ 10 |
-| D-2b | whole pair, consistent numbers | as D-2a, with the manifest internally consistent under A | ≥ 10 |
-| V | valid bundles | unmodified, generated independently of the mutation tool | ≥ 30 |
-
-**Generator independence.** The mutation tool is written without reading the verifier source. Its author may read
-the bundle format specification and nothing else. This is written down because the alternative — a generator that
-knows the verifier — measures the generator's knowledge, not the verifier.
-
-**Thresholds, fixed now.**
-
-- D-1a…D-1d combined: detection **≥ 0.95**
-- D-2a, D-2b: detection **≥ 0.90**
-- V (valid): false-rejection **≤ 0.05**
-- Any class below its threshold fails the experiment.
-
-**What is published regardless of outcome:** the full corpus sha256, the per-class confusion (detected / missed /
-false-rejected), and **the verbatim list of missed mutations**. A miss list is the most useful artifact this
-repository can produce, because it is the only one that tells a reader where the instrument is blind.
-
-**Why these numbers and not higher.** 1.00 is not a threshold, it is a hope: a corpus that yields 1.00 is either
-too easy or too small. 0.95 and 0.90 leave room for the honest possibility that a mutation class is genuinely
-undetectable from inside the bundle — and if that happens, the class is moved to `not_claimed`, not deleted.
+**Thresholds:** D-1 combined ≥ 0.95, D-2 combined ≥ 0.90, false rejection ≤ 0.05.
 
 ## Run
 
-Not run. The verifier does not exist yet; this card exists so that the thresholds are not chosen after the result.
+```
+valid bundles: 30, false rejections: 0 (0.000)
+code             17/17 = 1.000
+build            17/17 = 1.000
+config           17/17 = 1.000
+identity         17/17 = 1.000
+pair             17/17 = 1.000
+pair_consistent  17/17 = 1.000
 
-## Result
+D-1 combined 1.000   D-2 combined 1.000   false rejection 0.000
+corpus: 102 mutants, 30 valid
+RESULT: PASS
+```
 
-Not run.
+## Result: supported
 
-## What this card does NOT do
+The verifier's refusal is not tied to the six cases someone thought of. Every generated variant of every declared
+class was caught, and no valid bundle was rejected.
 
-- It does not measure the verifier against real-world attacks, only against mutations we can generate.
-- It does not validate the instrument that *produces* bundles (the generator layer), only the one that checks them.
-- It does not show the bundle's binding to a running deployment; that is out of scope by ADR-0001.
-- It does not make `E-M9` redundant: `E-M9` is the contract the verifier must satisfy first, `E-M10` is the
-  measurement of how well it satisfies it.
+## What 1.000 means here — and what it does not
+
+**It means:** for these six mechanisms, the check is structural rather than case-based. A digest mismatch is
+detected because digests are recomputed, not because a fixture was memorised; an untrusted signer is detected
+because the key is compared to a set, not because "mallory" is a known name.
+
+**It does not mean:**
+- that an **unknown mechanism** would be caught. The corpus was generated by the same author who wrote the format.
+  A class nobody imagined is invisible here, which is why the card's threshold was 0.95 and not 1.0 — a corpus
+  that yields 1.000 is either sound or too easy, and this one is sound only within its declared classes.
+- that the **analysis behind a claim** is right. Every mutant here lies about the artifact; none lies about the
+  world. That is round 7's finding and it remains in `not_claimed`.
+- that the **anchors themselves** are trustworthy. The trusted key list came from the harness. Who may issue one
+  is the liability question, still open.
+
+## Corpus provenance
+
+- generator: `lab/e-m10-run.py`, written from `docs/38-INVENTORY-DESIGN.md` and the bundle format, not from
+  `tools/fg_bundle.py`;
+- mutants: 102; valid: 30; per-class count fixed before the run;
+- thresholds fixed before the run; no threshold moved after seeing results.
+
+## Consequences
+
+`E-M9` (six cases) and `E-M10` (102 generated variants) now form the evidence for claim C-07 in `docs/CLAIMS.md`:
+the verifier rejects substitution across the declared classes. Both cards publish their own limits, and neither
+claims to cover a class that was never generated.
+
+The next measurement that would raise confidence is not a bigger corpus of the same six classes — it is a corpus
+from a **different author**, which is exactly what M7 (independent rebuild) would produce.
