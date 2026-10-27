@@ -1,5 +1,10 @@
 # 80. Pricing Doctrine: cut the price and raise the quality at the same time
 
+> **FROZEN (2026-10-27, ADR-0002):** commercial work is deferred until the first executable measurement
+> (`E-M9`). Nothing below is a live offer. Prices, margins and SKUs are doctrine, not quotes, and are not
+> maintained while the product has no artifact. See `lab/decisions/ADR-0002-commercial-freeze.md`.
+
+
 > Stance: do not milk clients. The goal is for the economics not to fall apart, and for the money for upgrades to be there.
 > Problem: "we will cut the price and raise the quality" is a promise, and promises in security are worth nothing. What is needed is a **mechanism** that forces this to happen, and a **condition** under which the promise is honestly withdrawn.
 > All numbers are `[HYPOTHESIS]` unless marked otherwise.

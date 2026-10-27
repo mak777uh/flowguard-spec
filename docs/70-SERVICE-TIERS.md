@@ -1,5 +1,10 @@
 # 70. Services: what to sell first, code as a separate SKU, OSS strategy
 
+> **FROZEN (2026-10-27, ADR-0002):** commercial work is deferred until the first executable measurement
+> (`E-M9`). Nothing below is a live offer. Prices, margins and SKUs are doctrine, not quotes, and are not
+> maintained while the product has no artifact. See `lab/decisions/ADR-0002-commercial-freeze.md`.
+
+
 > Scheme: OSS core for everyone → a service on top of it (fiat → crypto → automatic payouts without humans).
 > Question: which baseline analysis is optimally useful, and whether code can be sold separately.
 > Short answer: what must be sold is **the flow map and the contradictions in the rules**, not a "vulnerability scanner". Code — yes, a separate SKU, but with different economics and different liability.

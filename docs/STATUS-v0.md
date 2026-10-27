@@ -69,6 +69,11 @@ whether the recomputed bytes equal `manifest.sha256`. Agreement on the payload, 
 
 Until such a run exists and is recorded in an `E-` card, M7 stays absent — a definition is not a result.
 
+
+**Three reserved fields (ADR-0002).** `issuer`, `valid_until`, `reliance_scope` are defined in the format and may
+stay unused. They reserve the shape of a liability surface — the thing a buyer would need before relying on a
+bundle — without claiming semantics we cannot yet define. Adding them later would invalidate every bundle and
+every verifier written before, so the envelope is cut now; the meaning waits for a counterparty.
 ## What this document does not claim
 
 - That the specification is correct, complete, or safe to implement against.
