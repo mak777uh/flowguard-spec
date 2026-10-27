@@ -1,0 +1,31 @@
+# Backticked references allowed on purpose. Each line needs a reason.
+#
+# Two failure modes are checked: a dangling reference with no allowance, and an allowance
+# whose path now EXISTS (the list must not rot in either direction). Rule from VecDHT note 2.
+
+lab/e2e/attacks  # planned artifact named by a claim; the gap is published by lab/check-claims.py and by docs/STATUS-v0.md
+lab/e2e/narrowing  # planned artifact named by a claim; the gap is published by lab/check-claims.py and by docs/STATUS-v0.md
+lab/e2e/replay  # planned artifact named by a claim; the gap is published by lab/check-claims.py and by docs/STATUS-v0.md
+lab/e2e/unknown-path  # planned artifact named by a claim; the gap is published by lab/check-claims.py and by docs/STATUS-v0.md
+lab/e2e/verify-offline  # planned artifact named by a claim; the gap is published by lab/check-claims.py and by docs/STATUS-v0.md
+lab/experiments/E-C2  # planned artifact named by a claim; the gap is published by lab/check-claims.py and by docs/STATUS-v0.md
+lab/experiments/E-C2b  # planned artifact named by a claim; the gap is published by lab/check-claims.py and by docs/STATUS-v0.md
+lab/experiments/E-G8  # planned artifact named by a claim; the gap is published by lab/check-claims.py and by docs/STATUS-v0.md
+lab/experiments/E-G9  # planned artifact named by a claim; the gap is published by lab/check-claims.py and by docs/STATUS-v0.md
+lab/experiments/E-M1  # planned artifact named by a claim; the gap is published by lab/check-claims.py and by docs/STATUS-v0.md
+lab/experiments/E-M2  # planned artifact named by a claim; the gap is published by lab/check-claims.py and by docs/STATUS-v0.md
+lab/experiments/E-M5  # planned artifact named by a claim; the gap is published by lab/check-claims.py and by docs/STATUS-v0.md
+lab/experiments/E-M5  # planned artifact named by a claim; the gap is published by lab/check-claims.py and by docs/STATUS-v0.md
+lab/experiments/E-M6  # planned artifact named by a claim; the gap is published by lab/check-claims.py and by docs/STATUS-v0.md
+lab/experiments/E-M8  # planned artifact named by a claim; the gap is published by lab/check-claims.py and by docs/STATUS-v0.md
+lab/experiments/E-M9  # planned artifact named by a claim; the gap is published by lab/check-claims.py and by docs/STATUS-v0.md
+docs/31-…  # planned artifact named in a plan document; not built yet
+lab/check-claim-map.py  # path inside the VecDHT repository, cited in an interop note; not a local file
+lab/templates/experiment.md  # path inside the VecDHT repository, cited in an interop note; not a local file
+lab/xcheck-paid-orders.py  # path inside the VecDHT repository, cited in an interop note; not a local file
+.github/workflows/verify.yml  # path inside the VecDHT repository, cited in an interop note; not a local file
+lab/library.py  # path inside the VecDHT repository, cited in an interop note; not a local file
+lab/INVENTORY.md  # path inside the VecDHT repository, cited in an interop note; not a local file
+lab/lean-rubric.md  # path inside the VecDHT repository, cited in an interop note; not a local file
+lab/library/index.jsonl  # path inside the VecDHT repository, cited in an interop note; not a local file
+docs/STATUS-v1.md  # path inside the VecDHT repository, cited in an interop note; not a local file

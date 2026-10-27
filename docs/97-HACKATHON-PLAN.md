@@ -102,7 +102,7 @@ verifier rejects all four.
 - **Why it is the honest choice:** if the verifier misses one, the claim in `CLAIMS.md` moves from
   `judgment` to `false as stated`, and we publish that. A negative result is still a reproducible metric,
   and the registry is built to record it.
-- **Acceptance:** a table of four substitutions × accept/reject, plus `lab/experiments/E-M9.md`.
+- **Acceptance:** a table of four substitutions × accept/reject, plus `lab/experiments/E-M9-substitution.md`.
 - **Cost:** three days.
 
 ---

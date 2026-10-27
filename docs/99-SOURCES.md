@@ -19,10 +19,10 @@ What to take:
 
 | Artifact there | What it solves here |
 |---|---|
-| `lab/hypotheses` + `lab/experiments` | the `E-` card format: hypothesis, pre-registered threshold, result, one ADR per finding |
+| `lab/experiments` + `lab/experiments` | the `E-` card format: hypothesis, pre-registered threshold, result, one ADR per finding |
 | pre-registered thresholds | thresholds are fixed **before** the run, so a result cannot be re-fitted after seeing it |
 | `docs/METRICS.md` | every number carries the command that produced it; counters are generated, not typed by hand |
-| `docs/STATUS-v1.md` | honest status: what works, what is partial, what is a stub — written so a reviewer can falsify it |
+| `docs/STATUS-v0.md` | honest status: what works, what is partial, what is a stub — written so a reviewer can falsify it |
 | `AGENTS.md` | the rules an implementing agent must obey, including what it may not touch |
 | bit-for-bit seed anchors | a change that shifts the reference run is caught in minutes, not in a review |
 | `E-0113`: a pre-freeze reconnaissance that separated defects of the instrument from defects of the text — 7 defects, 6 in the spec text and 1 in the checker, 100 expectations, 0 mismatches | the shape of a cross-check, and the proof that an instrument needs its own audit. **Not** an independent rebuild: it compares their bytes to their own frozen numbers |

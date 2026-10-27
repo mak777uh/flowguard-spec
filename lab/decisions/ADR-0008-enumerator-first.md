@@ -19,7 +19,7 @@ one false positive, two instrument defects found in the process).
 
 ## Consequences
 
-- `lab/experiments/E-M11` is completed before `E-M9` runs, which reverses the plan's card order but not its logic:
+- `lab/experiments/E-M11-grant-enumeration.md` is completed before `E-M9` runs, which reverses the plan's card order but not its logic:
   the first measurement is now about discovery, not about formatting.
 - The next artifact is `fg-enum-routes` or the verifier, whichever is chosen; the enumerator already satisfies
   `independent_of_agent` for analyses that include it.

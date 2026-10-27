@@ -93,6 +93,16 @@ if [[ "$ONLY" == "all" || "$ONLY" == "readme" ]]; then
     pass "readme: unlinked document caught"
   fi
 fi
+# ---- control 6: a dangling backticked path is caught -------------------------
+if [[ "$ONLY" == "all" || "$ONLY" == "refs" ]]; then
+  stage
+  printf 'see `lab/does-not-exist.py` for details\n' > "$TMP/repo/docs/_negative_control_ref.md"
+  if python "$TMP/repo/lab/check-artifact-refs.py" >/dev/null 2>&1; then
+    fail "refs: a dangling backticked path was NOT caught"
+  else
+    pass "refs: dangling backticked path caught"
+  fi
+fi
 echo
 echo "controls passed: $PASS   failed: $FAIL"
 [[ "$FAIL" -eq 0 ]] || { echo "RESULT: fail"; exit 1; }

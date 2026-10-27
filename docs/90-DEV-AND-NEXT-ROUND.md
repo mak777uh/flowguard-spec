@@ -76,14 +76,14 @@ The last rule answers the question "how are research and the spec connected". Ri
 
 | VecDHT element | In FLOWGUARD | Why |
 |---|---|---|
-| `lab/hypotheses/H-*.md` | `lab/hypotheses/` | hypotheses: detector recall, K and flakiness, minutes per review, share of validatable targets |
+| `lab/hypotheses/H-*.md` | `lab/experiments/` | hypotheses: detector recall, K and flakiness, minutes per review, share of validatable targets |
 | `lab/experiments/E-*.md` | `lab/experiments/` | the M1–M9 cards from [master §7](FLOWGUARD-MASTER-v2.md) move here as E-cards |
-| `lab/adr/ADR-*.md` | `lab/adr/` | one decision each: "K≥5", "a $50k ceiling", "core instead of flow" |
+| `lab/adr/ADR-*.md` | `lab/decisions/` | one decision each: "K≥5", "a $50k ceiling", "core instead of flow" |
 | `docs/METRICS.md` | `docs/METRICS.md` | every number + `E-id` + the re-measurement command |
-| `docs/STATUS-v1.md` | `docs/STATUS-v0.1.md` | the five v0.1 conditions and an honest "not done" list |
+| `docs/STATUS-v0.md` | `docs/STATUS-v0.md` | the five v0.1 conditions and an honest "not done" list |
 | `AGENTS.md` | `AGENTS.md` | the contract for executing agents (§2.4) |
 | `lab/check-*.sh` | `lab/check-*.sh` | cheap guards: spec mirror, text cleanliness, inventory, cross-check of vectors |
-| counter generation | `lab/inventory.py` | numbers in the README are generated, not typed by hand |
+| counter generation | `tools/merge_inventory.py` | numbers in the README are generated, not typed by hand |
 | from ["-"](https://github.com/mak777uh/-) | run manifests + reports | the run manifest as a first-class artifact: without a manifest a run does not count as having happened |
 
 ## 2.3. Release conditions for v0.1 (they replace the "roadmap")

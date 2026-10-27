@@ -38,6 +38,7 @@ echo "round-check"
 stage "secrets (files + history + index)" bash lab/check-secrets.sh
 stage "relative links" "$PY" lab/check-links.py
 stage "claim registry" "$PY" lab/check-claims.py
+stage "backticked paths resolve" "$PY" lab/check-artifact-refs.py
 stage "README covers every document" "$PY" lab/check-readme.py
 stage "negative controls for every guard" bash lab/selftest-guards.sh
 stage "acceptance scenarios" "$PY" lab/e-m12-run.py

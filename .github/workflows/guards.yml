@@ -18,6 +18,8 @@ jobs:
         run: python3 lab/check-links.py
       - name: claim registry
         run: python3 lab/check-claims.py
+      - name: backticked paths resolve
+        run: python3 lab/check-artifact-refs.py
       - name: every document is linked from the README
         run: python3 lab/check-readme.py
       - name: negative controls for every guard
