@@ -1,0 +1,377 @@
+Discover Anything
+Signup
+Write
+READ
+TOP BLOGS
+WRITE NOW
+BUSINESS BLOGGING
+HACKATHONS
+ABOUT
+MORE
+Your AI engineering world model for shared context across the SDLC
+by PlayerZero
+Book a Demo
+New Story
+ModelProof: Bit-Exact, Permanently Stored AI Models You Can Verify in a Browser Tab
+by
+ModelProof
+October 27th, 2026
+TLDR
+Audio Presented by
+
+How an integer-only model format, a content-hashed manifest and Arweave let anyone prove a model still does what its publisher claimed.
+
+
+
+
+"Open" AI models live on mutable storage. Files get replaced, repos get deleted, and there is no cheap way to check that the model you run today is the one someone benchmarked yesterday. Even with the same file, floating-point inference differs between CPUs, GPUs and libraries, so two honest people can get different outputs and neither can prove the other wrong.
+
+
+
+
+ModelProof is a small, working answer to that problem: a model format whose outputs are identical on every machine, a manifest that pins those outputs, and permanent storage on Arweave so the evidence can't quietly disappear.
+
+
+
+
+The idea in four steps
+
+1. Integer-only inference (MPW1 format). Weights are int8, biases int32, accumulation is integer, activations are ReLU, and requantization is an arithmetic right shift. No floats at inference time means the same bytes in, the same bytes out, on any platform.
+
+2. A manifest. A JSON document that records the SHA-256 and size of the weights, the Arweave transaction holding them, the preprocessing rules, the evaluation metrics, a set of test vectors (exact input to exact output) and a digest over all outputs.
+
+3. Permanent storage. Weights and manifest are uploaded to Arweave as ANS-104 data items through ArDrive Turbo and tagged App-Name: ModelProof, so they are discoverable and immutable.
+
+4. Verification. Fetch the manifest, fetch the weights by transaction ID, check the hash, re-run every test vector and compare the output digest. Two independent runtimes, Python and JavaScript, have to agree.
+
+
+
+
+What is live today
+Verifier web app, hosted on Arweave.
+Manifest TX: XCnP6FwdPqVPz5REcI7hHmBR8X75bKdOMGWXTOstbLI
+Weights TX (117 bytes): SVHIFB9pR84SAv5TYwo_JUXJuAG8h7c1lTl-wmVmHl0
+Source code (MIT)
+
+
+
+
+The sample model is deliberately tiny: a 4-8-3 MLP trained on Iris. It reaches 100% holdout accuracy (30 samples) both in float and after int8 quantization, which shows the integer format costs nothing on this task. Open the web app, paste the manifest TX, and your browser downloads the weights from Arweave, checks the hash and re-runs every test vector locally. No server of ours is involved.
+
+
+
+
+Try it yourself
+python3 train_iris.py
+python3 cli.py verify XCnP6FwdPqVPz5REcI7hHmBR8X75bKdOMGWXTOstbLI
+node verify_node.js XCnP6FwdPqVPz5REcI7hHmBR8X75bKdOMGWXTOstbLI
+python3 cli.py predict XCnP6FwdPqVPz5REcI7hHmBR8X75bKdOMGWXTOstbLI 6.3 3.3 6.0 2.5
+
+
+The Python side has no dependencies beyond the standard library. Training is deterministic, so rebuilding the model from iris.csv reproduces the published weights byte for byte.
+
+
+
+
+Why integers matter for verifiable AI
+
+Most "verifiable inference" proposals either re-run a model and accept small numeric drift, or reach for zero-knowledge proofs that are still expensive for real networks. Integer-only inference sits in between: it is cheap, it already powers quantized models on phones and edge devices, and it turns "close enough" into "equal or not". Once outputs are exact, a hash of them becomes a fingerprint of the model's behaviour, and that fingerprint can be stored next to the weights forever.
+
+
+
+
+Honest limits
+The demo model is small. The format scales to bigger int8 networks, but a large model needs chunked weights with a Merkle root, which is on the roadmap.
+ModelProof proves that a model behaves as its manifest says. It does not prove the training data or the claimed metrics were honest; it only makes them permanent and checkable.
+Content addressing protects against silent replacement, not against a publisher who uploads a bad model in the first place.
+
+
+
+
+Roadmap
+Chunked weights with a Merkle root for larger models.
+Verification attestations published as tagged Arweave items, so a model accumulates independent "reproduced by" proofs over time.
+Running verifiers for larger int8 models as Nosana GPU jobs.
+
+
+
+
+ModelProof was built for the HackerNoon Decentralize AI Hackathon with the help of an AI coding agent. The code, the live Arweave artifacts, and the verifier are all public; please break it and tell me what you find.
+
+
+
+
+Decentralize AI
+
+Join the Decentralize AI Hackathon by HackerNoon, Arweave, Nosana, and MEXC to build open, transparent, and user-owned AI infrastructure, and compete for $51,750+ in prizes, compute credits, storage credits, and cash rewards. Let's build something worth blogging about!
+
+About Author
+by
+ModelProof
+|
+@modelproof
+
+Building verifiable AI on Arweave.
+
+Subscribe
+Read my stories
+About @modelproof
+TOPICS
+Software Engineering
+#decentralize-ai
+#verifiable-ai
+#decentralize-ai-hackathon
+#arweave
+#permanent-storage
+#decentralized-storage
+#ai-inference
+#modelproof
+THIS ARTICLE WAS FEATURED IN
+Terminal
+Lite
+X
+Bsky
+RELATED BLOG POSTS
+Make us Preferred on Google
+Give your team shared context across the SDLC
+by
+PlayerZero
+#SPONSORED
+Building Memory for AI Agents: From Episodes to Knowledge
+by
+Naveen
+@naveen
+#AI-AGENTS
+DOE v. Github: Code Stored on GitHub Ultimately Belong to Their Authors
+by
+Legal PDF: Tech Court Cases
+@legalpdf
+#DOE-VS-GITHUB
+Building your own ESP8266/ESP32 Over-The-Air Firmware Updater [A How-To Guide] Part I
+by
+Derk
+@dazzatron
+#ARDUINO
+World's ProveKit Can Verify Citizens, Hotel Guests and AI Agents Without Taking Their ID
+by
+Ishan Pandey
+@ishanpandey
+#PROVEKIT
+DOE v. Github: Plaintiffs File Suit On Behalf of Themselves and Others Who Stored Software in GitHub
+by
+Legal PDF: Tech Court Cases
+@legalpdf
+#DOE-VS-GITHUB
+Fast KV Compaction Makes Long Context LLMs Practical
+by
+aimodels44
+@aimodels44
+#AI
+How Big Data Can Help Personalize Your Ecommerce Store
+by
+John Ahya
+@johnahya
+#BIGCOMMERCE
+How Persistent Prompt Injection Attacks Live On After You've Locked the Door
+by
+Vishal Maurya
+@noauth
+#PENETRATION-TESTING
+KV-Cache Is the Real Latency Monster in Agentic Workloads
+by
+aimodels44
+@aimodels44
+#AI
+Local LLMs Need More Than OpenAI-Compatible Endpoints
+by
+roman
+@robertomanfreda
+#AI
+Some insights on Maps in Golang
+by
+Aleksandr Kochetkov
+@avk-ai
+#GOLANG
+Apple Patches Vulnerabilities Affecting Personal Data on All iPhone and Mac Devices
+by
+Noah Rue
+@nyrue24
+#SECURITY
+Effective Adoption of Data Warehouses in Healthcare: A Complete Guide
+by
+ITRex
+@itrex
+#DATA-WAREHOUSE
+The HackerNoon Newsletter
+Subscribe
+I agree to receive electronic content from HackerNoon
+Available on
+App Store
+Available on
+Google Play
+ABOUT
+Careers
+Contact
+Cookies
+Emails
+HackerNoon AI
+HackerNoon CV
+HackerNoon Tech
+Help
+Privacy
+Sitemap
+Shareholders
+Terms
+Testimonials
+READ
+Archive
+Categories
+Editors' Picks
+Image Gallery
+Leaderboard
+Newsletters
+On This Day
+Signup
+Tech Beat
+Tech Tags
+Terminal Reader
+Top Bloggers
+What Readers Say
+WRITE
+Distribution
+Editing Protocol
+Get Published
+Guidelines
+Help
+New Story
+Perks
+Post Templates
+Prizes
+Process
+Subscribers
+Why Write
+What Writers Say
+BUSINESS
+Blogging Contests
+Book Demo Meeting
+Business Blogging
+Case Studies
+Company Directory
+Demographics
+Hackathons
+Newsletters
+Niche Targeting
+Partnerships
+Top Startups
+Business Posts
+What Customers Say
+NETWORK
+AI Grants
+Computational
+Cuttlefish.MD
+Decentralize AI
+Learn Repo
+Phonology
+Pixel Icons
+Reinforcement
+Slogging
+Text Mining
+Text Models
+Turing Tests
+Usefulness
+© 2026 HackerNoon. All rights reserved - 56 Edwards Village Blvd, Unit 124-3000-243, Edwards, Colorado 81632, USA
+Trending Stories
+
+The Strange Programming Language That Helped Build WhatsApp
+
+#1
+
+4 072 new reads
+
+by @zbruceli
+
+AI-Assisted Genealogy: Using AI to Trace My Family Tree
+
+#2
+
+1 887 new reads
+
+by @nfrankel
+
+Muse, Instinct, Wajo, and OpenAI's Dots: Four AI Assistants That Do the Work for You
+
+#3
+
+1 871 new reads
+
+by @hacker-Antho
+
+Did Elon Musk Buy Dot.com Just to Troll OpenAI’s New AI Agent Dots?
+
+#4
+
+1 293 new reads
+
+by @clapback
+
+Awesome Agent Skills: 49 Skills for Better AI-Assisted Coding
+
+#5
+
+1 088 new reads
+
+by @khasky
+
+AI Agents Are Killing the Git Client, Not Git: What Anthropic's Scion and Cursor's Origin Show
+
+#6
+
+1 066 new reads
+
+by @pairprogramming
+
+Is Software Really Dead? The Rise of AI-Powered Reverse Engineering
+
+#7
+
+910 new reads
+
+by @mendoncamaria
+
+The LLM Operating System: Transformers, Limitations, and the Need for Adaptation
+
+#8
+
+839 new reads
+
+by @metinyurdev
+
+Why AI Agents Forget Everything (and How to Build Ones That Don't)
+
+#9
+
+774 new reads
+
+by @kapilbidikar
+
+Everyone Rushed to Deploy AI Agents. Now the Security Debt Is Coming Due
+
+#10
+
+682 new reads
+
+by @thekonst
+Categories
+Trending Topics
+BLOCKCHAIN
+CRYPTOCURRENCY
+HACKERNOON-TOP-STORY
+PROGRAMMING
+SOFTWARE-DEVELOPMENT
+TECHNOLOGY
+STARTUP
+HACKERNOON-BOOKS
+BITCOIN
+BOOKS
+LOGIN
+SIGNUP

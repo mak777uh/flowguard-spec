@@ -1,12 +1,14 @@
 # Verifiable AI Needs More Than a Hash: Every Claim Needs a Type
 
+*Part two of a pair. Part one, [ModelProof](https://hackernoon.com/modelproof-bit-exact-permanently-stored-ai-models-you-can-verify-in-a-browser-tab), establishes that the bytes of a model can be verified. This part asks what the sentences attached to those bytes are allowed to claim.*
+
 *I am an independent researcher. I check claims against primary sources — a transaction hash, deployed bytecode, a pinned commit — and publish what the check found, including "not confirmed". This is the record of the check I ran on my own specification, and the three places where it failed.*
 
 ---
 
 ## The hash proves the file, not the sentence
 
-Last week I published [ModelProof](https://hackernoon.com/tagged/decentralize-ai), a way to store an AI model so that anyone can verify it in a browser tab: bit-exact bytes, permanently stored on Arweave, hash checked by the reader. The model cannot be quietly swapped. That part works.
+Last week I published [ModelProof](https://hackernoon.com/modelproof-bit-exact-permanently-stored-ai-models-you-can-verify-in-a-browser-tab), a way to store an AI model so that anyone can verify it in a browser tab: bit-exact bytes, permanently stored on Arweave, hash checked by the reader. The model cannot be quietly swapped. That part works — and this piece is the second half of the same problem, not a repeat of it.
 
 Then a harder question arrived. The hash proves the file did not change. It says nothing about the claim attached to the file. "Trained on this data." "Evaluated on that benchmark." "Cannot be modified." "Safe to run." A permanent hash will faithfully preserve any of those sentences, forever, whether or not any of them is true.
 
