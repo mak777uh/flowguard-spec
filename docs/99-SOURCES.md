@@ -25,7 +25,7 @@ What to take:
 | `docs/STATUS-v1.md` | honest status: what works, what is partial, what is a stub — written so a reviewer can falsify it |
 | `AGENTS.md` | the rules an implementing agent must obey, including what it may not touch |
 | bit-for-bit seed anchors | a change that shifts the reference run is caught in minutes, not in a review |
-| independent client from documents alone (`E-0113`) | the external node for this project's loop: rebuild from documents, not from code |
+| `E-0113`: a pre-freeze reconnaissance that separated defects of the instrument from defects of the text — 7 defects, 6 in the spec text and 1 in the checker, 100 expectations, 0 mismatches | the shape of a cross-check, and the proof that an instrument needs its own audit. **Not** an independent rebuild: it compares their bytes to their own frozen numbers |
 | the "model ↔ code not instrumented" caveat | the same honesty we need for formal proofs: statements are about a model |
 
 What **not** to take: its scaffolding and module layout are tuned to a P2P network; copying the tree wholesale

@@ -24,3 +24,4 @@ A conversation does not survive that, and memory does not either.
 | date | from | to | about |
 |---|---|---|---|
 | 2026-10-27 | flowguard-spec | VecDHT | first compatibility pass: the M1–M7 method kit, what we take, what we give, what we do not ask for |
+| 2026-10-27 | flowguard-spec | VecDHT | corrections to myself after reading their lab/: their claim map is a different dimension rather than a missing registry; M7 protocol draft; two questions on gives and 	argets |

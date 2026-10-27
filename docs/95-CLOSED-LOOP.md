@@ -61,9 +61,12 @@ outside the loop. Three acceptable external nodes, in order of strength:
 
 1. **An independent implementation made from the documents alone.** Someone who never read `crates/` or
    `src/` rebuilds the verifier from `fg-bundle/1` and `CLAIMS.md`, and the two agree byte for byte. This is
-   the strongest guard, and it has a precedent in this workspace: in
-   [VecDHT](https://github.com/mak777uh/VecDHT) an independent client written from two documents alone
-   (`E-0113`) caught seven defects — six in the rule text, one in the checking instrument itself.
+   the strongest guard. It has a **near**-precedent in this workspace, and the difference matters: in
+   [VecDHT](https://github.com/mak777uh/VecDHT) `E-0113` caught seven defects — six in the rule text, one in
+   the checking instrument itself — but it was a pre-freeze cross-check, comparing that repository's bytes to
+   its own frozen numbers. A cross-check audits the instrument; only a rebuild by someone who never saw the
+   code tests the documents. Both repositories have the first kind and neither has the second, which is why
+   M7 remains a gap rather than a solved problem.
 2. **A consumer who changes a decision** because a bundle exists: an insurer, auditor, bank, counterparty.
    Our own escrow does not count — that is the loop biting its own tail.
 3. **An external reviewer with a measurement**, not an opinion: a round that arrives with a number we did not
