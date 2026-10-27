@@ -65,7 +65,27 @@
         "published": { "type": "boolean" }
       }
     },
-    "perimeter_growth": { "type": "boolean" },
+'    "perimeter_growth": { "type": "boolean" },
+    "foreign_validation": {
+      "type": "array",
+      "description": "Owner confirmations, per docs/FOREIGN-VALIDATION.md. The verifier refuses an evidence tier this list does not support.",
+      "items": {
+        "type": "object",
+        "required": ["schema", "owner_confirmed"],
+        "properties": {
+          "schema": { "type": "string" },
+          "version": { "type": "string" },
+          "owner_confirmed": { "type": "boolean" },
+          "blind_evaluation": { "type": "boolean" },
+          "owner": { "type": "object" },
+          "finding": { "type": "object" },
+          "owner_statement": { "type": "string" },
+          "verdict": { "enum": ["confirmed", "refuted", "partially_correct"] },
+          "ground_truth": { "type": "object" },
+          "our_result": { "type": "object" }
+        }
+      }
+    },'
     "paths_total": { "type": "integer", "minimum": 0 },
     "in_core_attributed": { "type": "integer", "minimum": 0 }
   }

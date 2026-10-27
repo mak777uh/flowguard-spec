@@ -1,0 +1,11 @@
+record refused:
+  missing or invalid: owner.role
+  missing or invalid: owner.how_contacted
+  missing or invalid: owner.date
+  missing or invalid: owner_statement: their sentence, quoted, at least a dozen characters
+  missing or invalid: finding.path_id
+  missing or invalid: finding.claim
+RESULT: fail
+record accepted: acme-billing — confirmed by Ivan Petrov on 2026-11-02
+attached to tools\_tmp\m23-fv.json - the inventory now supports evidence tier 2
+RESULT: ok
