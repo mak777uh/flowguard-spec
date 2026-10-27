@@ -1,0 +1,20 @@
+{
+  "target": { "schema": "bank", "table": "accounts" },
+  "declared_contract": "All writes to bank.accounts go through bank.transfer()",
+  "control_point": "function:bank.transfer",
+  "plants": [
+    { "id": "P1", "class": "direct_privilege", "expectation": "detect", "how": "GRANT UPDATE on the table to app_rw", "detectable_by": "catalog" },
+    { "id": "P2", "class": "direct_privilege", "expectation": "detect", "how": "GRANT INSERT on the table to app_rw", "detectable_by": "catalog" },
+    { "id": "P3", "class": "security_definer", "expectation": "detect", "how": "SECURITY DEFINER function updates accounts", "detectable_by": "catalog" },
+    { "id": "P4", "class": "plain_writer", "expectation": "detect", "how": "invoker function updates accounts with no check", "detectable_by": "catalog" },
+    { "id": "P5", "class": "disabled_control", "expectation": "detect", "how": "audit trigger exists and is disabled", "detectable_by": "catalog" },
+    { "id": "P6", "class": "view_trigger", "expectation": "detect", "how": "view with INSTEAD OF trigger writes accounts", "detectable_by": "catalog" },
+    { "id": "P7", "class": "dynamic_sql", "expectation": "detect_weak", "how": "function uses EXECUTE with the table name", "detectable_by": "text_search" },
+    { "id": "P8", "class": "indirect_chain", "expectation": "detect_weak", "how": "trigger on audit_events writes accounts", "detectable_by": "text_search" }
+  ],
+  "expected_misses": [
+    { "id": "M1", "class": "dynamic_sql_assembled", "how": "table name built from variables at runtime, so no literal appears in the body", "why": "a catalogue enumerator cannot read intent" },
+    { "id": "M2", "class": "outside_database", "how": "writes performed by another service, a foreign data wrapper, or dblink", "why": "not visible in this database catalogue at all" },
+    { "id": "M3", "class": "application_level", "how": "an application check that the database never sees", "why": "the database is the wrong lens for an application-layer control" }
+  ]
+}

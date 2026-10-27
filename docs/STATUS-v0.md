@@ -24,6 +24,10 @@ This is our declaration, as agreed; theirs is in `VecDHT docs/STATUS-v1.md`.
 | **M6** guards | **works** | [`lab/check-secrets.sh`](../lab/check-secrets.sh) (files + full history), [`lab/check-links.py`](../lab/check-links.py) (84 links, 0 broken), [`lab/check-claims.py`](../lab/check-claims.py), wired into `.github/workflows/guards.yml` | — |
 | **M7** independent rebuild | **absent** | — | no bundle that anyone has rebuilt; see the definition below |
 
+**First measurement exists** (`E-M11`, 2026-10-27): the Postgres grant enumerator found 8 of 8 planted bypasses and
+identified the declared control point; row precision 11/12. Log digest in `docs/METRICS.md`. This is the first number
+in this repository that was produced rather than cited.
+
 Kit conformance measured by [`lab/check-interop.py`](../lab/check-interop.py): **3 / 7**.
 
 ## What works

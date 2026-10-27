@@ -1,0 +1,25 @@
+fixture: applied
+source: 13 paths, 1 control point(s) -> C:\Users\Admin\AppData\Local\Temp\e-m11-source.json
+
+plant class              detectable_by result
+P1    direct_privilege   catalog      DETECTED
+P2    direct_privilege   catalog      DETECTED
+P3    security_definer   catalog      DETECTED
+P4    plain_writer       catalog      DETECTED
+P5    disabled_control   catalog      DETECTED
+P6    view_trigger       catalog      DETECTED
+P7    dynamic_sql        text_search  DETECTED
+P8    indirect_chain     text_search  DETECTED
+
+control point identified: ['function:bank.transfer']
+
+declared blind spots cover the expected misses:
+  M1 dynamic_sql_assembled    yes
+  M2 outside_database         yes
+  M3 application_level        yes
+
+thresholds (pre-registered):
+  catalog      6/6 required 6/6  PASS
+  text_search  2/2 required 1/2  PASS
+
+RESULT: PASS

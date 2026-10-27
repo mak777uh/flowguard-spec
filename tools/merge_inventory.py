@@ -1,0 +1,116 @@
+#!/usr/bin/env python3
+"""merge_inventory — combine SourceRecords into one InventoryManifest (ADR-0007).
+
+Rules, all of them load-bearing:
+
+  * union by path_id; provenance accumulates
+  * a conflicting control point for the same path is an ERROR, never a preference
+  * the denominator is the union, never one source
+  * nothing is deleted: a path that disappears becomes `vanished`
+  * `independent_of_agent` is computed from the source kinds received, not asserted
+
+    python tools/merge_inventory.py --out manifest.json sources/source-*.json [--previous prev.json]
+"""
+import argparse
+import glob
+import json
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+
+def load(paths):
+    sources = []
+    for pattern in paths:
+        for f in sorted(glob.glob(pattern)):
+            sources.append(json.loads(Path(f).read_text(encoding="utf-8")))
+    return sources
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("sources", nargs="+")
+    ap.add_argument("--out", required=True)
+    ap.add_argument("--previous")
+    a = ap.parse_args()
+
+    sources = load(a.sources)
+    if not sources:
+        raise SystemExit("no source records")
+
+    for s in sources:
+        if not s.get("blind_spots"):
+            raise SystemExit(f"refused: source {s.get('source_id')} declares no blind spots")
+
+    merged, conflicts = {}, []
+    for s in sources:
+        for p in s.get("paths", []):
+            pid = p["path_id"]
+            if pid in merged:
+                prev = merged[pid]
+                if prev["control_point"] != p["control_point"]:
+                    conflicts.append({
+                        "path_id": pid,
+                        "entry": p["entry"],
+                        "control_points": sorted({prev["control_point"], p["control_point"]}),
+                        "sources": prev["found_by"] + [s["source_id"]],
+                    })
+                prev["found_by"] = sorted(set(prev["found_by"] + [s["source_id"]]))
+                prev["kinds"] = sorted(set(prev["kinds"] + [s["kind"]]))
+            else:
+                merged[pid] = {
+                    "path_id": pid,
+                    "entry": p["entry"],
+                    "kind": p["kind"],
+                    "control_point": p["control_point"],
+                    "confidence": p["confidence"],
+                    "found_by": [s["source_id"]],
+                    "kinds": [s["kind"]],
+                }
+
+    previous = {}
+    if a.previous and Path(a.previous).exists():
+        prev_doc = json.loads(Path(a.previous).read_text(encoding="utf-8"))
+        previous = {p["path_id"]: p for p in prev_doc.get("paths", [])}
+
+    vanished = [pid for pid in previous if pid not in merged]
+    for pid in vanished:
+        entry = dict(previous[pid])
+        entry["vanished"] = True
+        merged[pid] = entry
+
+    kinds = {s["kind"] for s in sources}
+    independent_of_agent = bool(kinds - {"agent"})
+    non_agent_sources = [s["source_id"] for s in sources if s["kind"] != "agent"]
+
+    manifest = {
+        "manifest_version": "inventory/0.1",
+        "generated": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "sources": [
+            {
+                "source_id": s["source_id"], "kind": s["kind"],
+                "covers": s.get("covers", []), "blind_spots": s.get("blind_spots", []),
+                "completeness_claim": s.get("completeness_claim"),
+            } for s in sources
+        ],
+        "independent_of_agent": independent_of_agent,
+        "non_agent_sources": non_agent_sources,
+        "paths_total": len(merged),
+        "corroborated_by_2plus": sum(1 for p in merged.values() if len(p.get("kinds", [])) > 1),
+        "conflicts": conflicts,
+        "vanished_since_previous": vanished,
+        "paths": sorted(merged.values(), key=lambda p: (p["kind"], p["entry"])),
+    }
+    Path(a.out).write_text(json.dumps(manifest, indent=1, ensure_ascii=False), encoding="utf-8")
+
+    print(f"manifest: {manifest['paths_total']} paths from {len(sources)} source(s)")
+    print(f"independent_of_agent: {independent_of_agent} ({', '.join(non_agent_sources) or 'none'})")
+    if conflicts:
+        print(f"CONFLICTS: {len(conflicts)} — coverage cannot be computed until resolved")
+    if vanished:
+        print(f"vanished since previous: {len(vanished)}")
+    return 1 if conflicts else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,7 +1,8 @@
 # METRICS — every number carries its command and its log
 
-**Status:** contract in force, **zero rows**. There is no measurement in this repository yet, and this file exists
-so that the first one cannot be typed by hand.
+**Status:** contract in force, **two rows**. The first measurement in this repository: `E-M11`, the grant
+enumerator against eight planted bypasses. Both rows were produced by a command and carry the log digest; neither
+was typed from memory.
 
 ## The rule
 
@@ -16,7 +17,8 @@ The fix there was the same: make the header generated from the carrier, not writ
 
 | # | metric | value | command | log sha256 | commit | measured |
 |---|---|---|---|---|---|---|
-| — | *(none yet)* | — | — | — | — | — |
+| 1 | `E-M11` recall on planted bypasses | **8 / 8** | `python lab/e-m11-run.py --psql <conda>/Library/bin/psql.exe --port 54329` | `21a30af4b4aed7cb052e7593b731935da61dd59860237f52aed8e7e840972375` | 2026-10-27 tree | 2026-10-27 |
+| 2 | `E-M11` row precision (true writers / rows) | **11 / 12** | same run; false positive is a function whose string literal contains the table name | `21a30af4…` | 2026-10-27 tree | 2026-10-27 |
 
 ## What will fill it
 
