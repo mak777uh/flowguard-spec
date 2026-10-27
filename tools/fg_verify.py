@@ -28,6 +28,7 @@ DEFAULT_POLICY = {
     "full_coverage_for_proven": 1.0,
     "assurance_threshold": 0.75,
     "require_independent_inventory_for": ["PROVEN", "SCOPED_ASSURANCE"],
+    "min_paths_for_level": {"SCOPED_ASSURANCE": 3, "PROVEN": 8},
 }
 
 
@@ -254,13 +255,30 @@ def main() -> int:
     control = claim.get("declared_control_point")
     # A path is inside the core when an attribution source says it passes through the declared
     # control point. Falling back to control_point keeps single-source bundles working.
+    # Being inside the core must be CONTRIBUTED by a source that can see it - an attribution with a
+    # named source - not declared by the path itself. Accepting a bare `control_point` let any
+    # inventory say "everything passes through the control point" and reach PROVEN with no evidence
+    # at all (attack A9, E-M36).
     in_core = [
         p for p in paths
-        if control and (
-            (p.get("attribution") or {}).get("to") == control
-            or p.get("control_point") == control
-        )
+        if control and (p.get("attribution") or {}).get("to") == control
+        and (p.get("attribution") or {}).get("sources")
     ]
+    # A path that points at the control point but is not *supported* by an attribution naming a
+    # source is self-declared, even when it carries a to-field with an empty sources list
+    # (attack A4, E-M36).
+    self_declared = [
+        p for p in paths
+        if control and p.get("control_point") == control
+        and not ((p.get("attribution") or {}).get("to") == control
+                 and (p.get("attribution") or {}).get("sources"))
+    ]
+    if self_declared:
+        err("UNSUPPORTED_CONTROL_POINT_CLAIM", "coverage",
+            "in-core status contributed by an attribution source",
+            f"{len(self_declared)} path(s) declare themselves inside the core, e.g. "
+            f"{self_declared[0].get('entry')}",
+            "attribute the path from an enumerator, or leave it outside the core", False)
     outside = [p for p in paths if p not in in_core]
     coverage = len(in_core) / len(paths) if paths else 0.0
 
@@ -269,6 +287,17 @@ def main() -> int:
         err("CLAIM_EXCEEDS_EVIDENCE", "coverage",
             f"<= {coverage:.3f} (recomputed from the inventory)", f"{claimed:.3f} (claimed)",
             "lower the claim to the recomputed coverage or supply evidence for the missing paths")
+
+    # ---- 3b. the denominator must be big enough to carry the level -------
+    # A ratio over one or two paths is noise: a single-path inventory reached PROVEN with coverage
+    # 1.0 (attack A1, E-M36). The floor is on the denominator, not on the work done.
+    floors = policy.get("min_paths_for_level") or {}
+    need = floors.get(claim.get("declared_level", "CONSISTENT_DECLARED"))
+    if need and len(paths) < int(need):
+        err("COVERAGE_BASIS_TOO_SMALL", "coverage_basis",
+            "at least %d paths in the inventory for %s" % (need, claim.get("declared_level")),
+            "%d path(s)" % len(paths),
+            "a ratio over a handful of paths is noise; enumerate more or lower the level", False)
 
     # ---- 4. exclusions: counted, and bound to real paths -----------------
     # An exclusion is a claim that a known path is out of scope. It must therefore (a) name a path
@@ -496,6 +525,13 @@ def main() -> int:
             if not any(e["code"] == "CLAIM_EXCEEDS_EVIDENCE" for e in errors):
                 err("CLAIM_EXCEEDS_EVIDENCE", "level", f"<= {verdict}", claimed_level,
                     f"lower the claim to {verdict}")
+
+        # A verdict may not outrank its own findings. Before this, an artifact with a blocking error
+        # (an empty not_claimed, a tier the inventory cannot support, a witness-only basis) was still
+        # labelled PROVEN, because the level was computed from coverage alone (attacks A5-A7, E-M36).
+        # Any reported error caps the verdict at the floor; the error list says why.
+        if errors and ORDER.get(verdict, 0) > ORDER.get("CONSISTENT_DECLARED", 0):
+            verdict = "CONSISTENT_DECLARED"
 
     perimeter = {
         "known_paths": len(paths),

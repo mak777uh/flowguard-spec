@@ -26,8 +26,12 @@ def manifest(core=8, outside=2, independent=True, conflicts=None, target="abc123
              delta=None, growth=False, kinds=("grants",), sources=None):
     paths = []
     for i in range(core):
+        # In-core status comes from an attribution with a source, as a real enumerator produces it;
+        # a bare control_point is no longer accepted (attack A9, E-M36).
         paths.append({"path_id": f"wp_core{i}", "entry": f"table:core{i}", "kind": "function",
-                      "control_point": CORE, "confidence": "catalog", "found_by": ["grants-pg-v0.1"]})
+                      "control_point": CORE, "confidence": "catalog", "found_by": ["grants-pg-v0.1"],
+                      "attribution": {"to": CORE, "method": "direct", "confidence": "catalog",
+                                      "sources": ["grants-pg-v0.1"]}})
     for i in range(outside):
         paths.append({"path_id": f"wp_out{i}", "entry": f"table:out{i}", "kind": "privilege",
                       "control_point": "", "confidence": "catalog", "found_by": ["grants-pg-v0.1"]})
