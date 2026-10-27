@@ -4,7 +4,7 @@ This directory is a real `fg-bundle/1` bundle, small enough to read in a few min
 **so somebody who has never read our code can rebuild it from this description and say whether they get the same
 address.**
 
-Address of this bundle: `bb4c91835cb9645e…` (full value in `manifest.sha256`).
+Address of this bundle: `929c2824dc5a123b…` (full value in `manifest.sha256`).
 
 ## Layout
 
@@ -25,6 +25,7 @@ signatures/demo.role # which assertion this signature makes
 | `subjects` | for each of `code`, `build`, `config`, `identity`: the sha256 of the payload and its source name |
 | `objects` | digest → `{bytes, name}`; every digest here must exist as a file under `objects/` |
 | `claim` | the attestation: flow, target lock, declared control point, level, coverage, exclusions, `not_claimed` |
+| `not_claimed` | codes from `docs/NOT-CLAIMED.md` (`NC-01`, `NC-02` here), not prose; the verifier refuses unknown codes and refuses a level that omits its required codes |
 | `inventory_digest` | sha256 of the inventory manifest this claim was checked against |
 | `plaintext_notified` | a flag for the human-facing report path; carries no security meaning |
 

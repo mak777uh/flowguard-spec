@@ -47,8 +47,8 @@
   "claimed_coverage": 0.133,
   "excluded": [],
   "not_claimed": [
-   "complete_discovery_of_all_relevant_paths",
-   "absence_of_vulnerabilities_outside_verified_scope"
+   "NC-01",
+   "NC-02"
   ]
  },
  "inventory_digest": "sha256:c308e29b94c4e65d5d6cc544b9da1f61f3ff7e207376a058848560be73b11855",

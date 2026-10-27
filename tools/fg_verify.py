@@ -14,6 +14,7 @@ Exit codes: 0 the verdict is what was claimed or stronger; 1 the claim was lower
 """
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -28,6 +29,33 @@ DEFAULT_POLICY = {
     "require_independent_inventory_for": ["PROVEN", "SCOPED_ASSURANCE"],
 }
 
+
+_NOT_CLAIMED_CACHE = {}
+
+def load_not_claimed_registry() -> dict:
+    """Read docs/NOT-CLAIMED.md: the code table and the required codes per level.
+
+    Single source of truth: the document. If it is missing, every claim with not_claimed is
+    refused, because a vocabulary that cannot be read is not a vocabulary.
+    """
+    if _NOT_CLAIMED_CACHE:
+        return _NOT_CLAIMED_CACHE
+    doc = Path(__file__).resolve().parent.parent / "docs" / "NOT-CLAIMED.md"
+    codes, required, in_required = set(), {}, False
+    if doc.exists():
+        for line in doc.read_text(encoding="utf-8").splitlines():
+            if line.strip().startswith("## Required by level"):
+                in_required = True
+                continue
+            if in_required and line.startswith("|") and "`" in line:
+                cells = [c.strip().strip("`") for c in line.strip().strip("|").split("|")]
+                if len(cells) >= 2 and cells[0] in LEVELS:
+                    required[cells[0]] = [x.strip() for x in cells[1].split(",") if x.strip()]
+            m = re.match(r"^\|\s*\*\*(NC-\d{2})\*\*\s*\|", line)
+            if m:
+                codes.add(m.group(1))
+    _NOT_CLAIMED_CACHE.update({"codes": codes, "required": required})
+    return _NOT_CLAIMED_CACHE
 
 def load(p, what):
     if not p:
@@ -154,7 +182,29 @@ def main() -> int:
             f"<= {ceiling}", f"{len(excluded)}",
             "reduce the exclusions or change the declared scope; this requires a human decision", False)
 
-    # ---- 5. independence ------------------------------------------------
+    # ---- 5. not_claimed must use the vocabulary, and must cover the level ---
+    # Round 7: a free-text not_claimed is where boilerplate goes. Codes from docs/NOT-CLAIMED.md
+    # are checkable: unknown code refused, required codes for the declared level refused if absent.
+    registry = load_not_claimed_registry()
+    declared = claim.get("not_claimed") or []
+    if not isinstance(declared, list):
+        err("REPORT_BUNDLE_INCONSISTENT", "not_claimed", "a list of NC codes", str(type(declared)), False)
+        declared = []
+    unknown = [c for c in declared if c not in registry["codes"]]
+    if unknown:
+        err("REPORT_BUNDLE_INCONSISTENT", "not_claimed",
+            "codes from docs/NOT-CLAIMED.md",
+            "unknown: " + ", ".join(str(u) for u in unknown),
+            "use the vocabulary; free text is not checkable", False)
+    required = registry["required"].get(claim.get("declared_level", "CONSISTENT_DECLARED"), [])
+    missing = [c for c in required if c not in declared]
+    if missing:
+        err("MISSING_EVIDENCE", "not_claimed",
+            f"codes required by level {claim.get('declared_level')}: {', '.join(required)}",
+            "missing: " + ", ".join(missing),
+            "state what the attestation does not assert, using the vocabulary", True)
+
+    # ---- 6. independence ------------------------------------------------
     independent = bool(inventory.get("independent_of_agent"))
     if not independent:
         err("E_NO_INDEPENDENT_CLOSURE", "inventory",

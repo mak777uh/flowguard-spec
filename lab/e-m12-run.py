@@ -44,10 +44,19 @@ def manifest(core=8, outside=2, independent=True, conflicts=None, target="abc123
     }
 
 
-def claim(level="SCOPED_ASSURANCE", coverage=0.8, excluded=None, target="abc123", control=CORE):
+REQUIRED = {
+    "CONSISTENT_DECLARED": ["NC-01", "NC-02"],
+    "SCOPED_ASSURANCE": ["NC-01", "NC-02", "NC-04", "NC-05"],
+    "PROVEN": ["NC-01", "NC-02", "NC-03", "NC-04", "NC-05", "NC-10"],
+}
+
+
+def claim(level="SCOPED_ASSURANCE", coverage=0.8, excluded=None, target="abc123", control=CORE,
+          not_claimed=None):
     return {"claim_id": "C1", "flow": "balance_transfer", "target_lock": {"commit": target},
             "declared_control_point": control, "declared_level": level,
-            "claimed_coverage": coverage, "excluded": excluded or []}
+            "claimed_coverage": coverage, "excluded": excluded or [],
+            "not_claimed": REQUIRED[level] if not_claimed is None else not_claimed}
 
 
 def real_exclusions(m, n, reason="documented out of scope"):
@@ -125,6 +134,13 @@ def scenarios():
          lambda c, o: any(e["code"] == "UNKNOWN_OR_UNBOUND_PATH" for e in o["errors"])),
         ("T12", "exclusion names a path inside the covered core", t12,
          lambda c, o: any(e["code"] == "REPORT_BUNDLE_INCONSISTENT" for e in o["errors"])),
+        ("T13", "not_claimed is prose instead of vocabulary",
+         lambda: (manifest(), claim(not_claimed=["results may vary"]), None, None, 1),
+         lambda c, o: any(e["code"] == "REPORT_BUNDLE_INCONSISTENT" for e in o["errors"])),
+        ("T14", "claimed level without its required not_claimed codes",
+         lambda: (manifest(10, 0), claim(level="PROVEN", coverage=1.0,
+                                         not_claimed=["NC-01", "NC-02"]), None, None, 1),
+         lambda c, o: any(e["code"] == "MISSING_EVIDENCE" and e["subject"] == "not_claimed" for e in o["errors"])),
     ]
 
 
