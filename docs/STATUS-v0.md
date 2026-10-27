@@ -28,7 +28,7 @@ This is our declaration, as agreed; theirs is in `VecDHT docs/STATUS-v1.md`.
 identified the declared control point; row precision 11/12. Log digest in `docs/METRICS.md`. This is the first number
 in this repository that was produced rather than cited.
 
-Kit conformance measured by [`lab/check-interop.py`](../lab/check-interop.py): **3 / 7**.
+Kit conformance measured by [`lab/check-interop.py`](../lab/check-interop.py): **6 / 7**.
 
 ## What works
 
@@ -85,7 +85,7 @@ every verifier written before, so the envelope is cut now; the meaning waits for
   produced by this repository.
 - That the kit is settled. It is v0 and will change; changes are recorded as ADRs.
 - That the review rounds made the design right. They made it less wrong, which is a different claim.
-- That `3/7` means anything on its own. It is our own instrument measuring our own kit, and it has been
+- That the kit percentage means anything on its own, at any value. It is our own instrument measuring our own kit, and it has been
   corrected twice already for false positives — see the interop reports.
 
 ---

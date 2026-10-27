@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# round-check — the end-of-round ritual, as a script instead of a memory.
+#
+# Every round ends the same way: guards, negative controls, acceptance suite, audit, readiness.
+# Running them by hand meant occasionally forgetting one, which is exactly how a process rots.
+#
+#   bash lab/round-check.sh            # human summary
+#   bash lab/round-check.sh --quiet     # one line per stage
+#
+# Exit 0 only if every stage passes. A10 ("worktree clean") is expected to fail before the commit
+# and to pass after it, so run this twice around a commit, or accept the A10 failure as a reminder.
+
+set -uo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT" || exit 2
+PY="${PYTHON:-python}"
+QUIET="${1:-}"
+RC=0
+declare -a LINES=()
+
+stage() {
+  local name="$1"; shift
+  local out code
+  out="$("$@" 2>&1)"; code=$?
+  if [[ $code -eq 0 ]]; then
+    LINES+=("  ok    $name")
+  else
+    LINES+=("  FAIL  $name")
+    RC=1
+    if [[ "$QUIET" != "--quiet" ]]; then
+      printf '%s\n' "$out" | tail -12 | sed 's/^/        /'
+    fi
+  fi
+}
+
+echo "round-check"
+
+stage "secrets (files + history + index)" bash lab/check-secrets.sh
+stage "relative links" "$PY" lab/check-links.py
+stage "claim registry" "$PY" lab/check-claims.py
+stage "README covers every document" "$PY" lab/check-readme.py
+stage "negative controls for every guard" bash lab/selftest-guards.sh
+stage "acceptance scenarios" "$PY" lab/e-m12-run.py
+stage "instrument corpus" "$PY" lab/e-m10-run.py --per-class 4 --valid 4
+# A10 (clean worktree) is skipped here: a round is checked before its commit. Run
+# `python tools/fg_audit.py` after the commit to include it.
+stage "process audit (without A10)" "$PY" tools/fg_audit.py --allow-dirty
+
+printf '%s\n' "${LINES[@]}"
+
+echo
+echo "readiness:"
+"$PY" tools/fg_readiness.py 2>&1 | tail -4 | sed 's/^/  /'
+
+METRICS=$("$PY" - <<'EOF'
+import re, pathlib
+p = pathlib.Path("docs/METRICS.md")
+rows = [l for l in p.read_text(encoding="utf-8").splitlines() if re.match(r"^\|\s*\d+\s*\|", l)]
+print(len(rows))
+EOF
+)
+CARDS=$(ls lab/experiments/*.md 2>/dev/null | wc -l)
+ADRS=$(ls lab/decisions/ADR-*.md 2>/dev/null | wc -l)
+echo "  artifacts: metrics=$METRICS cards=$CARDS adrs=$ADRS"
+
+if [[ $RC -eq 0 ]]; then echo "RESULT: ok"; else echo "RESULT: fail"; fi
+exit $RC
