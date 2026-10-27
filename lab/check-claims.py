@@ -49,6 +49,40 @@ for cid, r in rows.items():
     if t not in TYPES and not any(t.startswith(x) for x in TYPES):
         errors.append(f"{cid}: unknown evidence type '{t}'")
 
+# 1b. the wording ceiling, actually enforced.
+# Until this existed the rule was stated in this file's docstring and in docs/CLAIMS.md and checked
+# by nobody - the seventh "declared, not enforced" instance in this repository. VecDHT's note 2 asked
+# for the wording to be DERIVED from the evidence type rather than written freely; this is that.
+CEILING = {
+    "proof":         {"reserved_ok": True},
+    "test":          {"reserved_ok": True},
+    # For weaker types the reserved words are forbidden outright in the wording column, with no
+    # negation exception: "may not be called a guarantee" is a comment about the claim, and it
+    # belongs in the refutation column, not in the sentence the claim is allowed to say.
+    "statistics":    {"reserved_ok": False, "deny": ["guaranteed", "always holds", "never fails"]},
+    "observation":   {"reserved_ok": False, "deny": ["guaranteed", "always holds", "never fails"]},
+    "judgment":      {"reserved_ok": False, "deny": ["guaranteed", "always holds", "never fails"]},
+    "withdrawn":     {"reserved_ok": False, "deny": ["guaranteed", "always holds", "never fails"]},
+    "not established": {"reserved_ok": False, "deny": ["guaranteed", "always holds", "never fails"]},
+    "false as stated": {"reserved_ok": False, "deny": ["guaranteed", "always holds", "never fails"]},
+}
+wording_checked = 0
+for cid, r in rows.items():
+    cells = [c.strip() for c in r["line"].strip().strip("|").split("|")]
+    if len(cells) < 4:
+        errors.append(f"{cid}: no wording column, so the ceiling cannot be checked")
+        continue
+    wording = cells[3].strip("*` ")
+    cur = wording.lower()
+    wording_checked += 1
+    rule = CEILING.get(r["type"], {"reserved_ok": False})
+    for word in RESERVED:
+        if word in cells[3] and not rule.get("reserved_ok"):
+            errors.append(f"{cid}: wording uses the reserved word '{word}' while typed '{r['type']}'")
+    for bad in rule.get("deny", []):
+        if bad in cur:
+            errors.append(f"{cid}: typed '{r['type']}' may not say '{bad}'")
+
 # 2. duplicate ids
 for cid in {i for i in ids if ids.count(i) > 1}:
     errors.append(f"{cid}: duplicate id")
@@ -85,7 +119,7 @@ for md in surface:
         if not CLAIM_REF.search(text):
             warnings.append(f"{md.relative_to(ROOT)}: uses reserved word '{word}' without citing a claim")
 
-print(f"claims: {len(ids)}  artifacts cited: {cited}  reserved-word files: {reserved_hits}")
+print(f"claims: {len(ids)}  wording ceilings checked: {wording_checked}  artifacts cited: {cited}  reserved-word files: {reserved_hits}")
 for w in warnings:
     print(f"warn  {w}")
 for e in errors:

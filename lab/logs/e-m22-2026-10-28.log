@@ -1,0 +1,17 @@
+claims: 18  wording ceilings checked: 18  artifacts cited: 16  reserved-word files: 0
+warn  C-01: cites missing artifact  | "verifies offline for bundle format fg/1" | 
+warn  C-02: cites missing artifact lab/e2e/replay
+warn  C-03: cites missing artifact lab/experiments/E-M1
+warn  C-04: cites missing artifact lab/experiments/E-C2
+warn  C-05: cites missing artifact lab/experiments/E-C2b
+warn  C-06: cites missing artifact lab/e2e/unknown-path
+warn  C-07: cites missing artifact lab/e2e/attacks
+warn  C-09: cites missing artifact lab/experiments/E-G8
+warn  C-10: cites missing artifact lab/experiments/E-G9
+warn  C-11: cites missing artifact lab/experiments/E-M2
+warn  C-12: cites missing artifact lab/experiments/E-M5
+warn  C-13: cites missing artifact lab/experiments/E-M6
+warn  C-14: cites missing artifact lab/experiments/E-M8
+warn  C-15: cites missing artifact lab/e2e/narrowing
+warn  C-18: cites missing artifact lab/experiments/E-M5
+RESULT: ok

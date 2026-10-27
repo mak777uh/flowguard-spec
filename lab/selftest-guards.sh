@@ -103,6 +103,17 @@ if [[ "$ONLY" == "all" || "$ONLY" == "refs" ]]; then
     pass "refs: dangling backticked path caught"
   fi
 fi
+# ---- control 7: a claim worded above its evidence type ------------------------
+if [[ "$ONLY" == "all" || "$ONLY" == "wording" ]]; then
+  stage
+  # a real type, but a reserved word it may not use: the ceiling must catch it
+  printf '\n| C-97 | A synthetic claim over a measured corpus | statistics | the result is PROVEN and carries a guarantee | x | y |\n' >> "$TMP/repo/docs/CLAIMS.md"
+  if python "$TMP/repo/lab/check-claims.py" >/dev/null 2>&1; then
+    fail "wording: a statistics claim using a reserved word was NOT caught"
+  else
+    pass "wording: reserved word above the evidence ceiling caught"
+  fi
+fi
 echo
 echo "controls passed: $PASS   failed: $FAIL"
 [[ "$FAIL" -eq 0 ]] || { echo "RESULT: fail"; exit 1; }
