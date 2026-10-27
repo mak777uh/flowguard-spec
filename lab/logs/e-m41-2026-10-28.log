@@ -1,0 +1,9 @@
+E-M41 runs, 2026-10-28
+fixture (fgfix, bank.accounts):  enumerator 13 paths; oracle agrees on writers, trigger chains and cascades -> PASS
+GitLab (public.projects):
+  before the fix: enumerator 10 paths, oracle found 2 cascading keys INTO projects that the enumerator
+    never reported: namespaces -> projects, organizations -> projects (ON DELETE CASCADE).
+    That is a real false-negative class: deleting a namespace or an organization deletes project rows.
+  after adding fk_cascade: enumerator 12 paths, oracle 2/2 cascades, 3/3 writers, 7/7 trigger chains -> PASS
+  note: 397 further cascading keys point FROM projects to other tables. They are not writers of the
+    target and are not reported as paths; a flow that cares about what a delete propagates would need them.

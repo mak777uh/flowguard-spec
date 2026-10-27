@@ -90,4 +90,27 @@ SELECT 'control_point', 'function',
 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
 WHERE n.nspname = :'schema' AND p.proname = 'transfer'
 
+UNION ALL
+-- A foreign key whose CHILD is the target, with a cascading action, is a write path into the
+-- target that no grant or function mentions: deleting the parent row deletes or rewrites target
+-- rows. GitLab has two such keys into `projects` (namespaces, organizations), and the enumerator
+-- missed both until an independent oracle pointed at them (E-M41).
+SELECT 'path', 'fk_cascade',
+       format('fk:%s -> %s', parent.relname, child.relname),
+       '',
+       'ON DELETE ' || CASE con.confdeltype WHEN 'c' THEN 'CASCADE'
+                                          WHEN 'n' THEN 'SET NULL'
+                                          WHEN 'd' THEN 'SET DEFAULT'
+                                          ELSE con.confdeltype::text END
+         || CASE WHEN con.confupdtype IN ('c','n','d') THEN ', ON UPDATE cascades' ELSE '' END,
+       'catalog'
+FROM pg_constraint con
+JOIN pg_class child ON child.oid = con.conrelid
+JOIN pg_class parent ON parent.oid = con.confrelid
+JOIN pg_namespace n ON n.oid = child.relnamespace
+WHERE con.contype = 'f'
+  AND n.nspname = :'schema'
+  AND child.relname = :'table'
+  AND (con.confdeltype IN ('c','n','d') OR con.confupdtype IN ('c','n','d'))
+
 ORDER BY 2, 3;
