@@ -52,6 +52,7 @@ commits a token, CI goes red instead of the reputation.
 | Product and boundaries | [protected flow](docs/40-FLOW-GUARANTEE.md) · [variants](docs/01-VARIANTS.md) · [remediation ladder](docs/02-GRID.md) |
 | Crypto | [in scope from day one](docs/61-CRYPTO-IN-SCOPE.md) · [crypto and auto-payout](docs/60-CRYPTO-AND-AUTOPAY.md) |
 | Economics | [SKUs and services](docs/70-SERVICE-TIERS.md) · [pricing doctrine](docs/80-PRICING-DOCTRINE.md) |
+| Decisions | lab/decisions/ — 11 ADRs, each stating its own limits |
 | Process | ash lab/round-check.sh · python tools/fg_audit.py · python tools/fg_readiness.py |
 | Implementation | [enumerators](enumerators/grants-pg/README.md) (grant, call-graph, runtime) · [verifier](tools/fg_verify.py) · [the stand](docs/50-IMPLEMENTATION-STAND.md) · [the harness](docs/51-HARNESS-BUILD.md) · [OSS product](docs/52-OSS-PRODUCT.md) |
 | Development | [method and next round](docs/90-DEV-AND-NEXT-ROUND.md) · [closed loop](docs/95-CLOSED-LOOP.md) · [hackathon plan](docs/97-HACKATHON-PLAN.md) · [grants](docs/98-GRANTS.md) · [sources](docs/99-SOURCES.md) · [interop](docs/96-INTEROP.md) · [evals and roadmap](docs/03-EVAL-ROADMAP.md) |

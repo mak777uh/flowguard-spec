@@ -233,7 +233,10 @@ def main() -> int:
     # A witness is not an inventory. Runtime and agent sources observe or interpret; they cannot
     # establish how many paths exist, so a denominator resting only on them is not a coverage
     # number (E-M17 measured that a runtime source under-counts by construction).
-    DENOMINATOR_KINDS = {"grants", "static", "routes", "manual"}
+    # A kind is listed here only after its enumerator exists AND has been measured. `routes` was
+    # listed speculatively while no such source existed - the same "declared, not built" pattern
+    # this repository keeps catching in its own instruments (ADR-0011).
+    DENOMINATOR_KINDS = {"grants", "static", "manual"}
     WITNESS_KINDS = {"runtime", "agent"}
     kinds_present = {s.get("kind", "?") for s in inventory.get("sources", [])}
     denominator_kinds = sorted(kinds_present & DENOMINATOR_KINDS)

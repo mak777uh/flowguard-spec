@@ -119,6 +119,20 @@ def main() -> int:
         entry["vanished"] = True
         merged[pid] = entry
 
+    # The perimeter delta is computed here, not taken on trust from the caller: ADR-0006 requires
+    # an upgrade to be blocked while the perimeter grows, and a field nobody computes is a claim
+    # about a number that does not exist (E-M19).
+    new_ids = [pid for pid in merged if pid not in previous]
+    delta = {
+        "new_paths": len(new_ids),
+        "vanished_paths": len(vanished),
+        "net_change": len(new_ids) - len(vanished),
+        "published": bool(previous),
+    }
+    # Growth counts NEW paths, and a path that vanished does not cancel one that appeared: a
+    # replacement is still a change of shape, and the reader has to see it.
+    perimeter_growth = bool(previous) and len(new_ids) > 0
+
     # target_lock is carried by the manifest, not left in the SourceRecords: without it a verdict
     # cannot be bound to a commit, and the verifier refuses (found by the E-M12 integration run).
     locks = {s.get("run", {}).get("target_lock") for s in sources if s.get("run", {}).get("target_lock")}
@@ -148,6 +162,8 @@ def main() -> int:
         "corroborated_by_2plus": sum(1 for p in merged.values() if len(p.get("kinds", [])) > 1),
         "conflicts": conflicts,
         "vanished_since_previous": vanished,
+        "delta_since_previous": delta,
+        "perimeter_growth": perimeter_growth,
         "paths": sorted(merged.values(), key=lambda p: (p["kind"], p["entry"])),
     }
     Path(a.out).write_text(json.dumps(manifest, indent=1, ensure_ascii=False), encoding="utf-8")
@@ -158,6 +174,9 @@ def main() -> int:
         print(f"CONFLICTS: {len(conflicts)} — coverage cannot be computed until resolved")
     if vanished:
         print(f"vanished since previous: {len(vanished)}")
+    if previous:
+        print("delta: +{} new, -{} vanished, net {:+d}; perimeter_growth={}".format(
+            delta["new_paths"], delta["vanished_paths"], delta["net_change"], perimeter_growth))
     return 1 if conflicts else 0
 
 
