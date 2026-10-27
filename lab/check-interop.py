@@ -172,7 +172,7 @@ def main():
     rebuild = None
     for p in md_files(root):
         text = p.read_text(encoding="utf-8", errors="ignore")
-        if re.search(r"independent (re)?build|rebuild from (the )?document", text, re.I) and re.search(r"\b(defects?|caught|found \d|result)\b", text, re.I) and p.name not in ("99-SOURCES.md", "96-INTEROP.md"):
+        if re.search(r"independent (re)?build|rebuild from (the )?document", text, re.I) and re.search(r"\b(defects?|caught|found \d|result)\b", text, re.I) and "interop" not in p.parts and p.name not in ("99-SOURCES.md", "96-INTEROP.md", "95-CLOSED-LOOP.md"):
             rebuild = p
             break
     out.append(row("M7 independent-rebuild test", "present" if rebuild else "absent",
