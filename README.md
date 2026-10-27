@@ -47,7 +47,7 @@ commits a token, CI goes red instead of the reputation.
 | Crypto | [in scope from day one](docs/61-CRYPTO-IN-SCOPE.md) · [crypto and auto-payout](docs/60-CRYPTO-AND-AUTOPAY.md) |
 | Economics | [SKUs and services](docs/70-SERVICE-TIERS.md) · [pricing doctrine](docs/80-PRICING-DOCTRINE.md) |
 | Implementation | [the stand](docs/50-IMPLEMENTATION-STAND.md) · [the harness](docs/51-HARNESS-BUILD.md) · [OSS product](docs/52-OSS-PRODUCT.md) |
-| Development | [method and next round](docs/90-DEV-AND-NEXT-ROUND.md) · [closed loop](docs/95-CLOSED-LOOP.md) · [hackathon plan](docs/97-HACKATHON-PLAN.md) · [grants](docs/98-GRANTS.md) · [evals and roadmap](docs/03-EVAL-ROADMAP.md) |
+| Development | [method and next round](docs/90-DEV-AND-NEXT-ROUND.md) · [closed loop](docs/95-CLOSED-LOOP.md) · [hackathon plan](docs/97-HACKATHON-PLAN.md) · [grants](docs/98-GRANTS.md) · [sources](docs/99-SOURCES.md) · [evals and roadmap](docs/03-EVAL-ROADMAP.md) |
 | Review rounds | [synthesis 2](docs/00-SYNTHESIS.md) · [decisions](docs/20-ROUND2-DECISIONS.md) · [synthesis 3](docs/30-ROUND3-SYNTHESIS.md) · [synthesis 4](docs/31-ROUND4-SYNTHESIS.md) |
 | Question sets | [round 2](docs/10-ROUND2-QUESTIONS.md) · [3](docs/11-ROUND3-QUESTIONS.md) · [4](docs/12-ROUND4-QUESTIONS.md) · [5](docs/13-ROUND5-QUESTIONS.md) |
 
