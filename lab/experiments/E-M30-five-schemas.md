@@ -70,3 +70,7 @@ the same model.
 The evidence base is no longer one fixture and one database. It is still tier 1, and the card says so. The honest next
 step is not more sample databases — two of the four are the same model, which is itself a finding about sample
 databases — but a schema from a project that has a real control point to bypass, which needs an owner.
+
+## Log
+
+`lab/logs/e-m30-2026-10-28.log` — sha256 `f8041dc77b546aa7cda481efff4184c376b2a79f149ddf220b6c43b06bfc779e`.

@@ -63,3 +63,7 @@ looks like.
 - **Risk classes are coarse.** `money` is matched by strings in `entry`; a payments table called `notes` is
   classified `other`, and `DATA_NOT_SENSITIVE` would pass on it. `ADR-0012` and the risk policy both say the
   classification is a convention.
+
+## Log
+
+`lab/logs/e-m27-2026-10-28.log` — sha256 `b323be8b120b99e41edc13716805e2ca8287ee90a577c228e597d9f30db343ba`.

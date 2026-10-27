@@ -66,3 +66,7 @@ outside_weighted_risk 1.0 (82/82) - correct for a fixture of thirteen bypasses a
 - It does not attribute: the log shows a statement, not the caller's route through a control point.
 - It does not replace the catalogue sources; it constrains them. A path the catalogue lists but the log never shows
   is a path that exists and was not exercised — which is a different fact, and both are worth publishing.
+
+## Log
+
+`lab/logs/e-m17-2026-10-27.log` — sha256 `6475c8e84df2c6ea2b46f17ffd8eebb74f060821de1e07018bcc0c2caba81bc6`.

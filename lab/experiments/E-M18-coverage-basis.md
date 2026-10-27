@@ -65,3 +65,7 @@ readiness: P2 = 0  «placeholder or too short»
   source exists; if it turns out to under-count like the runtime source, it moves.
 - It does not make the M8 form sufficient. A filled form is one observation; whether the decision *actually* changed
   is only knowable afterwards, and that is why the form asks what they lose, not what they think.
+
+## Log
+
+`lab/logs/e-m18-2026-10-27.log` — sha256 `da38bfd071941a70c97636d96909b35a312ad9a6aabe708ef17015556c7122b8`.

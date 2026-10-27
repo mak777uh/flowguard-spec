@@ -89,3 +89,8 @@ was none; it found what a reviewer would find, in four tenths of a second, with 
 
 The evidence base is no longer purely synthetic. It is still thin, and the honest next step is a schema from a
 project that has a real control point worth bypassing — which is a question for the owner, not for the tool.
+
+## Log
+
+re-run on 2026-10-28 with the output captured, because the original run was a command sequence
+whose transcript was the only record: `lab/logs/e-m21-2026-10-28.log` — sha256 `dc6f60dd0e00612549f68d068804b41559f734732906d2aca0a805168bbf666e`.

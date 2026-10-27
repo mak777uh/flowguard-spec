@@ -61,3 +61,7 @@ claim.
 - It does not make the list **complete**. A thing nobody thought to refuse is absent from the table — which is the
   same limitation as an inventory with a blind spot, and gets the same treatment: it is declared, not denied.
 - It does not replace the level's other requirements. Codes are a floor on honesty, not a substitute for coverage.
+
+## Log
+
+`lab/logs/e-m15-2026-10-27.log` — sha256 `6af1f48e20bf399f7a1165380f6fb9ddfd718492afd1789aaa64486afade415a`.

@@ -64,3 +64,7 @@ a claim that omits it lands on tier 0 and is capped.
 - **It does not change the current state.** Everything measured here is tier 1 — Pagila is a sample database, and
   one review was right that it is not a production schema. The product half stays at zero until an owner confirms a
   finding.
+
+## Log
+
+`lab/logs/e-m29-2026-10-28.log` — sha256 `ba021051fc9fcb7a814442552d8c8f0a911d3cfa3154a7b06d94eb21284ded9e`.

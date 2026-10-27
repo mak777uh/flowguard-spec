@@ -59,3 +59,7 @@ correct answer for a fixture that is thirteen bypasses and two callers.
 - The classification sees `entry` strings, not semantics. A table called `notes` holding card data is classified
   `other`.
 - It does not measure residual risk; it measures the share of **known** weighted risk that sits outside the core.
+
+## Log
+
+`lab/logs/e-m16-2026-10-27.log` — sha256 `edfe264ee531c5b92a4319c51fc3c7a94edbba1ebb9f474d0607327a13929d8b`.

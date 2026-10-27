@@ -63,3 +63,7 @@ the next person will make the same mistake.
   identical at this granularity.
 - **It does not make the denominator complete.** It makes its incompleteness **visible**, which is the most a check
   can do.
+
+## Log
+
+`lab/logs/e-m23-2026-10-28.log` — sha256 `300c88a52863270876825f4bd6c60e2457a151e3ef831ebda2a90bbc977dabeb`.

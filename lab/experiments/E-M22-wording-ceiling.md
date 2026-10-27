@@ -72,3 +72,7 @@ Neither change relaxes the claim; both make it checkable.
   the registry is not the only surface.
 - It does not decide the ceiling for new evidence types. A new type without an entry defaults to "reserved words
   forbidden", which fails closed.
+
+## Log
+
+`lab/logs/e-m22-2026-10-28.log` — sha256 `89b42bab0e5cfa5f2e585d40649ce7789578505869c312874b7003c4bdadd7cd`.

@@ -60,3 +60,7 @@ signed false claim.
 
 `fg_bundle verify` without `--trusted-keys` and `--expect-target` is documented as **not evidence**: it answers
 "the bundle is internally consistent", which is precisely the round-7 trap. ADR-0010 records this.
+
+## Log
+
+`lab/logs/e-m9b-2026-10-27.log` — sha256 `918b5cafed2f0ec66f03d3e638588a3f0f3d5cd4df319ef033904d36a1c59943`.

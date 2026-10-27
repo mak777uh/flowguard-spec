@@ -93,3 +93,7 @@ coverage 0" — true and nearly meaningless. The ceiling needs attribution.
 
 E-M14 added two scenarios (T11, T12) after the exclusion hole was found, and corrected T1/T5 to use real
 path ids instead of placeholders. The ten scenarios recorded here still pass; the suite now reports 12/12.
+
+## Log
+
+`lab/logs/e-m12-2026-10-27.log` — sha256 `eda90a18973a8639a902632d6fe498ec69a8baf7b7ead40cf3a7dedad0128f6d`.

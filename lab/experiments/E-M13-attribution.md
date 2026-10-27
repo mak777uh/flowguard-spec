@@ -73,3 +73,7 @@ implementation would have used.
 `independent_of_agent` now rests on two source kinds, so a single tool's blind spot is no longer the product's
 blind spot. The verdict is still capped at `CONSISTENT_DECLARED` because coverage is 0.133 — which is honest, and
 would be the right answer for any real system with thirteen unaddressed ways to write the table.
+
+## Log
+
+`lab/logs/e-m13-2026-10-27.log` — sha256 `c19388a2bb41b914d107e636f377752c175736082422deaec7f627aa6ba707fe`.

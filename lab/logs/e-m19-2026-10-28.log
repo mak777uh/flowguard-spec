@@ -1,0 +1,5 @@
+manifest: 13 paths from 1 source(s)
+independent_of_agent: True (grants-pg-v0.1)
+manifest: 14 paths from 1 source(s)
+independent_of_agent: True (grants-pg-v0.1)
+delta: +1 new, -0 vanished, net +1; perimeter_growth=True

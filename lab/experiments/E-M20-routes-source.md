@@ -68,3 +68,8 @@ passed and hidden both.
 
 `routes` now qualifies as a coverage denominator kind under `ADR-0011` — built, then measured — and returns to
 `DENOMINATOR_KINDS` with a measurement behind it rather than an intention.
+
+## Log
+
+re-run on 2026-10-28 with the output captured, because the original run was a command sequence
+whose transcript was the only record: `lab/logs/e-m20-2026-10-28.log` — sha256 `c57af71d6f476a5b885338e7508c2f59804be68433724e31045f2afd64c10a91`.

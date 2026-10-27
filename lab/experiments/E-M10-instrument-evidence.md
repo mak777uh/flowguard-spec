@@ -83,3 +83,7 @@ claims to cover a class that was never generated.
 
 The next measurement that would raise confidence is not a bigger corpus of the same six classes — it is a corpus
 from a **different author**, which is exactly what M7 (independent rebuild) would produce.
+
+## Log
+
+`lab/logs/e-m10-2026-10-27.log` — sha256 `8ae1cc011b64e48843e78e8d98c5fc00eb09ac83227dd52ccd4ba43f9e8a605b`.

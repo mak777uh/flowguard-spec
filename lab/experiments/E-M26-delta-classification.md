@@ -48,3 +48,7 @@ reported as its own row. `E-M11`, `E-M12`, `E-M13` and `E-M25` are unchanged by 
   equivalent is a human judgement, and nothing here checks it.
 - **Different targets are still comparable.** A delta between two `target_lock` values is not refused, which is a
   gap, not a decision.
+
+## Log
+
+`lab/logs/e-m26-2026-10-28.log` — sha256 `9ab2d7753c7554736f402593e0af771c9322f37e111655b2650ce46c0aa88daa`.

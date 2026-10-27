@@ -69,3 +69,7 @@ field was not testing the field.
 
 `docs/37-REFUSAL-CODES.md` already lists the codes used; no new code was needed. The three conditions are now part
 of the verifier's contract, and the acceptance suite documents them as T11 and T12.
+
+## Log
+
+`lab/logs/e-m14-2026-10-27.log` — sha256 `06b7bbceb1c767bd2847c8c9a7010d1560c64e5d7c973eb5d854e773b94dce06`.

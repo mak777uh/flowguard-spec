@@ -54,3 +54,7 @@ is actually looking at**. Implemented and re-run as `E-M9b`.
 
 This card stays as it is — a failed pre-registered experiment with its cause named. The fix does not get to
 rewrite the failure.
+
+## Log
+
+`lab/logs/e-m9b-2026-10-27.log` — sha256 `918b5cafed2f0ec66f03d3e638588a3f0f3d5cd4df319ef033904d36a1c59943`.

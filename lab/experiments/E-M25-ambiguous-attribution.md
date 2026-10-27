@@ -56,3 +56,7 @@ answers a question nobody asks is not a check.
 - **It does not fix the self-referential `control_point`.** The grant enumerator sets each function's
   `control_point` to the function itself, so every writer claims to be its own control point. Carded, not fixed, and
   named in `ADR-0013` so it cannot be forgotten.
+
+## Log
+
+`lab/logs/e-m25-2026-10-28.log` — sha256 `1889c75a949bc817e6c0b36f0e98f5b505495abdcb461cae8c7e789c1185cd09`.

@@ -69,3 +69,7 @@ as `risk_acceptance` with a scope bound to the bundle address, residual risk cod
 - **It does not create liability.** The bundle can record that a contract exists; it cannot be one.
 - **It cannot detect one human holding two keys.** Separation of duties is checked at the key level; two keys held by
   one person pass.
+
+## Log
+
+`lab/logs/e-m28-2026-10-28.log` — sha256 `506bc4f090ca0e01f4c498c8d9a76abcbbdc8e62f944908970ea9691b806c6d0`.

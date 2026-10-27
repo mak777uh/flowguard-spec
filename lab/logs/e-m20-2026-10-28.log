@@ -1,0 +1,3 @@
+routes: 4 endpoint(s) reach bank.accounts, 1 through the control point -> tools/_tmp/r.json
+manifest: 20 paths from 3 source(s)
+independent_of_agent: True (routes-json-v0.1, grants-pg-v0.1, pgcalls-v0.1)

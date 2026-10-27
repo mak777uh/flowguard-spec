@@ -64,3 +64,8 @@ measured would report how much it grew. The merger sees both inventories and can
 - It does not compare inventories of different targets. Two manifests with different `target_lock` values are not a
   delta, and the merger does not yet refuse that — recorded as a gap, not a solved problem.
 - It does not measure risk; the weighted perimeter is a separate computation (`E-M16`).
+
+## Log
+
+re-run on 2026-10-28 with the output captured, because the original run was a command sequence
+whose transcript was the only record: `lab/logs/e-m19-2026-10-28.log` — sha256 `4462d7977460f1d74b1720a1f6754badba41572371ad03858b2d579d6c5fed02`.
