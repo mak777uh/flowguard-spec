@@ -197,3 +197,21 @@ different target than the one presented.
 Two classes are now pre-registered in `E-M9`: tampering after signing (D-1) and falsely attested pairs (D-2).
 
 **Revived if:** never as a single class. Any future substitution test must name which of the two it addresses.
+
+### X-19 — "Logs are evidence" — eliminated, narrowed
+
+A log is read by people; evidence is a log that something replays and that can fail to match. An append-only
+journal nobody replays is prose with timestamps.
+
+**Revived as:** the narrow rule now in force — every number in `docs/METRICS.md` carries the command that
+produced it and the sha256 of the log it came from. Adopted from the sibling repository, where 121 append-only log
+files are counted, including a counter for duplicated hashes.
+
+### X-20 — "Evidence-based testing means more tests" — eliminated
+
+It means **measured** tests: a corpus with declared defect classes, a detection rate per class, and a
+false-rejection rate on valid inputs. A larger suite with no per-class numbers is the coverage theatre that
+`E-M10` exists to prevent.
+
+**Revived if:** never as "more tests". Any test artifact added here states which class it measures and against
+what corpus.

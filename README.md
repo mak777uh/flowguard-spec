@@ -37,6 +37,8 @@ commits a token, CI goes red instead of the reputation.
 | [docs/CLAIMS.md](docs/CLAIMS.md) | claim registry: evidence type and the strongest permitted wording |
 | [docs/eliminations.md](docs/eliminations.md) | what five rounds ruled out, and what would revive it |
 | [docs/STATUS-v0.md](docs/STATUS-v0.md) | what exists, what does not, and what this repository does not claim |
+| [docs/METRICS.md](docs/METRICS.md) | every number with its command and log digest — currently zero rows |
+| [docs/33-EBT-AND-LDD.md](docs/33-EBT-AND-LDD.md) | what we take from evidence-based testing and log-driven development, and what we refuse |
 | [docs/95-CLOSED-LOOP.md](docs/95-CLOSED-LOOP.md) | the loop: product is the showcase, the approach is the factory |
 
 ## Repository map
