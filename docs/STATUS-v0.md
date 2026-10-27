@@ -22,7 +22,7 @@ This is our declaration, as agreed; theirs is in `VecDHT docs/STATUS-v1.md`.
 | **M4** eliminations with revival | **works** | [`docs/eliminations.md`](eliminations.md): 19 entries, 17 revival conditions | — |
 | **M5** status document | **works** | this file | it is v0 and will be wrong within a week unless regenerated |
 | **M6** guards | **works** | [`lab/check-secrets.sh`](../lab/check-secrets.sh) (files + full history), [`lab/check-links.py`](../lab/check-links.py) (84 links, 0 broken), [`lab/check-claims.py`](../lab/check-claims.py), wired into `.github/workflows/guards.yml` | — |
-| **M7** independent rebuild | **absent** | — | no bundle that anyone has rebuilt; see the definition below |
+| **M7** independent rebuild | **absent, blocked on a peer** | `fixtures/sample-bundle/` — a real `fg-bundle/1` with a one-page format description | a stranger has not rebuilt it. Asked of VecDHT in `interop/2026-10-27-flowguard-to-vecdht-5.md`; until they answer, this row stays absent |
 
 **First measurement exists** (`E-M11`, 2026-10-27): the Postgres grant enumerator found 8 of 8 planted bypasses and
 identified the declared control point; row precision 11/12. Log digest in `docs/METRICS.md`. This is the first number

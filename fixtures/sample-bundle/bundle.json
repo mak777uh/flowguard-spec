@@ -1,0 +1,56 @@
+{
+ "bundle_version": "fg-bundle/1",
+ "subjects": {
+  "code": {
+   "sha256": "ff318bee3c3e2ef25c07cf54cc2499fccd615a213e399b2280a9b40482e274ac",
+   "source": "target.py"
+  },
+  "build": {
+   "sha256": "601d3d4e8ee7a8212185dc685b4ae2924da11e198a9fd874f0d2903acb659547",
+   "source": "build.json"
+  },
+  "config": {
+   "sha256": "0fb466a16fa84228496ff0aef036e6ab1bc832317cf9cd8b9d4715affe607208",
+   "source": "config.yml"
+  },
+  "identity": {
+   "sha256": "61a4517ff38bdb1043f20e35dfd579180c50ee9b42a927b419e218dfd3ca63ee",
+   "source": "identity.txt"
+  }
+ },
+ "objects": {
+  "ff318bee3c3e2ef25c07cf54cc2499fccd615a213e399b2280a9b40482e274ac": {
+   "bytes": 116,
+   "name": "target.py"
+  },
+  "601d3d4e8ee7a8212185dc685b4ae2924da11e198a9fd874f0d2903acb659547": {
+   "bytes": 37,
+   "name": "build.json"
+  },
+  "0fb466a16fa84228496ff0aef036e6ab1bc832317cf9cd8b9d4715affe607208": {
+   "bytes": 13,
+   "name": "config.yml"
+  },
+  "61a4517ff38bdb1043f20e35dfd579180c50ee9b42a927b419e218dfd3ca63ee": {
+   "bytes": 19,
+   "name": "identity.txt"
+  }
+ },
+ "claim": {
+  "claim_id": "FG-SAMPLE-1",
+  "flow": "balance_transfer",
+  "target_lock": {
+   "commit": "flowguard-sample@2026-10-27"
+  },
+  "declared_control_point": "function:bank.transfer",
+  "declared_level": "CONSISTENT_DECLARED",
+  "claimed_coverage": 0.133,
+  "excluded": [],
+  "not_claimed": [
+   "complete_discovery_of_all_relevant_paths",
+   "absence_of_vulnerabilities_outside_verified_scope"
+  ]
+ },
+ "inventory_digest": "sha256:c308e29b94c4e65d5d6cc544b9da1f61f3ff7e207376a058848560be73b11855",
+ "plaintext_notified": true
+}
