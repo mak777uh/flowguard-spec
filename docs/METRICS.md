@@ -47,3 +47,5 @@ honest, a filled one without logs is the failure mode the whole repository is bu
 - It does not record numbers quoted from other projects; those live in `docs/CLAIMS.md` with their artifact.
 - It does not store the logs themselves — logs are artifacts, this is the index with digests.
 - It does not claim coverage of anything. Zero rows means zero measurements, not zero risk.
+| 5 | `E-M13` attribution on legitimate callers / false attribution | **2 / 2** and **0 / 9** | pgcalls over the fixture; decoy `transfer_fast` not attributed | `c19388a2bb41b914d107e636f377752c175736082422deaec7f627aa6ba707fe` | 2026-10-27 tree | 2026-10-27 |
+| 6 | `E-M13` coverage after attribution | **0.133** (2 of 15 paths), was 0.000 | grants + pgcalls merged, then `fg_verify` | `c19388a2bb41b914d107e636f377752c175736082422deaec7f627aa6ba707fe` | 2026-10-27 tree | 2026-10-27 |

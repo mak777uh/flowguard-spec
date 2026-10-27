@@ -103,7 +103,15 @@ def main() -> int:
     # ---- 3. coverage, recomputed, never trusted -------------------------
     paths = inventory["paths"]
     control = claim.get("declared_control_point")
-    in_core = [p for p in paths if p.get("control_point") and control and p["control_point"] == control]
+    # A path is inside the core when an attribution source says it passes through the declared
+    # control point. Falling back to control_point keeps single-source bundles working.
+    in_core = [
+        p for p in paths
+        if control and (
+            (p.get("attribution") or {}).get("to") == control
+            or p.get("control_point") == control
+        )
+    ]
     outside = [p for p in paths if p not in in_core]
     coverage = len(in_core) / len(paths) if paths else 0.0
 

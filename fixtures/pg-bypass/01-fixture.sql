@@ -111,3 +111,34 @@ CREATE TRIGGER audit_events_write AFTER INSERT ON bank.audit_events
 GRANT INSERT ON bank.audit_events TO app_rw;
 
 INSERT INTO bank.accounts(id, balance) VALUES (1, 1000), (2, 500);
+
+-- ---------------------------------------------------------------------------
+-- Legitimate callers: paths that DO pass through the declared control point.
+-- Attribution is what these exist to test: a call-graph enumerator must mark
+-- them as inside the core, and must not be fooled by names.
+-- ---------------------------------------------------------------------------
+
+CREATE FUNCTION bank.transfer_via_api(src integer, dst integer, amt numeric)
+RETURNS void LANGUAGE plpgsql AS $$
+BEGIN
+  PERFORM bank.transfer(src, dst, amt);
+END $$;
+GRANT EXECUTE ON FUNCTION bank.transfer_via_api(integer, integer, numeric) TO app_rw;
+
+CREATE FUNCTION bank.transfer_batch(ids integer[], amt numeric)
+RETURNS void LANGUAGE plpgsql AS $$
+DECLARE i integer;
+BEGIN
+  FOR i IN 1 .. array_length(ids, 1) - 1 LOOP
+    PERFORM bank.transfer_via_api(ids[i], ids[i+1], amt);
+  END LOOP;
+END $$;
+GRANT EXECUTE ON FUNCTION bank.transfer_batch(integer[], numeric) TO app_rw;
+
+-- Decoy: named as if it were a transfer, writes the table directly.
+CREATE FUNCTION bank.transfer_fast(acct integer, amt numeric)
+RETURNS void LANGUAGE plpgsql AS $$
+BEGIN
+  UPDATE bank.accounts SET balance = balance + amt WHERE id = acct;
+END $$;
+GRANT EXECUTE ON FUNCTION bank.transfer_fast(integer, numeric) TO app_rw;

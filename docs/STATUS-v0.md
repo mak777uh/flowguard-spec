@@ -151,5 +151,6 @@ not an attestation of security.
 
 `E-M12` found that the grant enumerator sees writers, not callers. Without a call graph (static or runtime), no
 path can be attributed to the declared control point, so coverage computes to 0 and the verdict is capped at
-`CONSISTENT_DECLARED` no matter how many bypasses are found. That is honest and nearly worthless. The next
-artifact is an attribution-capable source; `E-M9` (substitution) is unblocked but secondary.
+`CONSISTENT_DECLARED` no matter how many bypasses are found. That is honest and nearly worthless. The attribution-capable source now exists (`E-M13`: 2/2 callers attributed, 0/9 false, including a decoy
+named like the flow). Coverage moved from 0.000 to 0.133 — still capped, and honest. The next artifact is the
+bundle format and `E-M9`; the older sentence follows. `E-M9` (substitution) is unblocked but secondary.

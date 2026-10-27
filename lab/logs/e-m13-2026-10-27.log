@@ -1,0 +1,9 @@
+=== E-M13 run 2026-10-27 ===
+grants:  13 paths
+pgcalls: 2 attributions
+merge:   15 paths, 2 in core, independent_of_agent=true
+coverage: 0.133
+claim 0.85 -> CLAIM_EXCEEDS_EVIDENCE, exit 1
+claim 0.133 -> CONSISTENT_DECLARED, exit 0
+decoy transfer_fast: not attributed (correct)
+acceptance suite: 10/10

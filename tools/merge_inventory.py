@@ -15,6 +15,7 @@ import argparse
 import glob
 import json
 import sys
+from hashlib import sha256
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -68,6 +69,45 @@ def main() -> int:
                     "kinds": [s["kind"]],
                 }
 
+    # Attribution is contributed separately from paths: a source may say "this writer goes through the
+    # control point" without claiming to have discovered the writer. Applied by entry.
+    attributions = {}
+    for s in sources:
+        for at in s.get("attributions", []):
+            attributions.setdefault(at["entry"], []).append({
+                "source": s["source_id"], "to": at["attributed_to"],
+                "method": at.get("method", ""), "confidence": at.get("confidence", ""),
+            })
+    attributed = 0
+    for p_ in merged.values():
+        hits = [a for a in attributions.get(p_["entry"], []) if a["to"]]
+        if hits:
+            p_["attribution"] = {
+                "to": hits[0]["to"],
+                "method": min(h["method"] for h in hits),
+                "confidence": min(h["confidence"] for h in hits),
+                "sources": [h["source"] for h in hits],
+            }
+            attributed += 1
+
+    # A caller that reaches the control point but never writes the table itself is invisible to a
+    # writer enumerator. It is still a path into the flow, and it is inside the core. Without this,
+    # coverage would count only writers and every legitimate caller would be missing.
+    for entry, hits in attributions.items():
+        active = [h for h in hits if h["to"]]
+        if not active or any(p_["entry"] == entry for p_ in merged.values()):
+            continue
+        pid = "wp_" + sha256(("caller|" + entry).encode()).hexdigest()[:16]
+        merged[pid] = {
+            "path_id": pid, "entry": entry, "kind": "caller",
+            "control_point": active[0]["to"], "confidence": active[0]["confidence"],
+            "found_by": [h["source"] for h in active], "kinds": ["static"],
+            "attribution": {"to": active[0]["to"], "method": active[0]["method"],
+                            "confidence": active[0]["confidence"],
+                            "sources": [h["source"] for h in active]},
+        }
+        attributed += 1
+
     previous = {}
     if a.previous and Path(a.previous).exists():
         prev_doc = json.loads(Path(a.previous).read_text(encoding="utf-8"))
@@ -104,6 +144,7 @@ def main() -> int:
         "independent_of_agent": independent_of_agent,
         "non_agent_sources": non_agent_sources,
         "paths_total": len(merged),
+        "in_core_attributed": attributed,
         "corroborated_by_2plus": sum(1 for p in merged.values() if len(p.get("kinds", [])) > 1),
         "conflicts": conflicts,
         "vanished_since_previous": vanished,
