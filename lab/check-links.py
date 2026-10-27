@@ -9,7 +9,7 @@ LINK = re.compile(r'\[[^\]]*\]\(([^)]+)\)')
 bad = 0
 checked = 0
 
-for md in list(ROOT.glob('*.md')) + list((ROOT / 'docs').glob('*.md')):
+for md in list(ROOT.glob('*.md')) + list((ROOT / 'docs').glob('*.md')) + list((ROOT / 'articles').glob('*.md')):
     for lineno, line in enumerate(md.read_text(encoding='utf-8').splitlines(), 1):
         for target in LINK.findall(line):
             t = target.strip()
