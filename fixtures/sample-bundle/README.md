@@ -68,3 +68,13 @@ Written down deliberately, because a rebuild that trips over them is doing its j
 - There is no field for the verifier's version, so a rebuild cannot check which program produced the verdict.
 
 If you hit one of these, that is a finding: report it and it becomes a card.
+## A resolved hazard, kept in the record
+
+On the first attempt this repository shipped the bundle through `.gitattributes` with `* text=auto eol=lf`.
+A fresh clone rewrote the object files, their digests stopped matching their names, and the bundle verified as
+`INVALID` — on a clean checkout, with nobody having touched it.
+
+Object file names **are** their sha256, so any EOL normalisation is corruption. Fixed with
+`fixtures/** -text -eol` and `fixtures/sample-bundle/** binary`. The check is now part of shipping: clone the
+repository into a temporary directory and verify the sample bundle there; if it is not
+`SIGNED_AND_CONSISTENT`, the repository is corrupting its own artifact.
