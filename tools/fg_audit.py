@@ -174,6 +174,14 @@ def a9_claims_artifact_status():
     return (r.returncode == 0, f"{missing} claims cite missing artifacts (to-do list); status publishes the number: {published}")
 
 
+def a11_dossier_current():
+    """DOSSIER.md is generated; if it lags, the one file we hand to outside models is a lie."""
+    import subprocess
+    r = subprocess.run([sys.executable, str(ROOT / "tools" / "fg_dossier.py"), "--check"],
+                       capture_output=True, text=True)
+    return r.returncode == 0, (r.stdout.strip().splitlines() or ["no output"])[-1]
+
+
 def a10_worktree_clean():
     import subprocess
     r = subprocess.run(["git", "status", "--porcelain"], cwd=ROOT, capture_output=True, text=True)
@@ -191,6 +199,7 @@ CHECKS = [
     ("A7", "no TODO/TBD markers in documents", a7_no_dangling_placeholders),
     ("A8", "the README links every document", a8_readme_links_all),
     ("A9", "claims citing missing artifacts remain lint-clean", a9_claims_artifact_status),
+    ("A11", "the dossier matches its generator", a11_dossier_current),
     ("A10", "the worktree is clean", a10_worktree_clean),
 ]
 

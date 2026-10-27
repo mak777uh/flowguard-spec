@@ -53,6 +53,7 @@ commits a token, CI goes red instead of the reputation.
 | Crypto | [in scope from day one](docs/61-CRYPTO-IN-SCOPE.md) · [crypto and auto-payout](docs/60-CRYPTO-AND-AUTOPAY.md) |
 | Economics | [SKUs and services](docs/70-SERVICE-TIERS.md) · [pricing doctrine](docs/80-PRICING-DOCTRINE.md) |
 | Decisions | lab/decisions/ — 11 ADRs, each stating its own limits |
+| Hand-off | **[DOSSIER.md](DOSSIER.md)** — one generated, self-contained file to paste into any model (Russian) |
 | Open | [questions for the owner](docs/QUESTIONS-FOR-OWNER.md) · [round 8 review pack](docs/16-ROUND8-QUESTIONS.md) — only what cannot be decided here |
 | Process | ash lab/round-check.sh · python tools/fg_audit.py · python tools/fg_readiness.py |
 | Implementation | [enumerators](enumerators/grants-pg/README.md) (grant, call-graph, runtime, routes) · [verifier](tools/fg_verify.py) · [the stand](docs/50-IMPLEMENTATION-STAND.md) · [the harness](docs/51-HARNESS-BUILD.md) · [OSS product](docs/52-OSS-PRODUCT.md) |
