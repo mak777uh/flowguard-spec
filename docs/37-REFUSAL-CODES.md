@@ -14,6 +14,7 @@ without guessing, and so it cannot be talked into a weaker reading.
 | `REPORT_BUNDLE_INCONSISTENT` | report and bundle disagree on version, digest, boundary or level | regenerate the derived document from the source | yes, if the cause is mechanical |
 | `POLICY_CEILING_EXCEEDED` | exclusions, outside-paths or residual risk exceed the policy ceiling | nothing autonomous — needs a scope change or a human decision | **no** |
 | `E_NO_INDEPENDENT_CLOSURE` | there is no obligation manifest from a source outside the analysing agent | supply one, or accept the capped verdict | **no** |
+| `EVIDENCE_TIER_UNSUPPORTED` | the claim declares an evidence tier the inventory cannot support | lower the tier or record the foreign validation | **no** |
 | `SIGNATURE_ROLE_UNKNOWN` | a signature claims a role the policy does not define | use a defined role | **no** |
 | `LIABILITY_NOT_A_ROLE` | a contract was declared as a signature role | record it as an external reference, not a signature | **no** |
 | `RISK_ACCEPTANCE_INCOMPLETE` | an acceptance lacks scope, expiry or residual-risk codes | complete it or remove it | **no** |

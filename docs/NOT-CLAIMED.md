@@ -25,6 +25,7 @@ level requires. Adding a code is a deliberate act: it means a new kind of thing 
 | **NC-07** | that risk weights are objective | weighting residual risk requires an agreed classification; until one exists, weights are a convention |
 | **NC-08** | that the issuer of a trust anchor was authorised to issue it | a trusted key list is a file; who may sign it is a governance question |
 | **NC-09** | that a third party can reproduce the analysis | only the bundle address is reproducible; the analysis is reproducible only after M7 |
+| **NC-11** | that these numbers generalise beyond the schemas actually validated | a result on one corpus says nothing about an unmeasured population; generalisability is a property of the sample, not of the tool |
 | **NC-10** | that observed runtime behaviour matches the static model | static paths and exercised paths are different sets; runtime evidence is a separate source |
 
 ## Required by level
@@ -32,8 +33,8 @@ level requires. Adding a code is a deliberate act: it means a new kind of thing 
 | declared level | codes that must be present |
 |---|---|
 | `CONSISTENT_DECLARED` | NC-01, NC-02 |
-| `SCOPED_ASSURANCE` | NC-01, NC-02, NC-04, NC-05 |
-| `PROVEN` | NC-01, NC-02, NC-03, NC-04, NC-05, NC-10 |
+| `SCOPED_ASSURANCE` | NC-01, NC-02, NC-04, NC-05, NC-11 |
+| `PROVEN` | NC-01, NC-02, NC-03, NC-04, NC-05, NC-10, NC-11 |
 
 A claim that declares a level without the codes it requires is refused, with the missing codes named.
 

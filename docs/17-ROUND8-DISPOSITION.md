@@ -24,7 +24,7 @@ refuses to.
 *Not yet done:* function-level `unenumerable`. It needs nested-statement logging (pgAudit
 `log_nested_statements`), which is exactly the gap `E-M17` measured. Accepted, not claimed.
 
-### Numbers are demonstration, not evidence — **accepted** (`E-M24`, needs foreign schemas)
+### Numbers are demonstration, not evidence — **done for the structure** (`E-M29`), still needs foreign schemas
 
 All three: fixtures written by the author prove the detector, not the world. Suggested shapes: 12–20 schemas
 (one reviewer), ≥30 stratified across three stacks (another), 3–5 with owner-confirmed ground truth (the third).

@@ -324,6 +324,31 @@ def main() -> int:
             "supply an inventory from an enumerator the agent does not control, or accept the capped verdict",
             False)
 
+    # ---- 6a0. evidence tier: what kind of ground the numbers stand on ----
+    # Round-8 review, all three: a result on the author's fixtures and a result on a stranger's
+    # schema look identical in the artifact. The tier makes that difference a field, and a tier the
+    # inventory cannot support is refused rather than trusted.
+    tier = claim.get("evidence_tier", 0)
+    fv = inventory.get("foreign_validation") or []
+    confirmed = [f for f in fv if f.get("owner_confirmed") is True]
+    supported = 1 if denominator_kinds else 0
+    if confirmed:
+        supported = 2
+    if any(f.get("blind_evaluation") is True for f in confirmed):
+        supported = 3
+    if tier > supported:
+        err("EVIDENCE_TIER_UNSUPPORTED", "evidence_tier",
+            "tier <= %d for this inventory" % supported,
+            "declared tier %d" % tier,
+            "lower the tier, or record the foreign validation that justifies it", False)
+    tier_ceiling = {0: "CONSISTENT_DECLARED", 1: "SCOPED_ASSURANCE",
+                    2: "PROVEN", 3: "PROVEN"}.get(min(int(tier), 3), "CONSISTENT_DECLARED")
+    if ORDER.get(claim.get("declared_level", "CONSISTENT_DECLARED"), 0) > ORDER.get(tier_ceiling, 0):
+        err("CLAIM_EXCEEDS_EVIDENCE", "evidence_tier",
+            "a level reachable at tier %d: %s" % (tier, tier_ceiling),
+            "declared %s" % claim.get("declared_level"),
+            "raise the evidence tier before raising the level", True)
+
     # ---- 6a2. three-state coverage: what was seen but never enumerated ----
     # A single ratio cannot express "an event happened that the denominator cannot explain".
     # If a verb was observed and no catalogue path mentions it, the denominator is already known to

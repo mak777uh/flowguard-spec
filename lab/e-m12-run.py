@@ -46,17 +46,18 @@ def manifest(core=8, outside=2, independent=True, conflicts=None, target="abc123
 
 REQUIRED = {
     "CONSISTENT_DECLARED": ["NC-01", "NC-02"],
-    "SCOPED_ASSURANCE": ["NC-01", "NC-02", "NC-04", "NC-05"],
-    "PROVEN": ["NC-01", "NC-02", "NC-03", "NC-04", "NC-05", "NC-10"],
+    "SCOPED_ASSURANCE": ["NC-01", "NC-02", "NC-04", "NC-05", "NC-11"],
+    "PROVEN": ["NC-01", "NC-02", "NC-03", "NC-04", "NC-05", "NC-10", "NC-11"],
 }
 
 
 def claim(level="SCOPED_ASSURANCE", coverage=0.8, excluded=None, target="abc123", control=CORE,
-          not_claimed=None):
+          not_claimed=None, evidence_tier=1):
     return {"claim_id": "C1", "flow": "balance_transfer", "target_lock": {"commit": target},
             "declared_control_point": control, "declared_level": level,
             "claimed_coverage": coverage, "excluded": excluded or [],
-            "not_claimed": REQUIRED[level] if not_claimed is None else not_claimed}
+            "not_claimed": REQUIRED[level] if not_claimed is None else not_claimed,
+            "evidence_tier": evidence_tier}
 
 
 def real_exclusions(m, n, reason="documented out of scope"):
@@ -160,6 +161,13 @@ def scenarios():
         ("T13", "not_claimed is prose instead of vocabulary",
          lambda: (manifest(), claim(not_claimed=["results may vary"]), None, None, 1),
          lambda c, o: any(e["code"] == "REPORT_BUNDLE_INCONSISTENT" for e in o["errors"])),
+        ("T24", "a tier the inventory cannot support",
+         lambda: (manifest(), claim(level="CONSISTENT_DECLARED", evidence_tier=3), None, None, 1),
+         lambda c, o: any(e["code"] == "EVIDENCE_TIER_UNSUPPORTED" for e in o["errors"])),
+        ("T25", "PROVEN claimed at tier 0",
+         lambda: (manifest(10, 0), claim(level="PROVEN", coverage=1.0, evidence_tier=0), None, None, 1),
+         lambda c, o: any(e["code"] == "CLAIM_EXCEEDS_EVIDENCE" and e["subject"] == "evidence_tier"
+                          for e in o["errors"])),
         ("T22", "exclusion reason contradicts the path risk class", t22,
          lambda c, o: any(e["code"] == "EXCLUSION_REASON_CONTRADICTION" for e in o["errors"])),
         ("T23", "compensating control claimed with no reference",
