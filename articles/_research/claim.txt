@@ -1,0 +1,157 @@
+PRIZES
+JUDGES
+FAQ
+|
+BLOG IT
+|
+POWERED BY
+Claim $70 in
+Nosana Compute Credits
+
+Qualified participants in the Decentralize AI Hackathon can access Nosana compute credits to build, test, and deploy AI workloads.
+
+|
+Claim Credits
+|
+SEE ELIGIBILITY
+USAGE GUIDELINES
+COMPUTE CREDITS WORTH
+$70
+AI BUILDERS
+Worldwide
+DEPLOY ON
+Nosana
+
+ELIGIBILITY REQUIREMENTS
+
+Who can claim credits
+Valid AI Project Proposal
+
+Submit a clear, well-scoped AI-related project proposal that leverages decentralized infrastructure.
+
+Deploy on Nosana
+
+Intend to deploy or test your AI workloads on the Nosana decentralized GPU network.
+
+One Claim per Team
+
+A single representative submits on behalf of the entire team. Duplicate submissions are not approved.
+
+Note: These credits must be used exclusively for Decentralize AI Hackathon submissions. Builders may either extend an existing project using Nosana credits or create an entirely new project for the hackathon. Incomplete or duplicate submissions may not be approved.
+
+CREDIT CLAIM FORM
+
+Submit your claim
+
+Share your project details. Approved teams receive Nosana credit access instructions by email.
+
+01
+PROJECT INFORMATION
+PROJECT NAME
+PROPOSAL DESCRIPTION
+0/5000
+GITHUB REPOSITORY URL
+MODEL / WORKLOAD DETAILS
+0/2000
+02
+NOSANA DEPLOYMENT COMMITMENT
+DO YOU PLAN TO DEPLOY OR TEST YOUR PROJECT ON NOSANA?
+Yes
+No
+03
+TEAM INFORMATION
+TEAM MEMBERS
+SOCIAL LINKS (optional)
+04
+CONTACT INFORMATION
+EMAIL ADDRESS
+PHONE NUMBER
+COUNTRY
+05
+AGREEMENT
+I confirm this submission is from one representative per team and that all information provided is accurate.
+SUBMIT CLAIM
+
+Approved participants receive credit access instructions by email after review.
+
+USAGE GUIDE
+
+Here’s How You Can Use Your Credits Efficiently
+
+Deployments on Nosana are by default set to using an “Infinite Strategy”, with a default “Container Timeout” of 6 hours and a “Replica Count” of 1.
+
+This mean that one instance will be created for you, and will continue running until your credits run out. Depending on the GPU market you have chosen, your credits will run out quickly.
+
+With an NVIDIA 5090, at $0.48/h, this will cost $350/month.
+
+USAGE
+HOURS/MONTH
+COST
+24/7
+~730
+~$350
+12 h/day
+~365
+~$175
+8 h/day
+~243
+~$117
+1 h/day
+~30
+~$14.40
+
+With only $70 worth of compute credits, you’ll need to use it efficiently for the hackathon.
+
+In order to do so, when creating your deployments, on https://deploy.nosana.com/deployments/create
+
+1
+Click the “configure” button
+2
+Go to the “Deployment Configuration” tab
+3
+Select “Simple” from the “Deployment Strategy” drop down list
+4
+Keep the “Replica Count” at 1
+5
+Choose your desired “Container Timeout”
+6
+Click “Save Changes”
+7
+Last but not least choose a GPU market that fits your needs
+
+OPEN IN NOSANA
+
+deploy.nosana.com/deployments/create
+
+LAUNCH
+
+Because billing is based on actual uptime, you only pay for the hours your instance is running. To avoid burning through credits, stop instances when they’re idle or lower the Container Timeout.
+
+This should help you stretch those $70 as long as possible!
+
+A global hackathon for the open AI future.
+
+ABOUT
+Prizes
+Editing Protocol
+Privacy
+HackerNoon AI
+RESOURCES
+Judges
+FAQ
+Hackathon Entries
+AI Newsletter
+POWERED BY
+HackerNoon
+Blogging Contests
+Proof of Usefulness
+Tech Hackathons
+SPONSORED BY
+Nosana
+Arweave
+MEXC
+HackerNoon
+
+© 2026 HackerNoon
+
+Decentralize AI, or Else

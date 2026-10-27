@@ -171,3 +171,49 @@ step 3, otherwise the article advertises something that does not exist — and t
 3. Does a submission require a specific form with fixed fields (repo, deployment URL, video)?
 4. Is there a deadline date for round 1, or is it rolling?
 5. Does the platform's own article generator count for or against an entry?
+
+---
+
+## 9. Corrected mechanics — read from the live site, 2026-10-27
+
+The site pages (PRIZES, JUDGES, the claim form) and the tag page were read directly through the shared
+Chrome session. Five facts change the plan.
+
+**9.1. Entry is a post, not a code submission.** PRIZES states it plainly: *"Your shot at $51,750+ starts
+with one post. Publish your decentralized AI piece on HackerNoon with the right tags and you're in."*
+The mandatory tag is **`#decentralize-ai-hackathon`** — the site's "Hackathon Entries" link resolves to
+`hackernoon.com/tagged/decentralize-ai-hackathon`.
+
+**9.2. The tag had 35 posts when checked, and one of them is already ours.** ModelProof, published
+2026-10-27. So the entry exists; the remaining question is a second, stronger entry, not a first one.
+
+**9.3. Winner slots are 15, not one.** "15 Winners × $450 Compute Credits". The grand prize is a single
+winner on top. With ~35 entries in the tag, the count-odds on a winner slot are close to 2 in 5; the
+quality-weighted odds are the ones we can move.
+
+**9.4. The rubric is a writing rubric, and it is published.** Deep technical understanding · novel insights ·
+real-world impact · **research and evidence ("data, papers, case studies")** · clear communication.
+Plus a stated pro tip: *"Judges favor posts that cite specific projects, papers, and people."*
+Our first draft cited only itself — that is a direct hit on criterion 04.
+
+**9.5. The Nosana claim is a form, and it collects personal data.** Fields: project name, proposal
+(≤5,000 chars), GitHub repo URL, model/workload details (≤2,000), deployment commitment, team members,
+social links, email, phone, country, one-representative confirmation. Credits arrive by email after review.
+**Requires the owner's data and explicit approval — not submittable by an agent on its own.**
+
+### What the plan becomes
+
+| Priority | Action | Why |
+|---|---|---|
+| 1 | Publish the citation-heavy second article with the hackathon tag | entry mechanism, doubles coverage, targets criterion 04 |
+| 2 | Claim the $70 Nosana credits (owner's data, owner's OK) | free money, no dependency on code |
+| 3 | Add one original image to the post | HackerNoon requirement, and the rubric rewards clarity |
+| 4 | Build the browser verifier + substitution test | makes the *next* entry score 03/04 instead of claiming it |
+
+### Decisions added
+
+- **D6.** Citations are not decoration; they are criterion 04. Every claim about prior art gets a source.
+- **D7.** A second entry in the same round is allowed and cheaper than waiting, provided it is a different
+  artifact rather than a rehash of the first.
+- **D8.** The claim form is submitted by the owner or with the owner's explicit approval, because it
+  contains personal data (email, phone, country) and creates an obligation to deploy on Nosana.
