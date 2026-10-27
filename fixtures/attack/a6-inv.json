@@ -1,0 +1,19 @@
+{
+ "manifest_version": "inventory/0.1",
+ "target_lock": "t@1",
+ "independent_of_agent": true,
+ "sources": [{"source_id": "s", "kind": "static",
+              "completeness_claim": "exhaustive_within_covers",
+              "db_logic_density": 0.02}],
+ "foreign_validation": [{"schema": "acme-billing", "owner_confirmed": true}],
+ "paths": [
+  {"path_id": "wp_001", "entry": "table:app.t1", "kind": "privilege", "attribution": {"to": "function:bank.transfer", "method": "direct", "sources": ["s"]}},
+  {"path_id": "wp_002", "entry": "table:app.t2", "kind": "privilege", "attribution": {"to": "function:bank.transfer", "method": "direct", "sources": ["s"]}},
+  {"path_id": "wp_003", "entry": "table:app.t3", "kind": "privilege", "attribution": {"to": "function:bank.transfer", "method": "direct", "sources": ["s"]}},
+  {"path_id": "wp_004", "entry": "table:app.t4", "kind": "privilege", "attribution": {"to": "function:bank.transfer", "method": "direct", "sources": ["s"]}},
+  {"path_id": "wp_005", "entry": "table:app.t5", "kind": "privilege", "attribution": {"to": "function:bank.transfer", "method": "direct", "sources": ["s"]}},
+  {"path_id": "wp_006", "entry": "table:app.t6", "kind": "privilege", "attribution": {"to": "function:bank.transfer", "method": "direct", "sources": ["s"]}},
+  {"path_id": "wp_007", "entry": "table:app.t7", "kind": "privilege", "attribution": {"to": "function:bank.transfer", "method": "direct", "sources": ["s"]}},
+  {"path_id": "wp_008", "entry": "table:app.t8", "kind": "privilege", "attribution": {"to": "function:bank.transfer", "method": "direct", "sources": ["s"]}}
+ ]
+}

@@ -1,0 +1,22 @@
+{
+ "manifest_version": "inventory/0.1",
+ "target_lock": "t@1",
+ "independent_of_agent": true,
+ "sources": [{"source_id": "s", "kind": "grants", "completeness_claim": "exhaustive_within_covers"},
+             {"source_id": "rt", "kind": "runtime", "completeness_claim": "exhaustive_within_covers"}],
+ "paths": [
+  {"path_id": "wp_001", "entry": "table:app.t1", "kind": "privilege", "attribution": {"to": "function:bank.transfer", "method": "direct", "sources": ["s"]}},
+  {"path_id": "wp_002", "entry": "table:app.t2", "kind": "privilege", "attribution": {"to": "function:bank.transfer", "method": "direct", "sources": ["s"]}},
+  {"path_id": "wp_003", "entry": "table:app.t3", "kind": "privilege", "attribution": {"to": "function:bank.transfer", "method": "direct", "sources": ["s"]}},
+  {"path_id": "wp_004", "entry": "table:app.t4", "kind": "privilege", "attribution": {"to": "function:bank.transfer", "method": "direct", "sources": ["s"]}},
+  {"path_id": "wp_005", "entry": "table:app.t5", "kind": "privilege", "attribution": {"to": "function:bank.transfer", "method": "direct", "sources": ["s"]}},
+  {"path_id": "wp_006", "entry": "table:app.t6", "kind": "privilege", "attribution": {"to": "function:bank.transfer", "method": "direct", "sources": ["s"]}},
+  {"path_id": "wp_007", "entry": "table:app.t7", "kind": "privilege", "attribution": {"to": "function:bank.transfer", "method": "direct", "sources": ["s"]}},
+  {"path_id": "wp_008", "entry": "table:app.t8", "kind": "privilege", "attribution": {"to": "function:bank.transfer", "method": "direct", "sources": ["s"]}},
+  {"path_id": "wp_009", "entry": "table:app.t9", "kind": "privilege", "attribution": {"to": "function:bank.transfer", "method": "direct", "sources": ["s"]}},
+  {"path_id": "wp_010", "entry": "table:app.t10", "kind": "privilege", "attribution": {"to": "function:bank.transfer", "method": "direct", "sources": ["s"]}},
+  {"path_id": "wp_011", "entry": "table:app.t11", "kind": "privilege", "attribution": {"to": "function:bank.transfer", "method": "direct", "sources": ["s"]}},
+  {"path_id": "wp_012", "entry": "table:app.t12", "kind": "privilege", "attribution": {"to": "function:bank.transfer", "method": "direct", "sources": ["s"]}},
+  {"path_id": "wp_013", "entry": "web_request DELETE /admin/purge (executed 2026-10-27 14:02, 91 rows)", "kind": "observed_write", "found_by": ["rt"]}
+ ]
+}

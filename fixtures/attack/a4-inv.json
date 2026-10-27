@@ -1,0 +1,10 @@
+{
+ "manifest_version": "inventory/0.1",
+ "target_lock": "t@1",
+ "independent_of_agent": true,
+ "sources": [{"source_id": "s", "kind": "static", "completeness_claim": "exhaustive_within_covers"}],
+ "foreign_validation": [{"schema": "acme-billing", "owner_confirmed": true}],
+ "paths": [
+  {"path_id": "wp_001", "entry": "table:app.payments", "kind": "privilege", "attribution": {"to": "function:bank.transfer", "method": "direct", "sources": ["s"]}}
+ ]
+}

@@ -1,0 +1,9 @@
+{
+ "claim_id": "atk-unenumerable-evasion",
+ "target_lock": {"commit": "t@1"},
+ "declared_control_point": "function:bank.transfer",
+ "declared_level": "SCOPED_ASSURANCE",
+ "claimed_coverage": 0.923,
+ "evidence_tier": 1,
+ "not_claimed": ["NC-01", "NC-02", "NC-04", "NC-05", "NC-11"]
+}

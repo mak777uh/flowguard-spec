@@ -38,8 +38,8 @@ def manifest(core=8, outside=2, independent=True, conflicts=None, target="abc123
     return {
         "manifest_version": "inventory/0.1",
         "target_lock": target,
-        "sources": sources or [{"source_id": "grants-pg-v0.1", "kind": k, "covers": [], "blind_spots": ["declared"]}
-                               for k in kinds],
+        "sources": sources or [{"source_id": "grants-pg-v0.1", "kind": k, "covers": [], "blind_spots": ["declared"],
+                                        "db_logic_density": 0.6} for k in kinds],
         "independent_of_agent": independent,
         "paths": paths,
         "conflicts": conflicts or [],
@@ -195,7 +195,7 @@ def scenarios():
                       and o["perimeter"]["coverage_basis_kinds"] == ["grants"]),
         ("T15", "weighted risk outside the core exceeds the policy",
          lambda: (manifest(8, 2), claim(excluded=None), None,
-                  {"policy_id": "tight", "max_excluded": 2, "assurance_threshold": 0.75,
+                  {"policy_id": "tight", "trusted": True, "max_excluded": 2, "assurance_threshold": 0.75,
                    "full_coverage_for_proven": 1.0, "max_outside_weighted_risk": 0.15,
                    "require_independent_inventory_for": ["PROVEN", "SCOPED_ASSURANCE"]}, 1),
          lambda c, o: any(e["code"] == "POLICY_CEILING_EXCEEDED" and e["subject"] == "perimeter"

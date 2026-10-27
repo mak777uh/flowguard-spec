@@ -1,0 +1,11 @@
+{
+ "control_point": "function:bank.transfer",
+ "coverage": 0.0,
+ "summary": "None of the analysed paths passes through the declared control point; the transfer function is unreachable from any of them.",
+ "analysed_paths": [
+  {"path_id": "wp_001", "in_core": false, "attributed_to": "function:report.render", "note": "decorative only"},
+  {"path_id": "wp_002", "in_core": false, "attributed_to": "function:report.render"},
+  {"path_id": "wp_003", "in_core": false, "attributed_to": "function:report.render"}
+ ],
+ "findings": [{"severity": "critical", "path_id": "wp_001", "claim": "the core is empty; coverage is 0 of 8"}]
+}

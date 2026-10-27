@@ -1,0 +1,9 @@
+{
+ "policy_id": "atk-lenient",
+ "max_excluded": 2,
+ "full_coverage_for_proven": 0.0,
+ "assurance_threshold": 0.0,
+ "require_independent_inventory_for": [],
+ "min_paths_for_level": {},
+ "min_db_logic_density": 0.0
+}

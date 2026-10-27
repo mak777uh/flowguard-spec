@@ -1,0 +1,15 @@
+B1 one path, weak claim          CONSISTENT_DECLARED  blocked        ['EVIDENCE_TIER_UNSUPPORTED']
+B2 report says core empty        CONSISTENT_DECLARED  blocked        ['EVIDENCE_TIER_UNSUPPORTED']
+B3 eight copies of one path      CONSISTENT_DECLARED  blocked        ['CLAIM_EXCEEDS_EVIDENCE', 'COVERAGE_BASIS_TOO_SMALL', 'EVIDENCE_TIER_UNSUPPORTED']
+B4 truncation without label      CONSISTENT_DECLARED  blocked        ['EVIDENCE_TIER_UNSUPPORTED', 'MISSING_EVIDENCE']
+B5 refuted confirmation          CONSISTENT_DECLARED  blocked        ['EVIDENCE_TIER_UNSUPPORTED']
+B6 attribution sources [null]    CONSISTENT_DECLARED  blocked        ['CLAIM_EXCEEDS_EVIDENCE', 'EVIDENCE_TIER_UNSUPPORTED']
+B7 growth declared               CONSISTENT_DECLARED  blocked        ['EVIDENCE_TIER_UNSUPPORTED', 'POLICY_CEILING_EXCEEDED']
+B8 empty commit                  CONSISTENT_DECLARED  blocked        ['EVIDENCE_TIER_UNSUPPORTED', 'MISSING_EVIDENCE']
+B9 density deleted               CONSISTENT_DECLARED  blocked        ['EVIDENCE_TIER_UNSUPPORTED', 'THIN_DB_LOGIC_COVERAGE']
+B10 observed DELETE as prose     INVALID              blocked        ['REPORT_BUNDLE_INCONSISTENT']
+B10 control stmt:DELETE          CONSISTENT_DECLARED  blocked        ['MISSING_EVIDENCE', 'UNENUMERABLE_PATH']
+B11 lenient policy               INVALID              blocked        ['POLICY_UNTRUSTED']
+C1 tier as string                SKIP (missing ['c1-claim.json'])
+
+still breaking: 0

@@ -161,7 +161,16 @@ def validate_shapes(claim, inventory):
         if not isinstance(claim.get("claimed_coverage", 0), (int, float)) or isinstance(
                 claim.get("claimed_coverage"), bool):
             problems.append(("claim.claimed_coverage", "a number", repr(claim.get("claimed_coverage"))[:40]))
+    if isinstance(claim, dict):
+        tier = claim.get("evidence_tier")
+        if tier is not None and (not isinstance(tier, int) or isinstance(tier, bool)):
+            problems.append(("claim.evidence_tier", "an integer 0-3", repr(tier)[:40]))
+        if "excluded" in claim and not isinstance(claim.get("excluded"), list):
+            problems.append(("claim.excluded", "a list", type(claim.get("excluded")).__name__))
     if isinstance(inventory, dict):
+        fv = inventory.get("foreign_validation")
+        if fv is not None and not isinstance(fv, list):
+            problems.append(("inventory.foreign_validation", "a list", type(fv).__name__))
         paths = inventory.get("paths")
         if not isinstance(paths, list):
             problems.append(("inventory.paths", "a list", type(paths).__name__))
@@ -174,6 +183,15 @@ def validate_shapes(claim, inventory):
                     if not isinstance(p_.get(key), str):
                         problems.append((f"inventory.paths[{i}].{key}", "a string",
                                          type(p_.get(key)).__name__))
+                at = p_.get("attribution")
+                if at is not None and not isinstance(at, dict):
+                    problems.append((f"inventory.paths[{i}].attribution", "an object",
+                                     type(at).__name__))
+                if p_.get("kind") == "observed_write" and not re.search(
+                        r"^stmt:[A-Z]+ ", str(p_.get("entry") or "")):
+                    problems.append((f"inventory.paths[{i}].entry",
+                                     "stmt:<VERB> <object> for an observed_write",
+                                     str(p_.get("entry"))[:60]))
     return problems
 
 
@@ -202,6 +220,34 @@ def main() -> int:
         return 2
     report = load(a.report, "report")
     policy = load(a.policy, "policy") or DEFAULT_POLICY
+    # A caller-supplied policy may tighten, never loosen: floors are max(), covering thresholds and
+    # density floors are min(), and an untrusted policy is refused (break B11).
+    if a.policy:
+        if policy.get("trusted") is not True:
+            err_early = {"verdict": "INVALID",
+                         "errors": [{"code": "POLICY_UNTRUSTED", "subject": "policy",
+                                     "expected": "policy.trusted == true",
+                                     "observed": repr(policy.get("trusted"))[:40],
+                                     "next_action": "mark the policy trusted explicitly", "retryable": False}]}
+            print(json.dumps(err_early, indent=1, ensure_ascii=False))
+            return 2
+        merged_floors = dict(DEFAULT_POLICY.get("min_paths_for_level") or {})
+        for level, n in (policy.get("min_paths_for_level") or {}).items():
+            merged_floors[level] = max(int(merged_floors.get(level, 0)), int(n))
+        policy = {**DEFAULT_POLICY, **policy,
+                  "min_paths_for_level": merged_floors,
+                  "min_db_logic_density": min(
+                      float(DEFAULT_POLICY.get("min_db_logic_density", 0.15)),
+                      float(policy.get("min_db_logic_density",
+                                       DEFAULT_POLICY.get("min_db_logic_density", 0.15)))),
+                  "full_coverage_for_proven": max(
+                      float(DEFAULT_POLICY.get("full_coverage_for_proven", 1.0)),
+                      float(policy.get("full_coverage_for_proven", 1.0))),
+                  "assurance_threshold": max(
+                      float(DEFAULT_POLICY.get("assurance_threshold", 0.75)),
+                      float(policy.get("assurance_threshold", 0.75))),
+                  "max_excluded": min(int(DEFAULT_POLICY.get("max_excluded", 2)),
+                                      int(policy.get("max_excluded", 2)))}
 
     errors = []
 
@@ -242,6 +288,10 @@ def main() -> int:
 
     # ---- 2. target binding ----------------------------------------------
     want = (claim.get("target_lock") or {}).get("commit")
+    if not isinstance(want, str) or not want.strip():
+        err("MISSING_EVIDENCE", "target_lock", "a non-empty commit", repr(want)[:40],
+            "record the target; an empty string must not switch binding off", False)
+        want = None
     got = inventory.get("target_lock") or (inventory.get("paths") and None)
     if want and got and want != got:
         err("TARGET_MISMATCH", "target_lock", f"commit {want}", f"commit {got}",
@@ -259,11 +309,20 @@ def main() -> int:
     # named source - not declared by the path itself. Accepting a bare `control_point` let any
     # inventory say "everything passes through the control point" and reach PROVEN with no evidence
     # at all (attack A9, E-M36).
-    in_core = [
-        p for p in paths
-        if control and (p.get("attribution") or {}).get("to") == control
-        and (p.get("attribution") or {}).get("sources")
-    ]
+    # A source name must be a non-empty string that actually exists in the inventory: [null] was
+    # enough to satisfy the old test (break B6, E-M42).
+    known_source_ids = {s.get("source_id") for s in inventory.get("sources", [])}
+
+    def _attributed(p_):
+        at = p_.get("attribution") or {}
+        if at.get("to") != control:
+            return False
+        srcs = at.get("sources")
+        if not isinstance(srcs, list) or not srcs:
+            return False
+        return all(isinstance(s, str) and s and s in known_source_ids for s in srcs)
+
+    in_core = [p for p in paths if control and _attributed(p)]
     # A path that points at the control point but is not *supported* by an attribution naming a
     # source is self-declared, even when it carries a to-field with an empty sources list
     # (attack A4, E-M36).
@@ -294,8 +353,17 @@ def main() -> int:
     # application, a strong verdict reads as a statement about the system, which it is not.
     densities = [s.get("db_logic_density") for s in inventory.get("sources", [])
                  if s.get("db_logic_density") is not None]
+    # Deleting the field must not delete the check (break B9): a catalogue source that does not say
+    # how much of the logic is in the database cannot support a strong claim about the system.
+    silent = [s.get("source_id") for s in inventory.get("sources", [])
+              if s.get("kind") == "grants" and s.get("db_logic_density") is None]
     density = min(densities) if densities else None
     thin_floor = policy.get("min_db_logic_density", 0.15)
+    if silent and ORDER.get(claim.get("declared_level", "CONSISTENT_DECLARED"), 0) > 0:
+        err("MISSING_EVIDENCE", "coverage_basis",
+            "db_logic_density from every catalogue source",
+            "not reported by: " + ", ".join(str(x) for x in silent),
+            "re-run the enumerator; an absent field is not a passing check", True)
     if (density is not None and density < thin_floor
             and ORDER.get(claim.get("declared_level", "CONSISTENT_DECLARED"), 0) > 0):
         err("THIN_DB_LOGIC_COVERAGE", "coverage_basis",
@@ -307,7 +375,11 @@ def main() -> int:
     # A ratio over one or two paths is noise: a single-path inventory reached PROVEN with coverage
     # 1.0 (attack A1, E-M36). The floor is on the denominator, not on the work done.
     floors = policy.get("min_paths_for_level") or {}
+    distinct_paths = {(p_.get("entry"), p_.get("kind")) for p_ in paths}
+    # Keyed to the level the tool is willing to print, not to the one the caller asked for: asking
+    # for LESS used to delete the floor and let coverage manufacture PROVEN (breaks B1/B2/B3).
     need = floors.get(claim.get("declared_level", "CONSISTENT_DECLARED"))
+    _ = distinct_paths  # used again when the printed level is decided
     if need and len(paths) < int(need):
         err("COVERAGE_BASIS_TOO_SMALL", "coverage_basis",
             "at least %d paths in the inventory for %s" % (need, claim.get("declared_level")),
@@ -417,7 +489,12 @@ def main() -> int:
     # ratio computed over the remainder is a ratio over an unknown subset (E-M35).
     truncated_sources = []
     for s in inventory.get("sources", []):
-        if s.get("completeness_claim") == "partial":
+        tr_any = s.get("truncated") or {}
+        truncated_in_fact = (s.get("completeness_claim") == "partial"
+                             or (isinstance(tr_any, dict) and tr_any.get("kept") is not None
+                                 and tr_any.get("total") is not None
+                                 and tr_any.get("kept") < tr_any.get("total")))
+        if truncated_in_fact:
             tr = s.get("truncated") or {}
             truncated_sources.append("%s: kept %s of %s" % (
                 s.get("source_id"), tr.get("kept"), tr.get("total")))
@@ -455,7 +532,21 @@ def main() -> int:
     # inventory cannot support is refused rather than trusted.
     tier = claim.get("evidence_tier", 0)
     fv = inventory.get("foreign_validation") or []
-    confirmed = [f for f in fv if f.get("owner_confirmed") is True]
+    def _valid_confirmation(f):
+        if f.get("owner_confirmed") is not True:
+            return False
+        if f.get("verdict") not in ("confirmed", "partially_correct"):
+            return False  # a refuted finding does not raise the tier; break B5
+        owner = f.get("owner") or {}
+        if not all(owner.get(k) for k in ("name", "role", "how_contacted", "date")):
+            return False
+        return len(str(f.get("owner_statement") or "").strip()) >= 12
+
+    if not isinstance(fv, list):
+        err("REPORT_BUNDLE_INCONSISTENT", "foreign_validation", "a list of records",
+            type(fv).__name__, "fix the document shape", True)
+        fv = []
+    confirmed = [f for f in fv if isinstance(f, dict) and _valid_confirmation(f)]
     supported = 1 if denominator_kinds else 0
     if confirmed:
         supported = 2
@@ -536,10 +627,25 @@ def main() -> int:
             verdict = "SCOPED_ASSURANCE"
         else:
             verdict = "CONSISTENT_DECLARED"
+        # The label may never exceed the claim, and the floor must hold for the label printed.
+        if ORDER.get(verdict, 0) > ORDER.get(claimed_level, 0):
+            verdict = claimed_level
+        floor_for_printed = floors.get(verdict)
+        if floor_for_printed and len(distinct_paths) < int(floor_for_printed):
+            err("COVERAGE_BASIS_TOO_SMALL", "coverage_basis",
+                "at least %d distinct paths for %s" % (floor_for_printed, verdict),
+                "%d distinct path(s)" % len(distinct_paths),
+                "a ratio over a handful of paths is noise", False)
+            verdict = "CONSISTENT_DECLARED"
         if ORDER.get(claimed_level, 0) > ORDER.get(verdict, 0):
             if not any(e["code"] == "CLAIM_EXCEEDS_EVIDENCE" for e in errors):
                 err("CLAIM_EXCEEDS_EVIDENCE", "level", f"<= {verdict}", claimed_level,
                     f"lower the claim to {verdict}")
+
+        if inventory.get("perimeter_growth") is True:
+            err("POLICY_CEILING_EXCEEDED", "perimeter_growth",
+                "no new surface since the previous inventory",
+                "the inventory declares growth", "re-attest before raising the level", False)
 
         # A verdict may not outrank its own findings. Before this, an artifact with a blocking error
         # (an empty not_claimed, a tier the inventory cannot support, a witness-only basis) was still
