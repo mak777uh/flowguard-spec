@@ -14,6 +14,10 @@ without guessing, and so it cannot be talked into a weaker reading.
 | `REPORT_BUNDLE_INCONSISTENT` | report and bundle disagree on version, digest, boundary or level | regenerate the derived document from the source | yes, if the cause is mechanical |
 | `POLICY_CEILING_EXCEEDED` | exclusions, outside-paths or residual risk exceed the policy ceiling | nothing autonomous — needs a scope change or a human decision | **no** |
 | `E_NO_INDEPENDENT_CLOSURE` | there is no obligation manifest from a source outside the analysing agent | supply one, or accept the capped verdict | **no** |
+| `SIGNATURE_ROLE_UNKNOWN` | a signature claims a role the policy does not define | use a defined role | **no** |
+| `LIABILITY_NOT_A_ROLE` | a contract was declared as a signature role | record it as an external reference, not a signature | **no** |
+| `RISK_ACCEPTANCE_INCOMPLETE` | an acceptance lacks scope, expiry or residual-risk codes | complete it or remove it | **no** |
+| `SEPARATION_OF_DUTIES_VIOLATED` | one key signed both the verdict and the acceptance | use different keys for different acts | **no** |
 | `EXCLUSION_REASON_CONTRADICTION` | an exclusion reason cannot hold for this path (e.g. `DATA_NOT_SENSITIVE` on a money path) | use a reason whose preconditions the path can satisfy | **no** |
 | `EXCLUSION_REASON_UNKNOWN` | the reason code does not exist in the policy | use a known code | **no** |
 | `AMBIGUOUS_ATTRIBUTION` | a call name matches more than one function, so the path cannot be placed in or out of the core | resolve by signature or oid, or leave the path outside | **no** |

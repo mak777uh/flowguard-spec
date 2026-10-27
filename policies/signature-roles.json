@@ -1,0 +1,33 @@
+{
+  "policy_id": "signature-roles/0.1",
+  "note": "Round-8 review, all three models: a signature under a verification result, an acceptance of risk, and a contractual liability are different acts with different subjects. One field cannot carry all three. These roles are what a bundle may contain; liability is deliberately NOT here, because a JSON file cannot create a contract.",
+  "roles": {
+    "analysis_provenance": {
+      "asserts": "this bundle was produced by this analysing agent from these inputs",
+      "requires": ["issuer"],
+      "may_be_held_by": "the analysing party"
+    },
+    "process_attestation": {
+      "asserts": "this bundle was produced by this harness, unmodified",
+      "requires": ["issuer"],
+      "may_be_held_by": "the harness or its operator"
+    },
+    "consistency_verdict": {
+      "asserts": "the claim does not exceed the evidence, under this policy",
+      "requires": ["issuer", "policy_digest"],
+      "may_be_held_by": "the verification party, which must not be the acceptance party"
+    },
+    "risk_acceptance": {
+      "asserts": "a named party accepts the residual risk of this bundle for a stated period",
+      "requires": ["issuer", "accepted_scope", "residual_risk", "valid_until", "statement"],
+      "may_be_held_by": "the party that owns the risk, never the tool"
+    }
+  },
+  "not_a_role": {
+    "liability_agreement": "a contract, not a signature. It may be referenced by a field, and the bundle must not imply that its existence creates one."
+  },
+  "separation_of_duties": {
+    "rule": "risk_acceptance and consistency_verdict may not be signed by the same key",
+    "why": "the party that checks the claim cannot also be the party that accepts what the check could not establish; otherwise the second signature adds nothing a reader can rely on"
+  }
+}

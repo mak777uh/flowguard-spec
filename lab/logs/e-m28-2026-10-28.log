@@ -1,0 +1,8 @@
+R1 unknown role                    PASS
+R2 acceptance without expiry       PASS
+R3 same key signs both             PASS
+R4 liability as a role             PASS
+R5 correct split accepted          PASS
+
+cases passed: 5/5
+RESULT: PASS

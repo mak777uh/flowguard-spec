@@ -48,6 +48,66 @@ def load_key(p: Path) -> Ed25519PrivateKey:
     return load_pem_private_key(p.read_bytes(), password=None)
 
 
+ROLES_POLICY = ROOT_POLICY = None
+
+
+def load_roles():
+    global ROLES_POLICY
+    if ROLES_POLICY is None:
+        p = Path(__file__).resolve().parent.parent / "policies" / "signature-roles.json"
+        ROLES_POLICY = json.loads(p.read_text(encoding="utf-8"))
+    return ROLES_POLICY
+
+
+def check_roles(bundle_dir: Path, address: str):
+    """Validate every signature's role against policies/signature-roles.json (E-M28).
+
+    Round-8 review: an attestation, an acceptance of risk and a contract are different acts. A role
+    file that says whatever it likes turns the three into one field, which is worse than having none.
+    """
+    policy = load_roles()
+    roles = policy["roles"]
+    problems = []
+    holders = {}
+    for rolefile in sorted(bundle_dir.glob("signatures/*.role")):
+        signer = rolefile.stem
+        try:
+            doc = json.loads(rolefile.read_text(encoding="utf-8"))
+        except Exception as e:  # noqa: BLE001
+            problems.append(("SIGNATURE_ROLE_UNKNOWN", signer, "a JSON role document", str(e)))
+            continue
+        role = doc.get("asserts")
+        if role in policy.get("not_a_role", {}):
+            problems.append(("LIABILITY_NOT_A_ROLE", signer, "no liability role in a bundle",
+                             "a contract cannot be created by a JSON field"))
+            continue
+        spec = roles.get(role)
+        if spec is None:
+            problems.append(("SIGNATURE_ROLE_UNKNOWN", signer,
+                             "one of: " + ", ".join(sorted(roles)), str(role)))
+            continue
+        # Holder identity is the KEY, not the file name: the same key under two names is still one
+        # party, and comparing names let that through (found by E-M28).
+        pubp = bundle_dir / "signatures" / f"{signer}.pub"
+        holders[role] = pubp.read_bytes() if pubp.exists() else signer.encode()
+        for req in spec.get("requires", []):
+            val = doc.get(req)
+            if req == "accepted_scope":
+                if val != address:
+                    problems.append(("RISK_ACCEPTANCE_INCOMPLETE", signer,
+                                     f"accepted_scope = the bundle address {address[:12]}…", str(val)))
+                continue
+            if not val:
+                problems.append(("RISK_ACCEPTANCE_INCOMPLETE" if role == "risk_acceptance" else "MISSING_EVIDENCE",
+                                 signer, f"{role} requires {req}", "absent"))
+    verdict_signer = holders.get("consistency_verdict")
+    acceptance_signer = holders.get("risk_acceptance")
+    if verdict_signer and verdict_signer == acceptance_signer:
+        problems.append(("SEPARATION_OF_DUTIES_VIOLATED", str(verdict_signer)[:12],
+                         "different keys for consistency_verdict and risk_acceptance",
+                         "the same key signed both"))
+    return problems
+
 def cmd_create(a) -> int:
     out = Path(a.out)
     (out / "objects").mkdir(parents=True, exist_ok=True)
@@ -86,9 +146,18 @@ def cmd_create(a) -> int:
     (out / "signatures" / f"{a.signer}.sig").write_text(base64.b64encode(sig).decode("ascii") + "\n", encoding="ascii")
     (out / "signatures" / f"{a.signer}.pub").write_bytes(
         key.public_key().public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo))
-    (out / "signatures" / f"{a.signer}.role").write_text(json.dumps({
-        "asserts": a.role, "issuer": a.signer,
-    }), encoding="utf-8")
+    role_doc = {"asserts": a.role, "issuer": a.signer}
+    if a.role == "consistency_verdict":
+        rp = Path(__file__).resolve().parent.parent / "policies" / "risk-classes.json"
+        role_doc["policy_digest"] = "sha256:" + hashlib.sha256(rp.read_bytes()).hexdigest()
+    if a.role == "risk_acceptance":
+        role_doc.update({
+            "accepted_scope": addr,
+            "residual_risk": a.residual_risk or ["NC-01", "NC-02"],
+            "valid_until": a.valid_until or "2027-01-01",
+            "statement": a.statement or "accepted by the named party for the stated period",
+        })
+    (out / "signatures" / f"{a.signer}.role").write_text(json.dumps(role_doc), encoding="utf-8")
 
     print(f"bundle: {out}  address {addr[:16]}…  subjects {', '.join(subjects)}")
     return 0
@@ -176,6 +245,11 @@ def verify_bundle(a) -> tuple:
 
     if not verified:
         problems.append(("MISSING_EVIDENCE", "signatures", "at least one valid signature", "none"))
+
+    # 4b. signature roles, and who is allowed to hold which (E-M28)
+    if addr:
+        for code, signer, expected, observed in check_roles(b, addr):
+            problems.append((code, "role:" + signer, expected, observed))
 
     # 5. the target the caller is actually looking at, not the one the bundle chose for itself.
     # Without this anchor a correctly re-signed bundle passes whatever it claims (E-M9 D-2).
@@ -276,6 +350,9 @@ def main() -> int:
     c.add_argument("--signer", required=True)
     c.add_argument("--role", default="consistency_verdict")
     c.add_argument("--canonical", action="store_true")
+    c.add_argument("--residual-risk", nargs="*")
+    c.add_argument("--valid-until")
+    c.add_argument("--statement")
     c.set_defaults(fn=cmd_create)
 
     v = sub.add_parser("verify")

@@ -63,7 +63,7 @@ Convergent: a `reason_code` enum with machine-checkable preconditions (`NOT_REAC
 path risk class. Ours checks existence, non-core membership, and that the reason is at least eight characters — which
 is what one reviewer called "syntactic validity". They are right.
 
-### Signatures must be split — **accepted** (`E-M28`, format change)
+### Signatures must be split — **done** (`E-M28`)
 
 Convergent: `attestation_signature` (provenance and integrity), `risk_acceptance` (an authorised party accepts
 residual risk, with scope and expiry), `liability_agreement` (a contract, not a field). Ours reserves one field for

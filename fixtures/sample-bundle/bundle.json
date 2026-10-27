@@ -2,11 +2,11 @@
  "bundle_version": "fg-bundle/1",
  "subjects": {
   "code": {
-   "sha256": "ff318bee3c3e2ef25c07cf54cc2499fccd615a213e399b2280a9b40482e274ac",
+   "sha256": "74c2f42f558171cf53e0184d001864ce1081e915a4fcf3887bec76b2c4ee161e",
    "source": "target.py"
   },
   "build": {
-   "sha256": "601d3d4e8ee7a8212185dc685b4ae2924da11e198a9fd874f0d2903acb659547",
+   "sha256": "b29cc00005a85cafaef8968b5864f9d3393e54a4b37016f493f278c0eec2de2b",
    "source": "build.json"
   },
   "config": {
@@ -19,12 +19,12 @@
   }
  },
  "objects": {
-  "ff318bee3c3e2ef25c07cf54cc2499fccd615a213e399b2280a9b40482e274ac": {
-   "bytes": 116,
+  "74c2f42f558171cf53e0184d001864ce1081e915a4fcf3887bec76b2c4ee161e": {
+   "bytes": 117,
    "name": "target.py"
   },
-  "601d3d4e8ee7a8212185dc685b4ae2924da11e198a9fd874f0d2903acb659547": {
-   "bytes": 37,
+  "b29cc00005a85cafaef8968b5864f9d3393e54a4b37016f493f278c0eec2de2b": {
+   "bytes": 35,
    "name": "build.json"
   },
   "0fb466a16fa84228496ff0aef036e6ab1bc832317cf9cd8b9d4715affe607208": {
@@ -51,6 +51,6 @@
    "NC-02"
   ]
  },
- "inventory_digest": "sha256:c308e29b94c4e65d5d6cc544b9da1f61f3ff7e207376a058848560be73b11855",
+ "inventory_digest": "sha256:b1ccd4bc4be5b5a40b112b20d2408727034f293692aace3fdf928704638cfaf0",
  "plaintext_notified": true
 }
