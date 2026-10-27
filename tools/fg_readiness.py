@@ -64,6 +64,7 @@ def ok_attribution():
 def ok_bundle():
     r = run([PY, "tools/fg_bundle.py", "verify", "--bundle", "fixtures/sample-bundle",
              "--trusted-keys", "fixtures/sample-bundle/signatures/demo.pub",
+             "fixtures/sample-bundle/signatures/owner.pub",
              "--expect-target", "flowguard-sample@2026-10-27"])
     return '"SIGNED_AND_CONSISTENT"' in r.stdout, "sample bundle verifies with both anchors"
 
@@ -76,6 +77,24 @@ def ok_corpus():
 CONSUMER_FIELDS = ("person", "organisation", "decision_before", "decision_after",
                    "what_they_lose", "date", "verbatim")
 
+
+def ok_risk_acceptance():
+    """A real acceptance, not a demonstration.
+
+    The fixture bundle carries a risk_acceptance role on purpose, to exercise the format. Crediting
+    the product for it is the same false credit as counting an unfilled M8 template (sixth instance):
+    an example is not an act. Only signatures outside fixtures/ count.
+    """
+    for rolefile in ROOT.glob("**/signatures/*.role"):
+        if "fixtures" in rolefile.parts or "_tmp" in rolefile.parts:
+            continue
+        try:
+            doc = json.loads(rolefile.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001
+            continue
+        if doc.get("asserts") == "risk_acceptance" and doc.get("issuer") and doc.get("valid_until"):
+            return True, f"{doc['issuer']} until {doc['valid_until']}"
+    return False, "no acceptance outside fixtures/ (a demo signature is not an act)"
 
 def ok_consumer():
     """A filled form, not a template. Placeholders and short values score zero: a template that
@@ -135,10 +154,7 @@ CHECKS = [
                                    "a stranger rebuilt a bundle (M7)"),
      "a party that did not write the code rebuilt a bundle"),
     ("P2", "product", 10, ok_consumer, "a named consumer documented the decision that changes"),
-    ("P3", "product", 8, lambda: (bool(list(ROOT.glob("fixtures/**/signatures/*.role"))) and
-                                  any("risk_acceptance" in p.read_text(encoding="utf-8", errors="ignore")
-                                      for p in ROOT.glob("fixtures/**/signatures/*.role")),
-                                   "a risk-acceptance signature exists"),
+    ("P3", "product", 8, ok_risk_acceptance,
      "someone signed risk acceptance with a reliance scope"),
     ("P4", "product", 7, lambda: (bool(has_marker(r"^external_corpus\s*:")),
                                   "a corpus from another author"),
