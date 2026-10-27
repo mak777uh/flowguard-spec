@@ -1,0 +1,8 @@
+generated schema: 400 functions, 50 tables, 30 triggers, 10 roles, 0 load errors
+runtime: 0.4s, paths reported: 480, distinct entries: 390
+kinds: {'dynamic_sql': 80, 'function': 350, 'privilege': 20, 'trigger_chain': 30}
+summary present: True -> more than 120 paths: read the summary first
+by kind: {'dynamic_sql': 80, 'function': 350, 'privilege': 20, 'trigger_chain': 30}, by control-point status: {'inside': 0, 'outside': 480}
+
+under 60s: True   writers expected 320, reported 320: True   reviewable: True
+RESULT: PASS

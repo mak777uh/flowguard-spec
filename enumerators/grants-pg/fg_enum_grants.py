@@ -90,7 +90,24 @@ def main() -> int:
         }
         (paths if item_kind == "path" else control_points).append(record)
 
+    # A flat list is fine for a machine and useless for a reader: on a 400-function schema this
+    # produced 480 paths (E-M34). The summary comes first so a human can triage, and the full list
+    # stays for the machine.
+    by_kind = {}
+    by_cp = {"inside": 0, "outside": 0}
+    for p_ in paths:
+        by_kind[p_["kind"]] = by_kind.get(p_["kind"], 0) + 1
+        by_cp["inside" if p_.get("control_point") else "outside"] += 1
+
     source = {
+        "summary": {
+            "paths_total": len(paths),
+            "distinct_entries": len({p_["entry"] for p_ in paths}),
+            "by_kind": by_kind,
+            "by_control_point_status": by_cp,
+            "reading_note": ("more than 120 paths: read the summary first"
+                             if len(paths) > 120 else "short enough to read in full"),
+        },
         "source_id": "grants-pg-v0.1",
         "kind": "grants",
         "tool": {
