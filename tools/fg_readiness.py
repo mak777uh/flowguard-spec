@@ -81,10 +81,20 @@ def has_marker(pattern):
 
 
 def find_psql():
-    for c in (Path(r"C:\Users\Admin\miniconda3\Library\bin\psql.exe"), Path("psql")):
-        if Path(c).exists():
-            return str(c)
-    return None
+    """Locate psql without hardcoding any absolute path: PATH first, then the active conda prefix."""
+    import os
+    import shutil
+    hit = shutil.which("psql")
+    if hit:
+        return hit
+    for base in (os.environ.get("CONDA_PREFIX"), os.environ.get("MAMBA_ROOT_PREFIX")):
+        if not base:
+            continue
+        cand = Path(base) / "Library" / "bin" / "psql.exe"
+        if cand.exists():
+            return str(cand)
+    cand = Path(os.environ.get("USERPROFILE", "")) / "miniconda3" / "Library" / "bin" / "psql.exe"
+    return str(cand) if cand.exists() else None
 
 
 CHECKS = [

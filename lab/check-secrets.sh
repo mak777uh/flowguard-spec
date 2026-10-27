@@ -13,7 +13,7 @@ PATTERNS='ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|gho_[A-Za-z0-9]{30,}
 LOCALPATH='C:\\111|C:\\Users\\|/home/[a-z]+/|\\.dsh'
 
 echo "== tracked files =="
-hits=$(git grep -nEI "$PATTERNS" -- . ':!lab/check-secrets.sh' 2>/dev/null || true)
+hits=$(git grep --cached -nEI "$PATTERNS" -- . ':!lab/check-secrets.sh' 2>/dev/null || true)
 if [ -n "$hits" ]; then echo "LEAK: секретные паттерны в файлах"; echo "$hits"; fail=1; else echo "ok"; fi
 
 echo "== git history =="
@@ -21,7 +21,7 @@ hits=$(git log -p --all 2>/dev/null | grep -aEI "$PATTERNS" | head -20 || true)
 if [ -n "$hits" ]; then echo "LEAK: секретные паттерны в истории"; echo "$hits"; fail=1; else echo "ok"; fi
 
 echo "== local paths =="
-hits=$(git grep -nEI "$LOCALPATH" -- '*.md' '*.yml' '*.sh' '*.py' ':!lab/check-secrets.sh' 2>/dev/null || true)
+hits=$(git grep --cached -nEI "$LOCALPATH" -- '*.md' '*.yml' '*.sh' '*.py' ':!lab/check-secrets.sh' 2>/dev/null || true)
 if [ -n "$hits" ]; then echo "LEAK: локальные пути"; echo "$hits"; fail=1; else echo "ok"; fi
 
 echo "== .git/config =="
