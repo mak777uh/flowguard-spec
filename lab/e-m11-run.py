@@ -89,6 +89,13 @@ def main() -> int:
                "application_level": "application-level"}[m["class"]]
         print(f"  {m['id']} {m['class']:24} {'yes' if key in declared else 'NO'}")
 
+    # A regression guard for the class an independent oracle found missing (E-M41): a cascade into
+    # the target must always be reported, or the next refactor silently loses it again.
+    cascades = [p for p in paths if p["kind"] == "fk_cascade"]
+    cascade_ok = any(p["entry"] == "fk:branches -> accounts" for p in cascades)
+    print(f"\ncascade into the target detected: {cascade_ok} "
+          f"({[p['entry'] for p in cascades]})")
+
     print("\nthresholds (pre-registered):")
     ok = True
     for cls, (need, total) in THRESHOLD.items():
@@ -96,8 +103,8 @@ def main() -> int:
         state = "PASS" if got >= need else "FAIL"
         ok = ok and got >= need
         print(f"  {cls:12} {got}/{total} required {need}/{total}  {state}")
-    print(f"\nRESULT: {'PASS' if ok and ctrl else 'FAIL'}")
-    return 0 if ok and ctrl else 1
+    print(f"\nRESULT: {'PASS' if ok and ctrl and cascade_ok else 'FAIL'}")
+    return 0 if ok and ctrl and cascade_ok else 1
 
 
 if __name__ == "__main__":

@@ -142,3 +142,9 @@ BEGIN
   UPDATE bank.accounts SET balance = balance + amt WHERE id = acct;
 END $$;
 GRANT EXECUTE ON FUNCTION bank.transfer_fast(integer, numeric) TO app_rw;
+
+-- A cascade INTO the target: deleting a branch deletes its accounts. Invisible to grants, function
+-- bodies and triggers; the enumerator missed this class entirely on a production schema (E-M41).
+CREATE TABLE bank.branches (id integer PRIMARY KEY, name text);
+ALTER TABLE bank.accounts ADD COLUMN IF NOT EXISTS branch_id integer
+  REFERENCES bank.branches(id) ON DELETE CASCADE;

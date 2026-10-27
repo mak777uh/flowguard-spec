@@ -13,6 +13,15 @@ control point identified separately. Read-only: nothing is written to the target
 - `INSTEAD OF` triggers on views that write the table
 - triggers on other tables whose body writes the table (indirect chains)
 
+## Cascading foreign keys
+
+A foreign key whose **child** is the target, with `ON DELETE CASCADE | SET NULL | SET DEFAULT` or a cascading
+`ON UPDATE`, is a write path into the target that no grant, function body or trigger mentions: deleting the parent row
+deletes or rewrites target rows. Added after an independent oracle found two such keys into GitLab's `projects`
+(`E-M41`).
+
+Keys where the target is the **parent** cascade *out* of it and are not writers of it; they are not reported as paths.
+
 ## Blind spots (declared, mandatory)
 
 - dynamic SQL where the table name is assembled at runtime and never appears literally
