@@ -13,6 +13,7 @@ Exit codes: 0 the verdict is what was claimed or stronger; 1 the claim was lower
     python tools/fg_verify.py --claim c.json --inventory m.json [--report r.json] [--policy p.json]
 """
 import argparse
+import importlib.util
 import json
 import re
 import sys
@@ -56,6 +57,28 @@ def load_not_claimed_registry() -> dict:
                 codes.add(m.group(1))
     _NOT_CLAIMED_CACHE.update({"codes": codes, "required": required})
     return _NOT_CLAIMED_CACHE
+
+_PERIMETER = {}
+
+def compute_perimeter(inventory, control_point=None, policy_path=None) -> dict:
+    """Weighted perimeter from tools/fg_perimeter.py. Kept optional so a missing policy file
+    degrades to counts rather than crashing a verdict."""
+    if "fn" not in _PERIMETER:
+        try:
+            spec = importlib.util.spec_from_file_location(
+                "fgp", Path(__file__).resolve().parent / "fg_perimeter.py")
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            _PERIMETER["fn"] = mod.compute
+        except Exception:  # noqa: BLE001
+            _PERIMETER["fn"] = None
+    fn = _PERIMETER["fn"]
+    if fn is None:
+        return {"outside_weighted_risk": None, "note": "risk policy unavailable"}
+    try:
+        return fn(inventory, policy_path, control_point)
+    except Exception as e:  # noqa: BLE001
+        return {"outside_weighted_risk": None, "note": f"risk policy failed: {e}"}
 
 def load(p, what):
     if not p:
@@ -213,6 +236,26 @@ def main() -> int:
             "supply an inventory from an enumerator the agent does not control, or accept the capped verdict",
             False)
 
+    # ---- 6b. weighted perimeter: counts are not risk --------------------
+    # Round-7 review 4: fourteen paths outside the core may be one payment endpoint and thirteen
+    # caches, or the reverse. The weights come from policies/risk-classes.json, never from a model.
+    risk = compute_perimeter(inventory, control_point=control)
+    # Two ceilings can exist: one in the risk-weights file, one in the claim's policy. The stricter
+    # wins, so a lenient claim policy cannot loosen the classification's own limit.
+    ceilings = [x for x in (risk.get("max_outside_weighted_risk"),
+                            policy.get("max_outside_weighted_risk")) if x is not None]
+    max_risk = min(ceilings) if ceilings else None
+    risk_exceeded = bool(max_risk is not None and risk["outside_weighted_risk"] > max_risk)
+    # The ceiling blocks an UPGRADE, not the existence of a verdict: CONSISTENT_DECLARED promises
+    # nothing about what is outside, so it cannot be refused for having a large outside.
+    asked_above_floor = ORDER.get(claim.get("declared_level", "CONSISTENT_DECLARED"), 0) > 0
+    if risk_exceeded and asked_above_floor:
+        err("POLICY_CEILING_EXCEEDED", "perimeter",
+            f"outside_weighted_risk <= {max_risk}",
+            f"{risk['outside_weighted_risk']} (weights {risk['weights_outside']}/{risk['weights_total']})",
+            "the risk outside the core is too large for the declared level; widen the core or lower the claim",
+            False)
+
     # ---- 6. report vs claim --------------------------------------------
     if report:
         if report.get("control_point") and control and report["control_point"] != control:
@@ -252,6 +295,9 @@ def main() -> int:
         "known_paths": len(paths),
         "core_paths": len(in_core),
         "outside_paths": len(outside),
+        "outside_weighted_risk": risk.get("outside_weighted_risk"),
+        "unclassified_paths": risk.get("unclassified_paths"),
+        "risk_policy_digest": risk.get("policy_digest"),
         "delta_since_previous": inventory.get("delta_since_previous"),
         "perimeter_growth": inventory.get("perimeter_growth", False),
         "level_upgrade_allowed": not inventory.get("perimeter_growth", False),

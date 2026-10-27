@@ -1,0 +1,21 @@
+{
+  "policy_id": "risk-classes/0.1",
+  "note": "Deterministic classification of inventory paths. Ordered rules, first match wins. A path that matches nothing stays `unclassified` and is NOT given a zero weight - an unclassified money path is not a harmless one. Weights are a convention, recorded by digest in every verdict that uses them (round 7, review 4: never let a model invent weights).",
+  "classes": {
+    "money":         { "weight": 5, "why": "moving value is the canonical irreversible act" },
+    "personal_data": { "weight": 4, "why": "irreversible disclosure, regulated in most jurisdictions" },
+    "files":         { "weight": 2, "why": "readable payload, usually reversible by access revocation" },
+    "other":         { "weight": 1, "why": "state that changes without an obvious external consequence" },
+    "unclassified":  { "weight": 3, "why": "unknown class is treated as materially risky, never as zero" }
+  },
+  "rules": [
+    { "class": "money",         "field": "entry", "regex": "(?i)(account|balance|ledger|payment|transfer|wallet|escrow|invoice|payout)" },
+    { "class": "money",         "field": "entry", "regex": "(?i)table:.*\\.(accounts|balances|ledger|payments|transfers|invoices)$" },
+    { "class": "personal_data", "field": "entry", "regex": "(?i)(profile|personal|email|phone|address|identity|kyc|user_data)" },
+    { "class": "files",         "field": "entry", "regex": "(?i)(file|blob|storage|document|attachment|upload)" }
+  ],
+  "thresholds": {
+    "note": "Fraction of known weighted risk that exists OUTSIDE the core. Above this, an upgrade to SCOPED_ASSURANCE or PROVEN is refused regardless of core coverage.",
+    "max_outside_weighted_risk": 0.5
+  }
+}

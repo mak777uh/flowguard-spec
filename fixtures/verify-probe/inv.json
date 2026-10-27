@@ -1,0 +1,1 @@
+{"paths":[{"path_id":"p1","entry":"table:x","control_point":""}],"sources":[{"source_id":"s","kind":"grants","blind_spots":["d"]}],"independent_of_agent":true,"target_lock":"x"}

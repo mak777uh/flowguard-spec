@@ -1,0 +1,1 @@
+{"claim_id":"probe","target_lock":{"commit":"x"},"declared_control_point":"f","declared_level":"CONSISTENT_DECLARED","claimed_coverage":0,"excluded":[],"not_claimed":["NC-01","NC-02"]}

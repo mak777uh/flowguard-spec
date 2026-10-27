@@ -64,6 +64,7 @@ def main() -> int:
         "claim_id": "E-M13", "target_lock": {"commit": "fgfix@e-m13"},
         "declared_control_point": CP, "declared_level": "CONSISTENT_DECLARED",
         "claimed_coverage": round(len(attributed) / man["paths_total"], 3), "excluded": [],
+        "not_claimed": ["NC-01", "NC-02"],
     }), encoding="utf-8")
     out = sh([sys.executable, VERIFY, "--claim", claim, "--inventory", m])
     v = json.loads(out)
