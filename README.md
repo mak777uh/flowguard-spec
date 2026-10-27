@@ -36,6 +36,7 @@ commits a token, CI goes red instead of the reputation.
 | [docs/90-DEV-AND-NEXT-ROUND.md](docs/90-DEV-AND-NEXT-ROUND.md) | development method, sober assessment, next round's questions |
 | [docs/CLAIMS.md](docs/CLAIMS.md) | claim registry: evidence type and the strongest permitted wording |
 | [docs/eliminations.md](docs/eliminations.md) | what five rounds ruled out, and what would revive it |
+| [docs/STATUS-v0.md](docs/STATUS-v0.md) | what exists, what does not, and what this repository does not claim |
 | [docs/95-CLOSED-LOOP.md](docs/95-CLOSED-LOOP.md) | the loop: product is the showcase, the approach is the factory |
 
 ## Repository map

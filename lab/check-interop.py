@@ -70,19 +70,31 @@ def find_eliminations(root):
 
 
 def find_experiments(root):
-    hits = []
-    for d in root.rglob("*"):
-        if d.is_dir() and re.search(r"experiment|hypothes", d.name, re.I) and ".git" not in d.parts:
-            hits.extend([f for f in d.glob("*.md")])
-    cards = 0
-    for f in hits:
+    """Count experiment cards and hypothesis cards separately.
+
+    Counting every markdown file under a directory named *experiment*/*hypothes* double-counts:
+    a hypothesis card and its experiment card are two documents about one cycle. VecDHT caught
+    this in our own report (227 "cards" were 122 experiments + 122 hypotheses).
+    """
+    exp_cards, hyp_cards, other = 0, 0, 0
+    for p in root.rglob("*.md"):
+        if ".git" in p.parts:
+            continue
+        name = p.name
+        parent = p.parent.name.lower()
         try:
-            text = f.read_text(encoding="utf-8", errors="ignore")
+            text = p.read_text(encoding="utf-8", errors="ignore")
         except OSError:
             continue
-        if THRESHOLD_WORDS.search(text):
-            cards += 1
-    return hits, cards
+        has_threshold = bool(THRESHOLD_WORDS.search(text))
+        if re.match(r"E-?\d", name) or "experiment" in parent:
+            if has_threshold or re.search(r"(?m)^verdict:", text):
+                exp_cards += 1
+            else:
+                other += 1
+        elif re.match(r"H-?\d", name) or "hypothes" in parent:
+            hyp_cards += 1
+    return exp_cards, hyp_cards, other
 
 
 def find_metrics(root):
@@ -114,7 +126,7 @@ def find_guards(root):
                 continue
             if "secret" in name or "secret" in head:
                 found["secrets"] = found["secrets"] or p
-            if "link" in name and ("http" in head or "relative" in head):
+            if ("link" in name or "artifact-refs" in name or "artifact_refs" in name) and ("http" in head or "relative" in head or "backtick" in head or "цитат" in head):
                 found["links"] = found["links"] or p
             if "claim" in name and ("linter" in head or "evidence" in head or "registry" in head):
                 found["claims"] = found["claims"] or p
@@ -136,10 +148,10 @@ def main():
         return 2
 
     out = []
-    exp_files, exp_cards = find_experiments(root)
+    exp_cards, hyp_cards, other = find_experiments(root)
     out.append(row("M1 experiment cards",
-                   "present" if exp_cards else ("partial" if exp_files else "absent"),
-                   f"{exp_cards} cards with a pre-registered threshold, {len(exp_files)} files"))
+                   "present" if exp_cards else "absent",
+                   f"{exp_cards} experiment cards, {hyp_cards} hypothesis cards, {other} unclassified"))
 
     metrics = find_metrics(root)
     out.append(row("M2 metrics with commands",
@@ -153,7 +165,12 @@ def main():
                        "present" if len(types) >= 3 else "partial",
                        f"{p.name}: {rows} claims, evidence types used: {', '.join(sorted(types)) or 'none'}"))
     else:
-        out.append(row("M3 claim registry", "absent", "no table with an evidence-type column"))
+        claim_map = next((p for p in root.rglob("*claim*map*") if p.is_file() and ".git" not in p.parts), None)
+        if claim_map:
+            out.append(row("M3 claim registry", "partial",
+                           f"{claim_map.name}: maps claims to instruments, but not to evidence types - the other dimension"))
+        else:
+            out.append(row("M3 claim registry", "absent", "no table with an evidence-type column"))
 
     elim = find_eliminations(root)
     out.append(row("M4 eliminations with revival conditions",
@@ -169,10 +186,15 @@ def main():
     out.append(row("M6 guards", "present" if len(have) == 3 else ("partial" if have else "absent"),
                    ", ".join(have) if have else "none found"))
 
+    # M7 must be a recorded RUN, not a document that mentions the idea. Require an experiment
+    # card (or a file inside an experiments directory) that names the rebuild and a result.
     rebuild = None
     for p in md_files(root):
+        in_experiments = "experiment" in p.parent.name.lower() or re.match(r"E-?\d", p.name)
+        if not in_experiments:
+            continue
         text = p.read_text(encoding="utf-8", errors="ignore")
-        if re.search(r"independent (re)?build|rebuild from (the )?document", text, re.I) and re.search(r"\b(defects?|caught|found \d|result)\b", text, re.I) and "interop" not in p.parts and p.name not in ("99-SOURCES.md", "96-INTEROP.md", "95-CLOSED-LOOP.md"):
+        if re.search(r"independent (re)?build|rebuild from (the )?document", text, re.I) and re.search(r"\b(verdict:|defects?|caught|found \d)\b", text, re.I):
             rebuild = p
             break
     out.append(row("M7 independent-rebuild test", "present" if rebuild else "absent",
