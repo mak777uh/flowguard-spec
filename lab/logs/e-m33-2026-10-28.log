@@ -1,0 +1,21 @@
+empty                        exit=2 json=yes traceback=no  verdict=INVALID
+not-json                     exit=2 json=yes traceback=no  verdict=INVALID
+array-claim                  exit=2 json=yes traceback=no  verdict=INVALID
+claim-is-string              exit=2 json=yes traceback=no  verdict=INVALID
+missing-id                   exit=2 json=yes traceback=no  verdict=INVALID
+coverage-is-string           exit=2 json=yes traceback=no  verdict=INVALID
+unknown-level                exit=2 json=yes traceback=no  verdict=INVALID
+excluded-is-object           exit=2 json=yes traceback=no  verdict=INVALID
+not-claimed-is-string        exit=2 json=yes traceback=no  verdict=INVALID
+target-lock-is-string        exit=2 json=yes traceback=no  verdict=INVALID
+tier-is-string               exit=2 json=yes traceback=no  verdict=INVALID
+inventory-empty              exit=2 json=yes traceback=no  verdict=INVALID
+inventory-no-paths           exit=2 json=yes traceback=no  verdict=INVALID
+inventory-paths-is-object    exit=2 json=yes traceback=no  verdict=INVALID
+inventory-path-missing-entry exit=2 json=yes traceback=no  verdict=INVALID
+deep-nesting                 exit=2 json=yes traceback=no  verdict=INVALID
+huge-claim                   exit=2 json=yes traceback=no  verdict=INVALID
+
+cases: 17, handled as a verdict: 17
+threshold (pre-registered): every case
+RESULT: PASS

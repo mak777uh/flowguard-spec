@@ -112,12 +112,69 @@ def compute_perimeter(inventory, control_point=None, policy_path=None) -> dict:
         return {"outside_weighted_risk": None, "note": f"risk policy failed: {e}"}
 
 def load(p, what):
+    """Load a JSON document, or refuse. A caller is a machine: a traceback is not a verdict.
+
+    E-M33 threw 17 malformed inputs at this tool; five of them produced a stack trace and one
+    malformed path was accepted with a clean verdict, which is worse. Everything that can be wrong
+    with the *shape* of the input is now a machine-readable refusal.
+    """
     if not p:
         return None
     path = Path(p)
     if not path.exists():
-        return None
-    return json.loads(path.read_text(encoding="utf-8"))
+        refuse_load(what, f"file not found: {path}")
+    try:
+        text = path.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        refuse_load(what, "not valid UTF-8")
+    if not text.strip():
+        refuse_load(what, "empty file")
+    try:
+        doc = json.loads(text)
+    except json.JSONDecodeError as e:
+        refuse_load(what, f"not valid JSON: {e.msg} at line {e.lineno}")
+    return doc
+
+
+def refuse_load(what, detail):
+    print(json.dumps({
+        "verdict": "INVALID",
+        "errors": [{"code": "REPORT_BUNDLE_INCONSISTENT", "subject": what,
+                    "expected": "a JSON document of the declared shape", "observed": detail,
+                    "next_action": "send a well-formed claim or inventory", "retryable": True}],
+    }, indent=1, ensure_ascii=False))
+    sys.exit(2)
+
+
+def validate_shapes(claim, inventory):
+    """Structural validation, before any arithmetic. Missing keys are refusals, not zeroes."""
+    problems = []
+    if not isinstance(claim, dict):
+        problems.append(("claim", "an object", type(claim).__name__))
+    if not isinstance(inventory, dict):
+        problems.append(("inventory", "an object", type(inventory).__name__))
+    if isinstance(claim, dict):
+        for key in ("claim_id", "declared_control_point", "declared_level"):
+            if not isinstance(claim.get(key), str):
+                problems.append((f"claim.{key}", "a string", type(claim.get(key)).__name__))
+        if not isinstance(claim.get("claimed_coverage", 0), (int, float)) or isinstance(
+                claim.get("claimed_coverage"), bool):
+            problems.append(("claim.claimed_coverage", "a number", repr(claim.get("claimed_coverage"))[:40]))
+    if isinstance(inventory, dict):
+        paths = inventory.get("paths")
+        if not isinstance(paths, list):
+            problems.append(("inventory.paths", "a list", type(paths).__name__))
+        else:
+            for i, p_ in enumerate(paths[:2000]):
+                if not isinstance(p_, dict):
+                    problems.append((f"inventory.paths[{i}]", "an object", type(p_).__name__))
+                    continue
+                for key in ("path_id", "entry", "kind"):
+                    if not isinstance(p_.get(key), str):
+                        problems.append((f"inventory.paths[{i}].{key}", "a string",
+                                         type(p_.get(key)).__name__))
+    return problems
+
 
 
 def main() -> int:
@@ -132,6 +189,16 @@ def main() -> int:
 
     claim = load(a.claim, "claim") or {}
     inventory = load(a.inventory, "inventory") or {}
+    shape_problems = validate_shapes(claim, inventory)
+    if shape_problems:
+        print(json.dumps({
+            "verdict": "INVALID",
+            "errors": [{"code": "REPORT_BUNDLE_INCONSISTENT", "subject": s,
+                        "expected": e, "observed": o,
+                        "next_action": "fix the document shape; values are checked after it",
+                        "retryable": True} for s, e, o in shape_problems[:8]],
+        }, indent=1, ensure_ascii=False))
+        return 2
     report = load(a.report, "report")
     policy = load(a.policy, "policy") or DEFAULT_POLICY
 
