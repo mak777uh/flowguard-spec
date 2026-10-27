@@ -215,3 +215,16 @@ false-rejection rate on valid inputs. A larger suite with no per-class numbers i
 
 **Revived if:** never as "more tests". Any test artifact added here states which class it measures and against
 what corpus.
+## X-21 — the pre-pivot claim set (withdrawn 2026-10-28)
+
+Seven claims described a product that no longer exists: an escrow invariant over ERC-20 tokens, ten on-chain
+attacks, a ledger Permit/Allow model, oracle classes, value-at-risk pricing, a legacy finding-rate estimate. Their
+artifacts were never built, and after the pivot to flow-level checks on database paths they describe the wrong
+system.
+
+Withdrawn rather than deleted: C-04, C-05, C-07, C-10, C-12, C-13, C-18. The rows stay in docs/CLAIMS.md with
+**withdrawn** and a reason, because a claim that quietly disappears teaches nothing, while a claim that says "we
+stopped asserting this, and here is why" is a record.
+
+**Revival condition:** a target of that shape (an on-chain escrow, a ledger with countersigned events) is put in
+front of this tool again, and an artifact is built for it. Until then the rows stay withdrawn.

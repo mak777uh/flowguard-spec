@@ -29,24 +29,24 @@ reserved word.
 
 | ID | Claim | Type | Allowed wording | Artifact | What would refute it |
 |---|---|---|---|---|---|
-| C-01 | The attestation bundle verifies offline, without contacting the issuer | `test` | "verifies offline for bundle format fg/1" | `lab/e2e/verify-offline` | a bundle accepted after the issuer is unreachable *and* the artifact is swapped |
-| C-02 | Two runs of the same input produce a byte-identical bundle | `test` | "reproduces byte-for-byte on the reference target" | `lab/e2e/replay` | one differing byte between two runs of an unchanged tree |
-| C-03 | The detector finds privileged paths with recall r on corpus C | `statistics` | "recall r on C, n targets" — with interval, never as a general rate | `lab/experiments/E-M1` | a manually found path absent from `discovered_paths` in a blind arm |
-| C-04 | Escrow invariant INV-1 holds for standard ERC-20 tokens | `proof` | "proved for the model under the standard-transfer assumption" | `lab/experiments/E-C2` | any accepted input where the accounting identity breaks |
-| C-05 | INV-1 does **not** hold for fee-on-transfer or rebasing tokens | `test` | "fails on the token-class corpus; such targets return INCONCLUSIVE" | `lab/experiments/E-C2b` | a fee-on-transfer target receiving a strong verdict |
-| C-06 | An unknown path blocks a strong verdict | `test` | "returns INCONCLUSIVE when `unknown_paths` is non-empty" | `lab/e2e/unknown-path` | a bundle with a non-empty unknown set receiving `PROVEN` |
-| C-07 | The ten on-chain attacks are blocked on the reference escrow | `test` | "10 of 10 blocked on the reference target; each attack fails on the mutated target" | `lab/e2e/attacks` | one attack passing, or an attack passing on the mutated target too (tautology) |
+| C-01 | The attestation bundle verifies offline, without contacting the issuer | `test` | "verifies offline for bundle format fg-bundle/1" | [bundle.json](../fixtures/sample-bundle/bundle.json) | a bundle that requires a network call to verify |
+| C-02 | Two runs of the same input produce a byte-identical bundle | `test` | "reproduces byte-for-byte on the reference target" | `lab/experiments/E-M31-determinism.md` | two builds of the same input with different addresses |
+| C-03 | The detector finds privileged paths with recall r on corpus C | `statistics` | "recall r on C, n targets" — with interval, never as a general property | `lab/experiments/E-M11-grant-enumeration.md` | a planted bypass that the enumerator misses |
+| C-04 | Escrow invariant INV-1 holds for standard ERC-20 tokens | **withdrawn** | no claim: the product pivoted away from escrow to flow-level checks on database paths | — | not applicable |
+| C-05 | INV-1 does **not** hold for fee-on-transfer or rebasing tokens | **withdrawn** | no claim: same pivot; no token-class corpus exists | — | not applicable |
+| C-06 | An unknown path blocks a strong verdict | `test` | "an unenumerable action, an unresolved attribution or a contradictory exclusion blocks an upgrade" | `lab/experiments/E-M23-three-state-coverage.md` | a verdict that improves while an unknown path is present |
+| C-07 | The ten on-chain attacks are blocked on the reference escrow | **withdrawn** | no claim: the escrow target no longer exists under this product | — | not applicable |
 | C-08 | A signed bundle proves the target is the one attested | `judgment` | "bundle binds target digest" | `lab/experiments/E-M9b-substitution-anchored.md` | a substituted code/build/config/identity accepted with valid signatures. Promotion to `test` requires E-M9b; the reserved words are unavailable to this claim until then |
-| C-09 | The database trigger is a physical guarantee | **withdrawn** | may be stated only as "one enforcement layer, conditioned on the privilege model" | `lab/experiments/E-G8` | a mutation past the trigger via replication, superuser or DDL |
-| C-10 | Every mutation of the ledger has a signed Permit and an Allow event | `test` | "holds on the instrumented target for the declared privilege model" | `lab/experiments/E-G9` | a mutation without a cryptographically bound Allow event |
-| C-11 | A reviewer signs one finding in 15 minutes | **not established** | may be stated only as a target; planning value is 35–40 minutes `[statistics pending]` | `lab/experiments/E-M2` | median above 45 minutes on 30 findings with three reviewers |
-| C-12 | Three oracle classes yield at least two findings per target | **not established** | may not be stated until E-M5 runs | `lab/experiments/E-M5` | median below 1 on 12 targets |
-| C-13 | The guarantee price follows value at risk | `judgment` | "our pricing model is" — never "the price is justified by loss data" | `lab/experiments/E-M6` | fewer than 3 of 10 buyers accepting the formula at any level |
-| C-14 | An external party relies on the attestation to change a decision | **not established** | may not be implied anywhere | `lab/experiments/E-M8` | zero of ten consumers willing to commit in writing |
-| C-15 | A client cannot narrow the closure to manufacture a strong verdict | `test` | "excluded-path ceiling and coverage scalar are enforced; a narrowing attempt drops the level" | `lab/e2e/narrowing` | a bundle with `excluded > 0` on a money path receiving `PROVEN` |
+| C-09 | The database trigger is a physical guarantee | **withdrawn** | no claim: a trigger is one enforcement layer, conditioned on the privilege model | — | a mutation past the trigger via replication or a superuser session |
+| C-10 | Every mutation of the ledger has a signed Permit and an Allow event | **withdrawn** | no claim: the ledger/Permit model belongs to the pre-pivot product | — | not applicable |
+| C-11 | A reviewer signs one finding in 15 minutes | **not established** | may be stated only as a target; the planning value was 35–40 minutes | — | median above 45 minutes on 30 findings |
+| C-12 | Three oracle classes yield at least two findings per target | **withdrawn** | no claim: the oracle-class design was cut before any measurement | — | not applicable |
+| C-13 | The guarantee price follows value at risk | **withdrawn** | no claim: pricing is frozen by ADR-0002 and no loss data exists | — | not applicable |
+| C-14 | An external party relies on the attestation to change a decision | **not established** | may not be implied anywhere; the form is unfilled | `docs/M8-CONSUMER.md` | one filled form naming a decision that changed |
+| C-15 | A client cannot narrow the closure to manufacture a strong verdict | `test` | "exclusions are bound to real paths with typed reasons; narrowing lowers the computed coverage" | `lab/experiments/E-M14-exclusions.md` | a narrowing that raises the verdict |
 | C-16 | The formal contour proves model-to-code correspondence | **false as stated** | must read: "proves statements about the extracted model; correspondence is not instrument-checked" | — | an executable instrument checking the correspondence |
 | C-17 | Composing C/T/N in a dumb aggregator is safer than a combined oracle verdict | `judgment` | "our position is" | — | a correlated-error case where the combined verdict fails and the split one does not |
-| C-18 | Legacy median findings per target is about 1 | `statistics` | "five independent estimates clustered at 1; not measured" | `lab/experiments/E-M5` | a measured median ≥ 2 on the M5 corpus |
+| C-18 | Legacy median findings per target is about 1 | **withdrawn** | no claim: the estimate was never measured and the corpus no longer applies | — | not applicable |
 
 ## Rules for adding a claim
 

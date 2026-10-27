@@ -46,6 +46,7 @@ stage "instrument corpus" "$PY" lab/e-m10-run.py --per-class 4 --valid 4
 # A10 (clean worktree) is skipped here: a round is checked before its commit. Run
 # `python tools/fg_audit.py` after the commit to include it.
 stage "dossier is current" "$PY" tools/fg_dossier.py --check
+stage "repository and method audit" "$PY" tools/fg_repo_audit.py >/dev/null
 stage "process audit (without A10)" "$PY" tools/fg_audit.py --allow-dirty
 
 printf '%s\n' "${LINES[@]}"

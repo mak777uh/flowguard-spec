@@ -31,9 +31,9 @@ commits a token, CI goes red instead of the reputation.
 | File | Role |
 |---|---|
 | [docs/FLOWGUARD-MASTER-v2.md](docs/FLOWGUARD-MASTER-v2.md) | **master document**: paste it whole into a model for external review |
-| [docs/SPEC-v0.1.md](docs/SPEC-v0.1.md) | on-chain detail: escrow, invariants, attacks, acceptance |
-| [docs/SPEC-v0.2-LEGACY.md](docs/SPEC-v0.2-LEGACY.md) | legacy detail: closure, mediator, trigger, witness, oracles |
-| [docs/90-DEV-AND-NEXT-ROUND.md](docs/90-DEV-AND-NEXT-ROUND.md) | development method, sober assessment, next round's questions |
+| [docs/SPEC-v0.1.md](docs/SPEC-v0.1.md) (first ring) | on-chain detail: escrow, invariants, attacks, acceptance |
+| [docs/SPEC-v0.2-LEGACY.md](docs/SPEC-v0.2-LEGACY.md) (superseded) | legacy detail: closure, mediator, trigger, witness, oracles |
+| [docs/90-DEV-AND-NEXT-ROUND.md](docs/90-DEV-AND-NEXT-ROUND.md) (superseded) | development method, sober assessment, next round's questions |
 | [docs/CLAIMS.md](docs/CLAIMS.md) | claim registry: evidence type and the strongest permitted wording |
 | [docs/eliminations.md](docs/eliminations.md) | what five rounds ruled out, and what would revive it |
 | [docs/M8-CONSUMER.md](docs/M8-CONSUMER.md) | the five-line form the product rests on: fillable in one conversation, worth zero until filled |
@@ -48,7 +48,7 @@ commits a token, CI goes red instead of the reputation.
 
 | Group | Files |
 |---|---|
-| Spec | [master v2](docs/FLOWGUARD-MASTER-v2.md) · [v1 (superseded)](docs/FLOWGUARD-MASTER.md) · [v0.1](docs/SPEC-v0.1.md) · [v0.2](docs/SPEC-v0.2-LEGACY.md) · [claim registry](docs/SPEC-CRITIQUE.md) |
+| Spec | [master v2](docs/FLOWGUARD-MASTER-v2.md) · [v1 (superseded)](docs/FLOWGUARD-MASTER.md) · [v0.1](docs/SPEC-v0.1.md) (first ring) · [v0.2](docs/SPEC-v0.2-LEGACY.md) (superseded) · [claim registry](docs/SPEC-CRITIQUE.md) |
 | Product and boundaries | [protected flow](docs/40-FLOW-GUARANTEE.md) · [variants](docs/01-VARIANTS.md) · [remediation ladder](docs/02-GRID.md) |
 | Crypto | [in scope from day one](docs/61-CRYPTO-IN-SCOPE.md) · [crypto and auto-payout](docs/60-CRYPTO-AND-AUTOPAY.md) |
 | Economics | [SKUs and services](docs/70-SERVICE-TIERS.md) · [pricing doctrine](docs/80-PRICING-DOCTRINE.md) |
@@ -57,7 +57,7 @@ commits a token, CI goes red instead of the reputation.
 | Open | [questions for the owner](docs/QUESTIONS-FOR-OWNER.md) · [round 8 review pack](docs/16-ROUND8-QUESTIONS.md) · [round 8 disposition](docs/17-ROUND8-DISPOSITION.md) — only what cannot be decided here |
 | Process | ash lab/round-check.sh · python tools/fg_audit.py · python tools/fg_readiness.py |
 | Implementation | [enumerators](enumerators/grants-pg/README.md) (grant, call-graph, runtime, routes) · [verifier](tools/fg_verify.py) · [the stand](docs/50-IMPLEMENTATION-STAND.md) · [the harness](docs/51-HARNESS-BUILD.md) · [OSS product](docs/52-OSS-PRODUCT.md) |
-| Development | [method and next round](docs/90-DEV-AND-NEXT-ROUND.md) · [closed loop](docs/95-CLOSED-LOOP.md) · [hackathon plan](docs/97-HACKATHON-PLAN.md) · [grants](docs/98-GRANTS.md) · [sources](docs/99-SOURCES.md) · [interop](docs/96-INTEROP.md) · [evals and roadmap](docs/03-EVAL-ROADMAP.md) |
+| Development | [method and next round](docs/90-DEV-AND-NEXT-ROUND.md) (superseded) · [closed loop](docs/95-CLOSED-LOOP.md) · [hackathon plan](docs/97-HACKATHON-PLAN.md) (superseded) · [grants](docs/98-GRANTS.md) · [sources](docs/99-SOURCES.md) · [interop](docs/96-INTEROP.md) · [evals and roadmap](docs/03-EVAL-ROADMAP.md) |
 | Review rounds | [synthesis 2](docs/00-SYNTHESIS.md) · [decisions](docs/20-ROUND2-DECISIONS.md) · [synthesis 3](docs/30-ROUND3-SYNTHESIS.md) · [synthesis 4](docs/31-ROUND4-SYNTHESIS.md) · [**synthesis 6 — plan change**](docs/32-ROUND6-SYNTHESIS.md) · [open questions](docs/34-OPEN-QUESTIONS.md) · [spec audit](docs/35-SPEC-AUDIT.md) · [round 7 pack](docs/15-ROUND7-QUESTIONS.md) · [**synthesis 7 — the name was wrong**](docs/36-ROUND7-SYNTHESIS.md) · [refusal codes](docs/37-REFUSAL-CODES.md) · [inventory design](docs/38-INVENTORY-DESIGN.md) |
 | Question sets | [round 2](docs/10-ROUND2-QUESTIONS.md) · [3](docs/11-ROUND3-QUESTIONS.md) · [4](docs/12-ROUND4-QUESTIONS.md) · [5](docs/13-ROUND5-QUESTIONS.md) · [**6 — the method itself**](docs/14-ROUND6-QUESTIONS.md) |
 
