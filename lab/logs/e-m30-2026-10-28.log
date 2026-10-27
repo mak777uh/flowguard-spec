@@ -1,0 +1,10 @@
+schema          tables funcs target           paths   sec  kinds
+pagila              20    10 payment              2   1.5  {'dynamic_sql': 1, 'function': 1}
+chinook             11     0 invoice              0   2.0  {}
+northwind           14     0 order_details        0   3.2  {}
+sakila              21    10 payment              2   1.4  {'dynamic_sql': 1, 'function': 1}
+adventureworks       0    11 -                    -     -  loaded (717 errors), no target table
+
+schemas run: 4/5, total paths reported: 4
+summary: C:\Users\Admin\AppData\Local\Temp\tmp7vo_n8tf\summary.json
+RESULT: PASS
