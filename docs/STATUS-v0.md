@@ -116,3 +116,29 @@ for.
 M1 experiment cards: **present** (`lab/experiments/E-M9-substitution.md`, thresholds fixed before the run).
 M2 metrics with commands: absent. M7 independent rebuild: absent. Conformance recomputed by
 `lab/check-interop.py`.
+
+---
+
+## Capability ceiling after round 7 (ADR-0005)
+
+Five independent reviews established what this artifact does and does not do. Recorded here because a status
+document that omits its own ceiling is a brochure.
+
+**What a positive verdict will mean, and what it will not.**
+
+| verdict | means | does not mean |
+|---|---|---|
+| `CONSISTENT_DECLARED(R)` | report, policy and bundle agree at the declared coverage; **no independent inventory** | that the declared scope is complete |
+| `SCOPED_ASSURANCE(R, level)` | as above, plus an independent obligation manifest and per-flow evidence | that anything outside the scope is safe |
+| `PROVEN(R)` | one flow, independent inventory, all obligations discharged | anything about the surrounding system |
+
+**Three mandatory inputs** (a bundle without them is invalid): `target_lock`, `obligation_manifest`,
+`previous_bundle`. If the manifest's generator is the analysing agent or its harness, the verifier returns
+`E_NO_INDEPENDENT_CLOSURE` and the verdict is capped at `CONSISTENT_DECLARED`. There is no override.
+
+**Not claimed, permanently:** complete discovery of all relevant paths; absence of vulnerabilities outside the
+verified scope; correctness of unvalidated agent interpretations; equivalence between the repository and the
+deployed system; independence of evidence that shares common assumptions.
+
+The fifth cannot be engineered away. It is the reason the artifact is called a scoped consistency attestation and
+not an attestation of security.
