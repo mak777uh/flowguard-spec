@@ -1,0 +1,28 @@
+id   scenario                                       result
+T1   correct claim, full declared scope             PASS
+T2   claims proven at coverage 0.6                  PASS
+T3   one required path missing, claim says full coverage PASS
+T4   report and bundle agree but different commits  PASS
+T5   unjustified exclusion beyond the ceiling       PASS
+T6   policy source untrusted                        PASS
+T7   new external path appeared this run            PASS
+T8   path moved into core without new evidence      PASS
+T9   evidence removed, verdict must not strengthen  PASS
+T10  resubmission after refusal exceeds the retry budget PASS
+T11  exclusion names a path that does not exist     PASS
+T12  exclusion names a path inside the covered core PASS
+T13  not_claimed is prose instead of vocabulary     PASS
+T22  exclusion reason contradicts the path risk class PASS
+T23  compensating control claimed with no reference PASS
+T20  an observed action that no catalogue path explains PASS
+T21  observed verbs all explained by the catalogue  PASS
+T18  inventory has witnesses only, no denominator source PASS
+T19  witness plus a catalogue source is a usable denominator PASS
+T15  weighted risk outside the core exceeds the policy PASS
+T16  unclassified paths are weighted, never zero    PASS
+T17  the risk policy digest is recorded in the verdict PASS
+T14  claimed level without its required not_claimed codes PASS
+
+scenarios passed: 23/23
+threshold (pre-registered): all of them
+RESULT: PASS

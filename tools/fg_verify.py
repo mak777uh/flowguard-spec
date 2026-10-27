@@ -35,6 +35,21 @@ _NOT_CLAIMED_CACHE = {}
 
 _COV = {}
 
+
+def exclusion_findings(excluded, class_of) -> list:
+    """Preconditions for exclusion reasons, from tools/fg_exclusions.py (E-M27)."""
+    try:
+        import importlib.util as _iu
+        spec = _iu.spec_from_file_location(
+            "fge", Path(__file__).resolve().parent / "fg_exclusions.py")
+        mod = _iu.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod.check(excluded, class_of)
+    except Exception as e:  # noqa: BLE001
+        return [{"code": "MISSING_EVIDENCE", "path_id": "?", "reason_code": None,
+                 "detail": "exclusion policy unavailable: " + str(e)}]
+
+
 def coverage_states(inventory) -> dict:
     if "fn" not in _COV:
         try:
@@ -216,6 +231,32 @@ def main() -> int:
             err("MISSING_EVIDENCE", f"excluded:{pid}",
                 "a reason for the exclusion", "no reason recorded",
                 "record why the path is out of scope", True)
+
+    # A reason is a claim with preconditions (E-M27). The risk class comes from the same policy the
+    # perimeter uses, so an exclusion cannot contradict the class the product assigns to the path.
+    def _class_of(pid_):
+        for p_ in paths:
+            if p_.get("path_id") == pid_:
+                try:
+                    import importlib.util as _iu
+                    spec = _iu.spec_from_file_location(
+                        "fgp2", Path(__file__).resolve().parent / "fg_perimeter.py")
+                    mod = _iu.module_from_spec(spec)
+                    spec.loader.exec_module(mod)
+                    pol, _ = mod.load_policy()
+                    return mod.classify(p_, pol)
+                except Exception:  # noqa: BLE001
+                    return "unknown"
+        return "unknown"
+
+    _known_codes = ("EXCLUSION_REASON_CONTRADICTION", "EXCLUSION_REASON_UNKNOWN")
+    for f in exclusion_findings(excluded_raw, _class_of):
+        code = f["code"] if f["code"] in _known_codes else "MISSING_EVIDENCE"
+        err(code, "excluded:" + str(f["path_id"]),
+            "a checkable exclusion (reason_code " + str(f.get("reason_code") or "required") + ")",
+            f["detail"],
+            "use a reason_code with its required evidence, or widen the scope", True)
+
     if len(excluded) > ceiling:
         err("POLICY_CEILING_EXCEEDED", "excluded",
             f"<= {ceiling}", f"{len(excluded)}",

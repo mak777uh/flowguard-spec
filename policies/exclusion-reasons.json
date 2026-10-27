@@ -1,0 +1,38 @@
+{
+  "policy_id": "exclusion-reasons/0.1",
+  "note": "A reason is a claim with preconditions. Round-8 review, all three models: checking that a path exists and that a reason is non-empty is syntactic validity, not semantic validity. Each code below names what it asserts and what must be present for the assertion to be checkable; each code also names the risk classes it may NOT be applied to.",
+  "reasons": {
+    "NOT_REACHABLE": {
+      "asserts": "no caller can reach this path",
+      "requires": ["evidence.source_id"],
+      "forbidden_for_classes": [],
+      "note": "requires a source that claims to enumerate callers; without one the assertion is a guess"
+    },
+    "COMPENSATING_CONTROL_PRESENT": {
+      "asserts": "a control outside this path stops the consequence",
+      "requires": ["evidence.control_ref"],
+      "forbidden_for_classes": [],
+      "note": "control_ref must name something checkable: a path_id in this inventory or an artifact path"
+    },
+    "DATA_NOT_SENSITIVE": {
+      "asserts": "the data on this path cannot cause the harm the flow carries",
+      "requires": [],
+      "forbidden_for_classes": ["money", "personal_data"],
+      "note": "the code most likely to be a lie; forbidden on the two classes where it is almost always false"
+    },
+    "TEST_ONLY": {
+      "asserts": "the path is reachable only from test code",
+      "requires": ["evidence.source_id"],
+      "forbidden_for_classes": ["money"],
+      "note": "a test-only payment path is a production payment path with a hopeful label"
+    },
+    "OWNER_ACCEPTS": {
+      "asserts": "a named party accepts the residual risk of this path",
+      "requires": ["accepted_by", "valid_until"],
+      "forbidden_for_classes": [],
+      "note": "the only code that transfers risk to a person; it needs a person and an expiry"
+    }
+  },
+  "unclassified_class_rule": "a path whose class is unknown may not be excluded with DATA_NOT_SENSITIVE: the class is exactly what the code asserts to know",
+  "evidence_ref_kinds": ["source_id", "artifact", "control_ref"]
+}

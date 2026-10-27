@@ -56,7 +56,7 @@ Convergent: split `additive` / `subtractive` / `substitutive`. Blanket blocking 
 cleanup — the ratchet problem. One reviewer's phrasing of the audit question is the one to keep: *"was this a
 documented, tested replacement with the same or lower risk class?"*
 
-### Exclusion reasons need typed preconditions — **accepted** (`E-M27`)
+### Exclusion reasons need typed preconditions — **done** (`E-M27`)
 
 Convergent: a `reason_code` enum with machine-checkable preconditions (`NOT_REACHABLE` needs no inbound edges,
 `COMPENSATING_CONTROL_PRESENT` needs a reference that resolves), plus a contradiction check between reason class and

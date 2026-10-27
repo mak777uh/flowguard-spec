@@ -60,9 +60,14 @@ def claim(level="SCOPED_ASSURANCE", coverage=0.8, excluded=None, target="abc123"
 
 
 def real_exclusions(m, n, reason="documented out of scope"):
-    """n real outside paths, each with a reason - the only shape a valid exclusion can take."""
+    """n real outside paths, each with a reason CODE and its required evidence.
+
+    Since E-M27 a free-text reason is refused: the code carries preconditions, and OWNER_ACCEPTS
+    requires a person and an expiry. The harness has to speak the same language as the product.
+    """
     outs = [p for p in m["paths"] if not p.get("control_point")]
-    return [{"path_id": p["path_id"], "reason": reason} for p in outs[:n]]
+    return [{"path_id": p["path_id"], "reason": reason, "reason_code": "OWNER_ACCEPTS",
+             "accepted_by": "test-owner", "valid_until": "2026-12-31"} for p in outs[:n]]
 
 
 def run(tmp, m, c, r=None, pol=None, attempts=1):
@@ -100,6 +105,14 @@ def scenarios():
         m = manifest()
         return m, claim(excluded=[{"path_id": "wp_core0", "reason": "we decided it is fine"}]), None, None, 1
 
+    def t22():
+        # a money-class path (entry mentions accounts) excluded as "not sensitive"
+        m = manifest(8, 2)
+        m["paths"].append({"path_id": "wp_money1", "entry": "role:app_rw table:bank.accounts",
+                           "kind": "privilege", "control_point": "", "confidence": "catalog",
+                           "detail": "UPDATE", "found_by": ["grants-pg-v0.1"], "kinds": ["grants"]})
+        return m, claim(excluded=[{"path_id": "wp_money1", "reason_code": "DATA_NOT_SENSITIVE",
+                                   "reason": "we believe it is fine"}]), None, None, 1
     def t20():
         # a catalogue that lists INSERT/UPDATE and a runtime witness that saw a DELETE
         m = manifest(8, 2, kinds=("grants", "runtime"))
@@ -147,6 +160,14 @@ def scenarios():
         ("T13", "not_claimed is prose instead of vocabulary",
          lambda: (manifest(), claim(not_claimed=["results may vary"]), None, None, 1),
          lambda c, o: any(e["code"] == "REPORT_BUNDLE_INCONSISTENT" for e in o["errors"])),
+        ("T22", "exclusion reason contradicts the path risk class", t22,
+         lambda c, o: any(e["code"] == "EXCLUSION_REASON_CONTRADICTION" for e in o["errors"])),
+        ("T23", "compensating control claimed with no reference",
+         lambda: (manifest(8, 4), claim(excluded=[{"path_id": "wp_out1",
+                                                   "reason_code": "COMPENSATING_CONTROL_PRESENT",
+                                                   "reason": "there is a control"}]), None, None, 1),
+         lambda c, o: any(e["code"] == "MISSING_EVIDENCE" and "control_ref" in e["observed"]
+                          for e in o["errors"])),
         ("T20", "an observed action that no catalogue path explains", t20,
          lambda c, o: any(e["code"] == "UNENUMERABLE_PATH" for e in o["errors"])),
         ("T21", "observed verbs all explained by the catalogue",
