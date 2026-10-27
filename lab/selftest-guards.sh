@@ -83,6 +83,16 @@ if [[ "$ONLY" == "all" || "$ONLY" == "interop" ]]; then
   fi
 fi
 
+# ---- control 5: the README covers every document -----------------------------
+if [[ "$ONLY" == "all" || "$ONLY" == "readme" ]]; then
+  stage
+  printf '# orphan\n' > "$TMP/repo/docs/_negative_control_orphan.md"
+  if python "$TMP/repo/lab/check-readme.py" >/dev/null 2>&1; then
+    fail "readme: an unlinked document was NOT caught"
+  else
+    pass "readme: unlinked document caught"
+  fi
+fi
 echo
 echo "controls passed: $PASS   failed: $FAIL"
 [[ "$FAIL" -eq 0 ]] || { echo "RESULT: fail"; exit 1; }

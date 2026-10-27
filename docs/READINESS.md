@@ -89,6 +89,12 @@ All four must hold:
 What to show: the fixture with eight planted bypasses and the measurement table. What not to show: the deck, the
 pricing, or the word "attestation" without the sentence above.
 
+## The README stays current by rule
+
+`lab/check-readme.py` fails if any document under `docs/` is not linked from `README.md`. It runs in CI and in the
+negative controls, where a planted orphan document must be caught. That is how "keep the front page current"
+becomes a check instead of an intention: a new document cannot land without a line on the front page.
+
 ## Current numbers
 
 Read them from the tool, never from this page — this page explains the criteria, the tool reports the state.

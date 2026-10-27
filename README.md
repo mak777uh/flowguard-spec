@@ -47,7 +47,7 @@ commits a token, CI goes red instead of the reputation.
 
 | Group | Files |
 |---|---|
-| Spec | [master v2](docs/FLOWGUARD-MASTER-v2.md) · [v0.1](docs/SPEC-v0.1.md) · [v0.2](docs/SPEC-v0.2-LEGACY.md) · [claim registry](docs/SPEC-CRITIQUE.md) |
+| Spec | [master v2](docs/FLOWGUARD-MASTER-v2.md) · [v1 (superseded)](docs/FLOWGUARD-MASTER.md) · [v0.1](docs/SPEC-v0.1.md) · [v0.2](docs/SPEC-v0.2-LEGACY.md) · [claim registry](docs/SPEC-CRITIQUE.md) |
 | Product and boundaries | [protected flow](docs/40-FLOW-GUARANTEE.md) · [variants](docs/01-VARIANTS.md) · [remediation ladder](docs/02-GRID.md) |
 | Crypto | [in scope from day one](docs/61-CRYPTO-IN-SCOPE.md) · [crypto and auto-payout](docs/60-CRYPTO-AND-AUTOPAY.md) |
 | Economics | [SKUs and services](docs/70-SERVICE-TIERS.md) · [pricing doctrine](docs/80-PRICING-DOCTRINE.md) |
