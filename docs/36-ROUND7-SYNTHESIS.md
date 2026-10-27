@@ -128,3 +128,8 @@ rebuild_result: <agreed | differed | not attempted> by <party> on <date>: <what 
 ```
 
 Nothing else counts. A note asking someone to rebuild is a request, not a result, and the counter now says so.
+
+**Second correction, same class.** The marker's own template appeared in this document, and the checker counted the
+documentation of a rule as an instance of it. A detector must exclude the text that describes it: the marker now
+requires an outcome word (`agreed` or `differed`) inside an experiment card. That is the fifth false positive this
+instrument has produced, and the second of exactly the same kind — *text about a thing is not the thing*.

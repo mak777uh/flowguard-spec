@@ -191,8 +191,13 @@ def main():
     # positive of this instrument). The marker is explicit, so it cannot be satisfied by prose.
     rebuild = None
     for p in md_files(root):
+        if "experiment" not in p.parent.name.lower():
+            continue
         text = p.read_text(encoding="utf-8", errors="ignore")
-        if re.search(r"(?m)^rebuild_result\s*:", text):
+        # A template is not a result: docs/36 documents the marker with <placeholders> and was
+        # counted as a completed rebuild (5th false positive of this instrument). Require a real
+        # outcome word, inside an experiment card.
+        if re.search(r"(?m)^rebuild_result\s*:\s*(agreed|differed)\b", text):
             rebuild = p
             break
     out.append(row("M7 independent-rebuild test", "present" if rebuild else "absent",
