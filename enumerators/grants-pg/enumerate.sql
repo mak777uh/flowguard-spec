@@ -22,7 +22,10 @@ WHERE g.table_schema = :'schema' AND g.table_name = :'table'
 UNION ALL
 SELECT 'path', 'function',
        format('function:%s.%s', n.nspname, p.proname),
-       format('function:%s.%s', n.nspname, p.proname),
+       -- Empty on purpose: a writer is not a control point just because it is a function. The
+       -- control point is reported separately (item_kind = 'control_point'). Setting this to the
+       -- function itself made every writer claim to be its own control point (E-M26).
+       '',
        CASE WHEN p.prosecdef THEN 'SECURITY DEFINER' ELSE 'SECURITY INVOKER' END,
        'catalog'
 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace

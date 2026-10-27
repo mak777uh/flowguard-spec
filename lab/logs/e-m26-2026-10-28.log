@@ -1,0 +1,6 @@
+after adding a writer:   classification={'additive': 1, 'substitutive': 0, 'subtractive': 0} growth=True
+after removing it:       classification={'additive': 0, 'substitutive': 0, 'subtractive': 1} growth=False
+upgrade allowed while additive: False
+upgrade allowed after removal:  False
+
+RESULT: PASS

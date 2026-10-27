@@ -186,15 +186,50 @@ def main() -> int:
     # an upgrade to be blocked while the perimeter grows, and a field nobody computes is a claim
     # about a number that does not exist (E-M19).
     new_ids = [pid for pid in merged if pid not in previous]
+
+    # The delta is classified, not counted. Round-8 review, all three: blanket-blocking every change
+    # rewards stagnation and punishes cleanup, because deleting a dead path is a change too.
+    #   additive     a path whose shape did not exist before - blocks an upgrade
+    #   substitutive a new path replacing a vanished one of the same shape - needs re-attestation
+    #   subtractive  removal with no replacement - never blocks
+    def shape(p):
+        return (p.get("kind", "?"), (p.get("control_point") or "") != "")
+
+    vanished_shapes = {}
+    for pid in vanished:
+        vanished_shapes.setdefault(shape(previous[pid]), []).append(pid)
+
+    additive, substitutive, paired = [], [], set()
+    for pid in new_ids:
+        s = shape(merged[pid])
+        pool = vanished_shapes.get(s) or []
+        if pool:
+            paired.add(pool.pop())   # pair one-for-one: a replacement, not new surface
+            substitutive.append(pid)
+        else:
+            additive.append(pid)
+
+    # Only the paths actually paired with a new one are "replaced"; the rest were removed outright.
+    # Counting every vanished path as replaced made subtractive come out zero (found by E-M26).
+    subtractive = [pid for pid in vanished if pid not in paired]
+
     delta = {
         "new_paths": len(new_ids),
         "vanished_paths": len(vanished),
         "net_change": len(new_ids) - len(vanished),
+        "additive": additive,
+        "substitutive": substitutive,
+        "subtractive": subtractive,
+        "classification": {
+            "additive": len(additive),
+            "substitutive": len(substitutive),
+            "subtractive": len(subtractive),
+        },
         "published": bool(previous),
     }
-    # Growth counts NEW paths, and a path that vanished does not cancel one that appeared: a
-    # replacement is still a change of shape, and the reader has to see it.
-    perimeter_growth = bool(previous) and len(new_ids) > 0
+    # Growth now means NEW SURFACE, not any change: a replacement of the same shape and control-point
+    # status is a re-attestation event, not growth.
+    perimeter_growth = bool(previous) and len(additive) > 0
 
     # target_lock is carried by the manifest, not left in the SourceRecords: without it a verdict
     # cannot be bound to a commit, and the verifier refuses (found by the E-M12 integration run).
