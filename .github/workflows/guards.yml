@@ -18,3 +18,5 @@ jobs:
         run: python3 lab/check-links.py
       - name: claim registry
         run: python3 lab/check-claims.py
+      - name: negative controls for every guard
+        run: bash lab/selftest-guards.sh

@@ -4,6 +4,11 @@
 set -uo pipefail
 fail=0
 
+# Корень определяется по расположению скрипта, а не по текущему каталогу.
+# Иначе запуск из подкаталога молча проверяет не то дерево — это найдено негативным
+# контролем lab/selftest-guards.sh, а не чтением кода.
+cd "$(dirname "${BASH_SOURCE[0]}")/.." || exit 2
+
 PATTERNS='ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|gho_[A-Za-z0-9]{30,}|ghs_[A-Za-z0-9]{30,}|sk-[A-Za-z0-9]{20,}|BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|xox[baprs]-[A-Za-z0-9-]{10,}'
 LOCALPATH='C:\\111|C:\\Users\\|/home/[a-z]+/|\\.dsh'
 

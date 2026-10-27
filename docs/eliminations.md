@@ -158,3 +158,42 @@ diff is an automatic reject.
 
 **Revived if:** an instrument exists that derives tests mechanically from the spec and cannot be influenced
 by the implementer.
+
+---
+
+## Round 6 additions
+
+### X-16 — "The browser verifier is where the value is" — eliminated
+
+Five of five reviewers rejected the browser as the first artifact. The substantive content of a verifier is not
+hash comparison — `sha256sum` does that — it is **recomputing the denominator**: closure, coverage, excluded,
+unknown, and refusing a bundle whose printed numbers do not derive from its objects. That is a command-line
+program, and it is smaller than the front end.
+
+The browser version adds isolated execution and convenience. Both are real; neither is proof.
+
+**Revived if:** a consumer exists whose workflow requires verification inside a browser session and who will not
+run a CLI — a concrete person, not a persona.
+
+### X-17 — "Eight claim columns are sufficient" — eliminated
+
+Five of five said the same thing, and one named the exact hole: a claim passes all eight columns when the
+*instrument* is wrong or the corpus was chosen after seeing results. `snapshot` documents where a number was
+taken; it cannot detect that the instrument lied.
+
+**Revived if:** an instrument-assessment entity exists with a reference corpus, known positive and negative cases,
+published false-positive and false-negative rates, and an independent re-measurement — and a linter can require
+it.
+
+Until then the cheap version applies: **a negative control per guard**, a planted defect that the guard must
+catch, running in CI. Our own checker was wrong three times before it had one.
+
+### X-18 — "The substitution test is one test" — eliminated
+
+As first specified it was near-tautological: replace the code, the digest fails, the verifier rejects — that
+tests our own hash comparison. What cannot be caught by a hash is a correctly signed bundle describing a
+different target than the one presented.
+
+Two classes are now pre-registered in `E-M9`: tampering after signing (D-1) and falsely attested pairs (D-2).
+
+**Revived if:** never as a single class. Any future substitution test must name which of the two it addresses.

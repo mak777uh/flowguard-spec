@@ -78,3 +78,36 @@ Until such a run exists and is recorded in an `E-` card, M7 stays absent — a d
 - That the review rounds made the design right. They made it less wrong, which is a different claim.
 - That `3/7` means anything on its own. It is our own instrument measuring our own kit, and it has been
   corrected twice already for false positives — see the interop reports.
+
+---
+
+## Review points (round 6)
+
+Five independent reviews of the round-6 packet converged on a plan change and one open question. Two dates are
+recorded here because a stop condition that is not dated is a wish.
+
+| date | what must exist | if it does not |
+|---|---|---|
+| **2026-11-10** | a conversation with a named person, in a named role, about what evidence would change their decision | the product question moves ahead of all engineering; no further design work until it is answered |
+| **2026-11-26** | one executable measurement: `E-M9` recorded with its pre-registered thresholds, result published including failure | the method is not extended; the project narrows to the piece that can be measured |
+
+The second date is the binding one. Five reviewers gave 21–30 days; the median is 26 November. One gave 90 days,
+but that was a threshold for external integration, not for producing a first measurement.
+
+### The open question, recorded as central
+
+> **Who is the specific person whose decision changes when the first line says `coverage: 11/14` — and what does
+> the publisher of the bundle lose if the bundle is wrong?**
+
+All five reviews arrived at this independently, and three added the liability half unprompted. It decides the
+artifact: a consumer who must act needs a liability surface — who signed, on what authority, for what period,
+with what effect. No amount of coverage arithmetic substitutes for it.
+
+**This is not answerable by design review.** It is answerable by one conversation, which is what 2026-11-10 is
+for.
+
+### Kit status after this change
+
+M1 experiment cards: **present** (`lab/experiments/E-M9-substitution.md`, thresholds fixed before the run).
+M2 metrics with commands: absent. M7 independent rebuild: absent. Conformance recomputed by
+`lab/check-interop.py`.

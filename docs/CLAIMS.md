@@ -55,3 +55,21 @@ reserved word.
 3. Moving a claim **up** in evidence type requires a new `E-` card and an `ADR`; moving it **down** requires only an `ADR`.
 4. `withdrawn` and `false as stated` are permanent records. A withdrawn claim stays in the registry with the reason — deleting it is how a team forgets why it was withdrawn.
 5. The three reserved words are grep-enforced across `docs/`, `README.md` and any future report template: a file containing them must link a claim of type `proof` or `test`.
+
+---
+
+## Corrections from round 6 (2026-10-27)
+
+**`PROVEN` is not unreachable in principle.** Review 3 objected, correctly, to our earlier flat statement.
+Whether `PROVEN` is attainable depends on the strictness of the model, the boundary of the object and the
+completeness of the checked paths. It is unreachable **for a whole application under our assumptions**; for a
+narrow closure it may be attainable. Claims here must say which of the two they mean.
+
+**A point estimate of recall is not a measurement of recall.** `0.71` on a corpus of 20 is roughly 14/20, and the
+interval at that size is about 0.5–0.9. Every published recall figure must carry its interval and the corpus, or
+it is decoration. A buyer with an auditor will compute the interval whether or not we print it.
+
+**Instrument correctness is not a column.** Five reviewers converged: the eight columns cannot detect a wrong
+instrument. Any claim whose strength depends on an instrument must point at that instrument's negative control —
+a planted defect the instrument is required to catch. Until such a control exists, the claim's permitted wording
+drops by one level.
