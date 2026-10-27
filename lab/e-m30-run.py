@@ -27,18 +27,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 GRANTS = ROOT / "enumerators" / "grants-pg" / "fg_enum_grants.py"
-SCHEMA_DIR = Path(r"C:\111\_schemas")
+# The schema files are third-party and not committed; the directory is supplied on the command line.
 
 TARGETS = ["payment", "payments", "invoice", "invoices", "order", "orders", "sale", "sales",
            "transaction", "transactions", "purchase", "purchases"]
 
-SCHEMAS = [
-    ("pagila", Path(r"C:\111\_pagila\s-v2.1.0.sql")),
-    ("chinook", SCHEMA_DIR / "chinook.sql"),
-    ("northwind", SCHEMA_DIR / "northwind.sql"),
-    ("sakila", SCHEMA_DIR / "sakila.sql"),
-    ("adventureworks", SCHEMA_DIR / "adventureworks.sql"),
-]
+
 
 
 def psql(psql_bin, port, user, db, *args, sql=None):
@@ -53,11 +47,21 @@ def main() -> int:
     ap.add_argument("--psql", required=True)
     ap.add_argument("--port", type=int, default=54329)
     ap.add_argument("--user", default="postgres")
+    ap.add_argument("--schemas", required=True, help="directory holding the downloaded schema dumps")
+    ap.add_argument("--pagila", required=True, help="path to the pagila schema dump")
     a = ap.parse_args()
     tmp = Path(tempfile.mkdtemp())
     rows = []
+    schema_dir = Path(a.schemas)
+    schemas = [
+        ("pagila", Path(a.pagila)),
+        ("chinook", schema_dir / "chinook.sql"),
+        ("northwind", schema_dir / "northwind.sql"),
+        ("sakila", schema_dir / "sakila.sql"),
+        ("adventureworks", schema_dir / "adventureworks.sql"),
+    ]
 
-    for name, path in SCHEMAS:
+    for name, path in schemas:
         if not path.exists():
             rows.append({"schema": name, "status": "missing file"})
             continue
@@ -123,7 +127,7 @@ def main() -> int:
 
     ok_rows = [r for r in rows if r.get("status") == "ok"]
     total_findings = sum(r["paths"] for r in ok_rows)
-    print(f"\nschemas run: {len(ok_rows)}/{len(SCHEMAS)}, total paths reported: {total_findings}")
+    print(f"\nschemas run: {len(ok_rows)}/{len(schemas)}, total paths reported: {total_findings}")
     (tmp / "summary.json").write_text(json.dumps(rows, indent=1), encoding="utf-8")
     print("summary:", tmp / "summary.json")
     ok = len(ok_rows) >= 4
