@@ -12,6 +12,7 @@ The criteria and weights are documented in docs/READINESS.md. Change them there 
 """
 import argparse
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -72,6 +73,30 @@ def ok_corpus():
     return r.returncode == 0, "E-M10 corpus detects all declared classes" if r.returncode == 0 else "E-M10 failed"
 
 
+CONSUMER_FIELDS = ("person", "organisation", "decision_before", "decision_after",
+                   "what_they_lose", "date", "verbatim")
+
+
+def ok_consumer():
+    """A filled form, not a template. Placeholders and short values score zero: a template that
+    passes its own check is exactly the failure this repository keeps finding in its instruments."""
+    p = ROOT / "docs" / "M8-CONSUMER.md"
+    if not p.exists():
+        return False, "no docs/M8-CONSUMER.md"
+    text = p.read_text(encoding="utf-8")
+    values = {}
+    for field in CONSUMER_FIELDS:
+        m = re.search(rf"(?m)^\s*{field}:\s*(.+)$", text)
+        if m:
+            values[field] = m.group(1).strip()
+    missing = [f for f in CONSUMER_FIELDS if f not in values]
+    if missing:
+        return False, f"fields missing: {', '.join(missing)}"
+    weak = [f for f, v in values.items() if v.startswith("<") or len(v) < 8]
+    if weak:
+        return False, f"placeholder or too short: {', '.join(weak)}"
+    return True, f"{values['person']} on {values['date']}"
+
 def has_marker(pattern):
     import re
     for p in (ROOT / "lab" / "experiments").glob("*.md"):
@@ -109,9 +134,7 @@ CHECKS = [
     ("P1", "product", 15, lambda: (bool(has_marker(r"^rebuild_result\s*:\s*(agreed|differed)")),
                                    "a stranger rebuilt a bundle (M7)"),
      "a party that did not write the code rebuilt a bundle"),
-    ("P2", "product", 10, lambda: ((ROOT / "docs" / "M8-CONSUMER.md").exists(),
-                                   "a named consumer stated what changes"),
-     "a named consumer documented the decision that changes"),
+    ("P2", "product", 10, ok_consumer, "a named consumer documented the decision that changes"),
     ("P3", "product", 8, lambda: (bool(list(ROOT.glob("fixtures/**/signatures/*.role"))) and
                                   any("risk_acceptance" in p.read_text(encoding="utf-8", errors="ignore")
                                       for p in ROOT.glob("fixtures/**/signatures/*.role")),

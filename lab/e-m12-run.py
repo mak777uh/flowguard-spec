@@ -137,6 +137,14 @@ def scenarios():
         ("T13", "not_claimed is prose instead of vocabulary",
          lambda: (manifest(), claim(not_claimed=["results may vary"]), None, None, 1),
          lambda c, o: any(e["code"] == "REPORT_BUNDLE_INCONSISTENT" for e in o["errors"])),
+        ("T18", "inventory has witnesses only, no denominator source",
+         lambda: (manifest(kinds=("runtime",)), claim(level="CONSISTENT_DECLARED", coverage=0.0), None, None, 1),
+         lambda c, o: any(e["code"] == "MISSING_EVIDENCE" and e["subject"] == "coverage_basis"
+                          for e in o["errors"])),
+        ("T19", "witness plus a catalogue source is a usable denominator",
+         lambda: (manifest(kinds=("grants", "runtime")), claim(level="CONSISTENT_DECLARED", coverage=0.8), None, None, 1),
+         lambda c, o: not any(e["subject"] == "coverage_basis" for e in o["errors"])
+                      and o["perimeter"]["coverage_basis_kinds"] == ["grants"]),
         ("T15", "weighted risk outside the core exceeds the policy",
          lambda: (manifest(8, 2), claim(excluded=None), None,
                   {"policy_id": "tight", "max_excluded": 2, "assurance_threshold": 0.75,

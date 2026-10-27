@@ -36,6 +36,7 @@ commits a token, CI goes red instead of the reputation.
 | [docs/90-DEV-AND-NEXT-ROUND.md](docs/90-DEV-AND-NEXT-ROUND.md) | development method, sober assessment, next round's questions |
 | [docs/CLAIMS.md](docs/CLAIMS.md) | claim registry: evidence type and the strongest permitted wording |
 | [docs/eliminations.md](docs/eliminations.md) | what five rounds ruled out, and what would revive it |
+| [docs/M8-CONSUMER.md](docs/M8-CONSUMER.md) | the five-line form the product rests on: fillable in one conversation, worth zero until filled |
 | [docs/READINESS.md](docs/READINESS.md) | **what works, who can use it, and the gate for showing it to others — computed, not asserted** |
 | [docs/STATUS-v0.md](docs/STATUS-v0.md) | what exists, what does not, and what this repository does not claim |
 | [docs/METRICS.md](docs/METRICS.md) | every number with its command and log digest — currently zero rows |

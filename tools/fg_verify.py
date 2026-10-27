@@ -229,6 +229,19 @@ def main() -> int:
 
     # ---- 6. independence ------------------------------------------------
     independent = bool(inventory.get("independent_of_agent"))
+
+    # A witness is not an inventory. Runtime and agent sources observe or interpret; they cannot
+    # establish how many paths exist, so a denominator resting only on them is not a coverage
+    # number (E-M17 measured that a runtime source under-counts by construction).
+    DENOMINATOR_KINDS = {"grants", "static", "routes", "manual"}
+    WITNESS_KINDS = {"runtime", "agent"}
+    kinds_present = {s.get("kind", "?") for s in inventory.get("sources", [])}
+    denominator_kinds = sorted(kinds_present & DENOMINATOR_KINDS)
+    if not denominator_kinds:
+        err("MISSING_EVIDENCE", "coverage_basis",
+            f"at least one source of kind {sorted(DENOMINATOR_KINDS)}",
+            f"sources present: {', '.join(sorted(kinds_present)) or 'none'} (witness only)",
+            "coverage cannot be computed from witnesses; run a catalogue source", False)
     if not independent:
         err("E_NO_INDEPENDENT_CLOSURE", "inventory",
             "at least one source that is not the analysing agent",
@@ -295,6 +308,7 @@ def main() -> int:
         "known_paths": len(paths),
         "core_paths": len(in_core),
         "outside_paths": len(outside),
+        "coverage_basis_kinds": denominator_kinds,
         "outside_weighted_risk": risk.get("outside_weighted_risk"),
         "unclassified_paths": risk.get("unclassified_paths"),
         "risk_policy_digest": risk.get("policy_digest"),

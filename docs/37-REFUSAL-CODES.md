@@ -14,6 +14,10 @@ without guessing, and so it cannot be talked into a weaker reading.
 | `REPORT_BUNDLE_INCONSISTENT` | report and bundle disagree on version, digest, boundary or level | regenerate the derived document from the source | yes, if the cause is mechanical |
 | `POLICY_CEILING_EXCEEDED` | exclusions, outside-paths or residual risk exceed the policy ceiling | nothing autonomous — needs a scope change or a human decision | **no** |
 | `E_NO_INDEPENDENT_CLOSURE` | there is no obligation manifest from a source outside the analysing agent | supply one, or accept the capped verdict | **no** |
+| `POLICY_UNTRUSTED` | the policy, or the key that signed it, is not in the trusted set | obtain a trusted policy | **no** |
+
+`MISSING_EVIDENCE` also carries `subject: coverage_basis` when every source in the manifest is a witness (runtime,
+agent). Witnesses observe; they do not enumerate, so a ratio computed against them is not coverage.
 
 Plus one loop-stopper, not a failure of the artifact:
 
