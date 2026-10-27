@@ -1,1 +1,1 @@
-{"asserts": "risk_acceptance", "issuer": "owner", "accepted_scope": "c3a2e79b74a95bc204f8b44db6d6adf3110d59d6287c03dd22be68dcd8b1fed6", "residual_risk": ["NC-01", "NC-02"], "valid_until": "2027-01-01", "statement": "accepted for the balance-transfer flow"}
+{"asserts": "risk_acceptance", "issuer": "owner", "accepted_scope": "e369994878f1b4cbf6da6133f612acc24406c608dbe59c2082d2b6d319b79bd9", "residual_risk": ["NC-01", "NC-02"], "valid_until": "2027-01-01", "statement": "accepted for the balance-transfer flow"}

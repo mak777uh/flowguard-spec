@@ -128,28 +128,36 @@ def cmd_create(a) -> int:
         objects[h] = {"bytes": len(data), "name": src_path.name}
         subjects[name] = {"sha256": h, "source": src_path.name}
 
+    inv_bytes = Path(a.inventory).read_bytes()
+    inv_hash = hashlib.sha256(inv_bytes).hexdigest()
+    (out / "objects" / inv_hash).write_bytes(inv_bytes)
+    objects[inv_hash] = {"bytes": len(inv_bytes), "name": "inventory.json"}
+
     bundle = {
         "bundle_version": VERSION,
         "subjects": subjects,
         "objects": objects,
         "claim": claim,
-        "inventory_digest": "sha256:" + sha256_file(Path(a.inventory)),
+        # The inventory is part of the evidence, so it travels inside the bundle as an object and
+        # its digest is bare hex: the rebuilder found that a "sha256:" prefix here matched nothing
+        # in the bundle at all (E-M38).
+        "inventory_digest": inv_hash,
         "plaintext_notified": True,
     }
     (out / "bundle.json").write_bytes(canon(bundle) if a.canonical else
                                       json.dumps(bundle, indent=1, ensure_ascii=False).encode())
     addr = hashlib.sha256(canon(bundle)).hexdigest()
-    (out / "manifest.sha256").write_text(addr + "\n", encoding="ascii")
+    (out / "manifest.sha256").write_bytes((addr + "\n").encode("ascii"))  # LF, always
 
     key = load_key(Path(a.key))
     sig = key.sign(addr.encode("ascii"))
-    (out / "signatures" / f"{a.signer}.sig").write_text(base64.b64encode(sig).decode("ascii") + "\n", encoding="ascii")
+    (out / "signatures" / f"{a.signer}.sig").write_bytes(base64.b64encode(sig).decode("ascii").encode("ascii") + b"\n")
     (out / "signatures" / f"{a.signer}.pub").write_bytes(
         key.public_key().public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo))
     role_doc = {"asserts": a.role, "issuer": a.signer}
     if a.role == "consistency_verdict":
         rp = Path(__file__).resolve().parent.parent / "policies" / "risk-classes.json"
-        role_doc["policy_digest"] = "sha256:" + hashlib.sha256(rp.read_bytes()).hexdigest()
+        role_doc["policy_digest"] = hashlib.sha256(rp.read_bytes()).hexdigest()
     if a.role == "risk_acceptance":
         role_doc.update({
             "accepted_scope": addr,

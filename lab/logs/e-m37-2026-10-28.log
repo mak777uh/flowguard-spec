@@ -1,0 +1,7 @@
+schema   gitlab structure.sql   tables 1436   functions 558   load 29s  load_errors 0
+target   paths   seconds  kinds
+projects 10      0.4      function 3, trigger_chain 7
+members  0       0.5      -
+gitlab_subscriptions 0  0.5  -
+subscription_add_on_purchases 0  0.9  -
+functions with write statements in the whole schema: 36

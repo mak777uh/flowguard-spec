@@ -1,0 +1,14 @@
+Rebuild attempt 1, agent `rebuilder`, 2026-10-28 — the description was NOT in the directory.
+address computed  c3a2e79b74a95bc2…   recorded c3a2e79b74a95bc2…   MATCH (by fitting 16 canonical variants)
+signatures: demo OK, owner OK
+objects: 4 checked 4 matching
+description present: NO - packaging error deleted it; the test as designed is invalid
+defects reported (all confirmed by inspection):
+  inventory_digest matched nothing in the bundle
+  3 of 4 objects contained CRLF, so their digests are not portable
+  trailing newline rule undeclared (one LF changes the address: 09774fd1365807eb…)
+  signed message type undeclared (digest bytes / hex / canonical payload)
+  two digest conventions in one file (sha256: prefix in two places, absent in four)
+  ensure_ascii unresolvable from an all-ASCII bundle
+  float formatting, collation and role semantics untested by this vector
+verdict: agreed, but obtained with the answer available - invalid as a test

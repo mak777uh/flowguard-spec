@@ -1,0 +1,14 @@
+Rebuild report, agent rebuilder2, 2026-10-28 (verbatim summary)
+address computed  e369994878f1b4cb…   recorded e369994878f1b4cb…   MATCH (canonical bytes 1388)
+cross-checks: hashing file bytes 25189e3864773bcf | trailing LF d7e8d6efc30a6633 | spaces 8210eaacb85a6152
+signatures: demo OK, owner OK; 2 verified 0 failed; keys distinct
+negative controls all fail as predicted: 32 raw digest, sha256:+hex, hex+LF, hex+CRLF, uppercase, hex+NUL
+objects: 5 checked 5 matching; inventory_digest -> inventory.json
+ambiguities: recursive vs top-level sorting (artifacts decisive, top-level gives 81f553f1);
+  manifest.sha256 and .sig ship CRLF while README says LF (description factually wrong);
+  ensure_ascii indistinguishable (README caveat correct);
+  collation IS decisive (claim_id vs claimed_coverage; locale variant gives 7af6136b) - README claim of untestable was false;
+  number rendering pinned only for 0.133; bool literal true; role definitions absent from bundle
+brute force: none - first computation matched
+verdict: agreed
+most likely divergence for a future rebuilder: recursive vs top-level-only key sorting

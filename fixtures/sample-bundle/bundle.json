@@ -2,7 +2,7 @@
  "bundle_version": "fg-bundle/1",
  "subjects": {
   "code": {
-   "sha256": "74c2f42f558171cf53e0184d001864ce1081e915a4fcf3887bec76b2c4ee161e",
+   "sha256": "14d268ad504f20416920223e6c1bd2eecc19e4a5beb54b0684baf766b4d467a7",
    "source": "target.py"
   },
   "build": {
@@ -10,30 +10,34 @@
    "source": "build.json"
   },
   "config": {
-   "sha256": "0fb466a16fa84228496ff0aef036e6ab1bc832317cf9cd8b9d4715affe607208",
+   "sha256": "b2fdb2fb436ec7fc63874272c3261ed0f66b4c32b1b4dd1ac7f03b75964ef5e8",
    "source": "config.yml"
   },
   "identity": {
-   "sha256": "61a4517ff38bdb1043f20e35dfd579180c50ee9b42a927b419e218dfd3ca63ee",
+   "sha256": "2094cfbe86a061c5a2aa307d74a0e2478be0db393327ef3dafb4e5b1d52b18b1",
    "source": "identity.txt"
   }
  },
  "objects": {
-  "74c2f42f558171cf53e0184d001864ce1081e915a4fcf3887bec76b2c4ee161e": {
-   "bytes": 117,
+  "14d268ad504f20416920223e6c1bd2eecc19e4a5beb54b0684baf766b4d467a7": {
+   "bytes": 113,
    "name": "target.py"
   },
   "b29cc00005a85cafaef8968b5864f9d3393e54a4b37016f493f278c0eec2de2b": {
    "bytes": 35,
    "name": "build.json"
   },
-  "0fb466a16fa84228496ff0aef036e6ab1bc832317cf9cd8b9d4715affe607208": {
-   "bytes": 13,
+  "b2fdb2fb436ec7fc63874272c3261ed0f66b4c32b1b4dd1ac7f03b75964ef5e8": {
+   "bytes": 12,
    "name": "config.yml"
   },
-  "61a4517ff38bdb1043f20e35dfd579180c50ee9b42a927b419e218dfd3ca63ee": {
-   "bytes": 19,
+  "2094cfbe86a061c5a2aa307d74a0e2478be0db393327ef3dafb4e5b1d52b18b1": {
+   "bytes": 18,
    "name": "identity.txt"
+  },
+  "b1ccd4bc4be5b5a40b112b20d2408727034f293692aace3fdf928704638cfaf0": {
+   "bytes": 544,
+   "name": "inventory.json"
   }
  },
  "claim": {
@@ -51,6 +55,6 @@
    "NC-02"
   ]
  },
- "inventory_digest": "sha256:b1ccd4bc4be5b5a40b112b20d2408727034f293692aace3fdf928704638cfaf0",
+ "inventory_digest": "b1ccd4bc4be5b5a40b112b20d2408727034f293692aace3fdf928704638cfaf0",
  "plaintext_notified": true
 }

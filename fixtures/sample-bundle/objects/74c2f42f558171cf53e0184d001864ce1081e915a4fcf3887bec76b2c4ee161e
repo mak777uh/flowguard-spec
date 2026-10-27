@@ -1,4 +1,0 @@
-def transfer(src, dst, amt):
-    if amt <= 0:
-        raise ValueError('amount')
-    return src - amt, dst + amt

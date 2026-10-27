@@ -29,7 +29,7 @@ python tools/fg_readiness.py --json    # machine-readable
 | E5 | engine | 8 | attribution measured, decoy not fooled | `lab/e-m13-run.py` exits 0 |
 | E6 | engine | 8 | bundle with Ed25519 verifies under both anchors | sample bundle returns `SIGNED_AND_CONSISTENT` |
 | E7 | engine | 6 | mutation corpus measured | `lab/e-m10-run.py` exits 0 |
-| P1 | product | 15 | a stranger rebuilt a bundle | `rebuild_result: agreed|differed` in an experiment card |
+| P1 | product | 15 | a **third party, not an AI agent**, rebuilt a bundle | `rebuild_result: agreed|differed by a third party / human / organisation` in an experiment card |
 | P2 | product | 10 | a named consumer documented the decision | `docs/M8-CONSUMER.md` exists |
 | P3 | product | 8 | risk acceptance signed | a `risk_acceptance` signature role in a bundle |
 | P4 | product | 7 | corpus from another author | `external_corpus:` marker in a card |
