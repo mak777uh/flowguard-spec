@@ -29,7 +29,15 @@ FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
 WHERE n.nspname = :'schema'
   AND p.prokind IN ('f', 'p')
   AND p.prosrc ~* ('(update|insert[[:space:]]+into|delete[[:space:]]+from)[^;]{0,200}' || :'table')
-  AND p.proname NOT IN ('transfer')
+  -- Exclude the declared control point BY IDENTITY, not by name: with an overload present the name
+  -- matches two different functions, and dropping both hides the one that writes the table directly
+  -- (E-M25). When the name is ambiguous, keep every candidate and let the merger report it.
+  AND NOT (
+        p.proname = 'transfer'
+        AND (SELECT count(*)
+             FROM pg_proc p2 JOIN pg_namespace n2 ON n2.oid = p2.pronamespace
+             WHERE n2.nspname = :'schema' AND p2.proname = 'transfer') = 1
+      )
 
 UNION ALL
 SELECT 'path', 'disabled_control',

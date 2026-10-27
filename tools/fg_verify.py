@@ -246,6 +246,21 @@ def main() -> int:
     # ---- 6. independence ------------------------------------------------
     independent = bool(inventory.get("independent_of_agent"))
 
+    # ---- 6a1. ambiguous attribution blocks an upgrade --------------------
+    # A name that matches two functions cannot place a route inside the core. Round-8 reviews:
+    # resolution must be exact / probable / ambiguous / unresolvable, and ambiguous may not count.
+    conflicted = [p for p in paths if p.get("attribution_conflict")]
+    if conflicted:
+        examples = []
+        for p in conflicted[:3]:
+            c = p["attribution_conflict"]
+            examples.append("{} -> {} ({} candidates)".format(p["entry"], c["called"],
+                                                              len(c["candidates"])))
+        err("AMBIGUOUS_ATTRIBUTION", "attribution",
+            "one resolved identity per attributed path",
+            "; ".join(examples),
+            "resolve the call by signature or oid, or leave the path outside the core", False)
+
     # A witness is not an inventory. Runtime and agent sources observe or interpret; they cannot
     # establish how many paths exist, so a denominator resting only on them is not a coverage
     # number (E-M17 measured that a runtime source under-counts by construction).
@@ -340,13 +355,19 @@ def main() -> int:
         "core_paths": len(in_core),
         "outside_paths": len(outside),
         "coverage_basis_kinds": denominator_kinds,
+        "ambiguous_attributions": len(conflicted),
         "coverage_states": {k: cov.get(k) for k in ("covered", "unobserved", "unenumerable", "counts")},
         "outside_weighted_risk": risk.get("outside_weighted_risk"),
         "unclassified_paths": risk.get("unclassified_paths"),
         "risk_policy_digest": risk.get("policy_digest"),
         "delta_since_previous": inventory.get("delta_since_previous"),
         "perimeter_growth": inventory.get("perimeter_growth", False),
-        "level_upgrade_allowed": not inventory.get("perimeter_growth", False),
+        # An upgrade is allowed only when nothing blocking was found: growth alone was the old
+        # rule, and it let a claim raise its level while an ambiguous attribution was unresolved.
+        "level_upgrade_allowed": (
+            not inventory.get("perimeter_growth", False)
+            and not any(not e.get("retryable", True) for e in errors)
+        ),
     }
     code = 0 if ORDER.get(verdict, 0) >= ORDER.get(claimed_level, 0) else 1
     if verdict == "INVALID":

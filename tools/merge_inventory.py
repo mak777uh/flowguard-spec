@@ -117,8 +117,35 @@ def main() -> int:
     # alone: /transfer/batch calls transfer_batch, which reaches the control point two hops away, and
     # the route source cannot see that (found by E-M20). Resolution happens here, where both are
     # visible, and it is recorded as transitive with both sources named.
+    # Candidates are collected BEFORE any attribution, so an overload can be detected rather than
+    # silently resolved. Joining on a bare name is a guess when two functions share it (E-M25).
+    by_call_name = {}
+    for p_ in merged.values():
+        if p_["entry"].startswith("function:"):
+            nm = p_["entry"].rsplit(".", 1)[-1]
+            by_call_name.setdefault(nm, []).append(p_)
+    # Ambiguity is checked for EVERY path that declares calls, including one its own source already
+    # attributed: a route source that attributes by name is exactly the guess this rule exists to
+    # stop, so its attribution must be withdrawn rather than trusted (E-M25).
+    for p_ in merged.values():
+        if not p_.get("calls"):
+            continue
+        for called in p_["calls"]:
+            cands = by_call_name.get(str(called)) or []
+            if len(cands) > 1:
+                p_["attribution_conflict"] = {
+                    "called": str(called),
+                    "candidates": [x["entry"] for x in cands],
+                    "resolution": "ambiguous",
+                }
+                p_.pop("attribution", None)
+                p_["control_point"] = ""
+                break
+
     by_name = {}
     for p_ in merged.values():
+        if p_.get("attribution_conflict"):
+            continue
         to = (p_.get("attribution") or {}).get("to")
         if not to:
             continue
@@ -128,7 +155,7 @@ def main() -> int:
         for name in (p_["entry"].rsplit(".", 1)[-1], to.rsplit(".", 1)[-1]):
             by_name.setdefault(name, (to, p_["attribution"]))
     for p_ in merged.values():
-        if p_.get("attribution") or not p_.get("calls"):
+        if p_.get("attribution") or p_.get("attribution_conflict") or not p_.get("calls"):
             continue
         for called in p_["calls"]:
             hit = by_name.get(str(called))

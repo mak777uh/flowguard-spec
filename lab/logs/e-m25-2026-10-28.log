@@ -1,0 +1,8 @@
+functions in the schema: adjust_dynamic, audit_accounts, audit_to_accounts, credit_direct, set_balance, transfer, transfer_batch, transfer_fast, transfer_via_api, v_accounts_write
+route http:POST /transfer: attribution=None conflict={'called': 'transfer', 'candidates': ['function:bank.transfer', 'function:bank.transfer'], 'resolution': 'ambiguous'}
+verdict: CONSISTENT_DECLARED codes=['CLAIM_EXCEEDS_EVIDENCE', 'AMBIGUOUS_ATTRIBUTION', 'POLICY_CEILING_EXCEEDED']
+level_upgrade_allowed: False
+
+ambiguous attribution detected: True
+upgrade blocked: True
+RESULT: PASS
