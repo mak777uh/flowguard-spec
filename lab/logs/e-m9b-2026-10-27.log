@@ -1,0 +1,14 @@
+mode: run 2 — anchors supplied
+base bundle: SIGNED_AND_CONSISTENT signed_by=['alice']
+
+case  class     expect                   result
+D-1a  code      INVALID                  CAUGHT
+D-1b  build     INVALID                  CAUGHT
+D-1c  config    INVALID                  CAUGHT
+D-1d  identity  INVALID                  CAUGHT
+D-2a  pair      not SIGNED_AND_CONSISTENT CAUGHT
+D-2b  pair      not SIGNED_AND_CONSISTENT CAUGHT
+
+cases caught: 6/6
+threshold (pre-registered): 6/6
+RESULT: PASS

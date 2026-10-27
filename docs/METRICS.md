@@ -49,3 +49,5 @@ honest, a filled one without logs is the failure mode the whole repository is bu
 - It does not claim coverage of anything. Zero rows means zero measurements, not zero risk.
 | 5 | `E-M13` attribution on legitimate callers / false attribution | **2 / 2** and **0 / 9** | pgcalls over the fixture; decoy `transfer_fast` not attributed | `c19388a2bb41b914d107e636f377752c175736082422deaec7f627aa6ba707fe` | 2026-10-27 tree | 2026-10-27 |
 | 6 | `E-M13` coverage after attribution | **0.133** (2 of 15 paths), was 0.000 | grants + pgcalls merged, then `fg_verify` | `c19388a2bb41b914d107e636f377752c175736082422deaec7f627aa6ba707fe` | 2026-10-27 tree | 2026-10-27 |
+| 7 | `E-M9` substitution, run 1 without anchors | **3 / 6** (refutes) | `python lab/e-m9-run.py --no-anchors` | `-` | 2026-10-27 tree | 2026-10-27 |
+| 8 | `E-M9b` substitution with two external anchors | **6 / 6** | `python lab/e-m9-run.py` | `918b5cafed2f0ec66f03d3e638588a3f0f3d5cd4df319ef033904d36a1c59943` | 2026-10-27 tree | 2026-10-27 |
