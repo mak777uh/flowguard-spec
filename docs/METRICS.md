@@ -54,3 +54,5 @@ honest, a filled one without logs is the failure mode the whole repository is bu
 | 9 | `E-M10` D-1 detection on 68 generated mutants | **1.000** | `python lab/e-m10-run.py` | `8ae1cc011b64e48843e78e8d98c5fc00eb09ac83227dd52ccd4ba43f9e8a605b` | 2026-10-27 tree | 2026-10-27 |
 | 10 | `E-M10` D-2 detection on 34 generated mutants | **1.000** | same run | `8ae1cc011b64e48843e78e8d98c5fc00eb09ac83227dd52ccd4ba43f9e8a605b` | 2026-10-27 tree | 2026-10-27 |
 | 11 | `E-M10` false rejection on 30 valid bundles | **0.000** | same run | `8ae1cc011b64e48843e78e8d98c5fc00eb09ac83227dd52ccd4ba43f9e8a605b` | 2026-10-27 tree | 2026-10-27 |
+| 12 | `E-M14` acceptance scenarios after exclusion binding | **12 / 12** | `python lab/e-m12-run.py` | `06b7bbceb1c767bd2847c8c9a7010d1560c64e5d7c973eb5d854e773b94dce06` | 2026-10-27 tree | 2026-10-27 |
+| 13 | `E-M14` claims that passed before binding and must not | **2** (invented exclusion, core path excluded) | reproduced by T11/T12 | `06b7bbceb1c767bd2847c8c9a7010d1560c64e5d7c973eb5d854e773b94dce06` | 2026-10-27 tree | 2026-10-27 |

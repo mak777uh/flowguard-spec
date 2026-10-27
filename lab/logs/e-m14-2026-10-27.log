@@ -1,0 +1,17 @@
+id   scenario                                       result
+T1   correct claim, full declared scope             PASS
+T2   claims proven at coverage 0.6                  PASS
+T3   one required path missing, claim says full coverage PASS
+T4   report and bundle agree but different commits  PASS
+T5   unjustified exclusion beyond the ceiling       PASS
+T6   policy source untrusted                        PASS
+T7   new external path appeared this run            PASS
+T8   path moved into core without new evidence      PASS
+T9   evidence removed, verdict must not strengthen  PASS
+T10  resubmission after refusal exceeds the retry budget PASS
+T11  exclusion names a path that does not exist     PASS
+T12  exclusion names a path inside the covered core PASS
+
+scenarios passed: 12/12
+threshold (pre-registered): all of them
+RESULT: PASS

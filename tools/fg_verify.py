@@ -121,9 +121,34 @@ def main() -> int:
             f"<= {coverage:.3f} (recomputed from the inventory)", f"{claimed:.3f} (claimed)",
             "lower the claim to the recomputed coverage or supply evidence for the missing paths")
 
-    # ---- 4. exclusions under the ceiling --------------------------------
-    excluded = claim.get("excluded") or []
+    # ---- 4. exclusions: counted, and bound to real paths -----------------
+    # An exclusion is a claim that a known path is out of scope. It must therefore (a) name a path
+    # that exists in the inventory, (b) not name a path that is inside the core, and (c) carry a
+    # reason. Without these three, "excluded" is a free-text list that silently narrows the scope -
+    # the T3 vacuum that round 7 warned about.
+    excluded_raw = claim.get("excluded") or []
     ceiling = policy.get("max_excluded", 2)
+    known_ids = {p.get("path_id") for p in paths}
+    core_ids = {p.get("path_id") for p in in_core}
+    excluded = []
+    for item in excluded_raw:
+        if isinstance(item, dict):
+            pid, reason = item.get("path_id"), (item.get("reason") or "").strip()
+        else:
+            pid, reason = item, ""
+        excluded.append(pid)
+        if pid not in known_ids:
+            err("UNKNOWN_OR_UNBOUND_PATH", f"excluded:{pid}",
+                "a path_id present in the inventory", "not in the obligation manifest",
+                "name an existing path or remove the exclusion", False)
+        elif pid in core_ids:
+            err("REPORT_BUNDLE_INCONSISTENT", f"excluded:{pid}",
+                "an exclusion outside the core", "the path is inside the declared core",
+                "a path cannot be both covered and excluded", False)
+        if not reason:
+            err("MISSING_EVIDENCE", f"excluded:{pid}",
+                "a reason for the exclusion", "no reason recorded",
+                "record why the path is out of scope", True)
     if len(excluded) > ceiling:
         err("POLICY_CEILING_EXCEEDED", "excluded",
             f"<= {ceiling}", f"{len(excluded)}",

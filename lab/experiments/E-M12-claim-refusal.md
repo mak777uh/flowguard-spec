@@ -88,3 +88,8 @@ coverage 0" — true and nearly meaningless. The ceiling needs attribution.
    verifier.
 2. `E-M9` (substitution) can now run against the bundle format that `fg_verify` already half-defines.
 3. `docs/METRICS.md` gains the first two measurements of the verifier itself.
+
+## Extended later
+
+E-M14 added two scenarios (T11, T12) after the exclusion hole was found, and corrected T1/T5 to use real
+path ids instead of placeholders. The ten scenarios recorded here still pass; the suite now reports 12/12.
