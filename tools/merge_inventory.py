@@ -65,6 +65,10 @@ def main() -> int:
                     "kind": p["kind"],
                     "control_point": p["control_point"],
                     "confidence": p["confidence"],
+                    "detail": p.get("detail", ""),
+                    # `calls` is what lets the merger resolve transitive attribution later; dropping
+                    # it here silently disabled that resolution (found by E-M20).
+                    "calls": p.get("calls", []),
                     "found_by": [s["source_id"]],
                     "kinds": [s["kind"]],
                 }
@@ -107,6 +111,38 @@ def main() -> int:
                             "sources": [h["source"] for h in active]},
         }
         attributed += 1
+
+    # Transitive attribution through DECLARED calls. A route manifest says which functions a handler
+    # calls; the call-graph source says which functions reach the control point. Neither is enough
+    # alone: /transfer/batch calls transfer_batch, which reaches the control point two hops away, and
+    # the route source cannot see that (found by E-M20). Resolution happens here, where both are
+    # visible, and it is recorded as transitive with both sources named.
+    by_name = {}
+    for p_ in merged.values():
+        to = (p_.get("attribution") or {}).get("to")
+        if not to:
+            continue
+        # Index by the name of the path ITSELF (so `transfer_batch` is findable when a route
+        # declares that call) and by the control point's name (so a direct call resolves too).
+        # Indexing only by the target name made every transitive lookup miss (found by E-M20).
+        for name in (p_["entry"].rsplit(".", 1)[-1], to.rsplit(".", 1)[-1]):
+            by_name.setdefault(name, (to, p_["attribution"]))
+    for p_ in merged.values():
+        if p_.get("attribution") or not p_.get("calls"):
+            continue
+        for called in p_["calls"]:
+            hit = by_name.get(str(called))
+            if hit:
+                to, src_attr = hit
+                p_["attribution"] = {
+                    "to": to,
+                    "method": "transitive",
+                    "confidence": "catalog",
+                    "sources": sorted({*(src_attr.get("sources") or []), "merge:declared_calls"}),
+                }
+                p_["control_point"] = to
+                attributed += 1
+                break
 
     previous = {}
     if a.previous and Path(a.previous).exists():

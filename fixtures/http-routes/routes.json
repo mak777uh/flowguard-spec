@@ -1,0 +1,14 @@
+{
+  "note": "A route manifest as it would be produced by a framework, a gateway, or an OpenAPI export. `writes` lists the tables the handler reaches; `calls` lists the functions it calls. A source may only contribute paths that reach the target table (ADR-0012).",
+  "service": "bank-api",
+  "target_lock": "bank-api@e-m20",
+  "routes": [
+    { "method": "POST", "path": "/transfer",        "handler": "api_transfer",   "writes": ["accounts"], "calls": ["transfer"] },
+    { "method": "POST", "path": "/transfer/batch",  "handler": "api_batch",      "writes": ["accounts"], "calls": ["transfer_batch"] },
+    { "method": "POST", "path": "/admin/credit",    "handler": "api_admin_credit","writes": ["accounts"], "calls": ["credit_direct"] },
+    { "method": "PUT",  "path": "/accounts/{id}",   "handler": "api_set_balance","writes": ["accounts"], "calls": ["set_balance"] },
+    { "method": "GET",  "path": "/accounts/{id}",   "handler": "api_read",       "writes": [],           "calls": [] },
+    { "method": "GET",  "path": "/health",          "handler": "api_health",     "writes": [],           "calls": [] },
+    { "method": "POST", "path": "/notes",           "handler": "api_note",       "writes": ["notes"],    "calls": [] }
+  ]
+}

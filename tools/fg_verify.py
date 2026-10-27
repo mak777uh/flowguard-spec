@@ -236,7 +236,7 @@ def main() -> int:
     # A kind is listed here only after its enumerator exists AND has been measured. `routes` was
     # listed speculatively while no such source existed - the same "declared, not built" pattern
     # this repository keeps catching in its own instruments (ADR-0011).
-    DENOMINATOR_KINDS = {"grants", "static", "manual"}
+    DENOMINATOR_KINDS = {"grants", "static", "routes", "manual"}
     WITNESS_KINDS = {"runtime", "agent"}
     kinds_present = {s.get("kind", "?") for s in inventory.get("sources", [])}
     denominator_kinds = sorted(kinds_present & DENOMINATOR_KINDS)
