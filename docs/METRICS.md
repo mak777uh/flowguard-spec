@@ -19,6 +19,8 @@ The fix there was the same: make the header generated from the carrier, not writ
 |---|---|---|---|---|---|---|
 | 1 | `E-M11` recall on planted bypasses | **8 / 8** | `python lab/e-m11-run.py --psql <conda>/Library/bin/psql.exe --port 54329` | `21a30af4b4aed7cb052e7593b731935da61dd59860237f52aed8e7e840972375` | 2026-10-27 tree | 2026-10-27 |
 | 2 | `E-M11` row precision (true writers / rows) | **11 / 12** | same run; false positive is a function whose string literal contains the table name | `21a30af4…` | 2026-10-27 tree | 2026-10-27 |
+| 3 | `E-M12` acceptance scenarios passed | **10 / 10** | `python lab/e-m12-run.py` | `eda90a18973a8639a902632d6fe498ec69a8baf7b7ead40cf3a7dedad0128f6d` | 2026-10-27 tree | 2026-10-27 |
+| 4 | `E-M12` end-to-end: claimed vs recomputed coverage | **0.9 claimed / 0.0 recomputed -> lowered** | fixture DB + enumerator + merge + verify | `eda90a18973a8639a902632d6fe498ec69a8baf7b7ead40cf3a7dedad0128f6d` | 2026-10-27 tree | 2026-10-27 |
 
 ## What will fill it
 

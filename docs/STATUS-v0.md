@@ -146,3 +146,10 @@ deployed system; independence of evidence that shares common assumptions.
 
 The fifth cannot be engineered away. It is the reason the artifact is called a scoped consistency attestation and
 not an attestation of security.
+
+### The blocking item is now attribution, not the verifier
+
+`E-M12` found that the grant enumerator sees writers, not callers. Without a call graph (static or runtime), no
+path can be attributed to the declared control point, so coverage computes to 0 and the verdict is capped at
+`CONSISTENT_DECLARED` no matter how many bypasses are found. That is honest and nearly worthless. The next
+artifact is an attribution-capable source; `E-M9` (substitution) is unblocked but secondary.

@@ -32,6 +32,8 @@ BLIND_SPOTS = [
     "application-level checks that the database never sees",
     "privileges inherited through role membership chains and column-level grants",
     "writes performed by extensions or by superuser sessions outside these catalogues",
+    "attribution of a write path to a declared control point - this needs a call graph, so coverage",
+    "    computed from this source alone stays at 0 and the verdict stays capped",
 ]
 
 

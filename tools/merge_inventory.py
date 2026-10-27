@@ -79,6 +79,12 @@ def main() -> int:
         entry["vanished"] = True
         merged[pid] = entry
 
+    # target_lock is carried by the manifest, not left in the SourceRecords: without it a verdict
+    # cannot be bound to a commit, and the verifier refuses (found by the E-M12 integration run).
+    locks = {s.get("run", {}).get("target_lock") for s in sources if s.get("run", {}).get("target_lock")}
+    target_lock = locks.pop() if len(locks) == 1 else None
+    target_lock_conflict = sorted(locks) if len(locks) > 1 else []
+
     kinds = {s["kind"] for s in sources}
     independent_of_agent = bool(kinds - {"agent"})
     non_agent_sources = [s["source_id"] for s in sources if s["kind"] != "agent"]
@@ -93,6 +99,8 @@ def main() -> int:
                 "completeness_claim": s.get("completeness_claim"),
             } for s in sources
         ],
+        "target_lock": target_lock,
+        "target_lock_conflict": target_lock_conflict,
         "independent_of_agent": independent_of_agent,
         "non_agent_sources": non_agent_sources,
         "paths_total": len(merged),

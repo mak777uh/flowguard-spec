@@ -20,6 +20,9 @@ control point identified separately. Read-only: nothing is written to the target
 - application-level checks the database never sees
 - privileges inherited through role membership chains and column-level grants
 - writes performed by extensions or by superuser sessions outside these catalogues
+- **attribution of a path to a declared control point** — this needs a call graph (static or runtime). Without
+  one, every path looks like it bypasses the control point, coverage computes to 0, and the verdict stays capped.
+  This was found by the end-to-end run, not by reasoning: the enumerator sees writers, not callers.
 
 A one-line summary of the method's honesty: **it can see every door the database knows about, and no door that
 lives outside the database.**
