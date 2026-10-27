@@ -252,6 +252,7 @@ def main() -> int:
                 # Propagated so the verifier can refuse a coverage ratio over a truncated list:
                 # the count is meaningless without the totals it was cut from (E-M35).
                 "truncated": s.get("truncated"),
+                "db_logic_density": (s.get("summary") or {}).get("db_logic_density"),
             } for s in sources
         ],
         "target_lock": target_lock,

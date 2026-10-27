@@ -64,6 +64,17 @@ def run_psql(a) -> list[list[str]]:
     return rows
 
 
+def count_functions(a) -> int:
+    """Total functions in the schema: the denominator of db_logic_density."""
+    cmd = [a.psql, "-h", a.host, "-p", str(a.port), "-U", a.user, "-d", a.db, "-tAc",
+           "select count(*) from pg_proc p join pg_namespace n on n.oid = p.pronamespace "
+           f"where n.nspname = '{a.schema}'"]
+    r = subprocess.run(cmd, capture_output=True, text=True)
+    try:
+        return int((r.stdout or "0").strip() or 0)
+    except ValueError:
+        return 0
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--psql", required=True)
@@ -93,6 +104,13 @@ def main() -> int:
         }
         (paths if item_kind == "path" else control_points).append(record)
 
+    # How much of the write logic lives in the database at all. On GitLab's public schema only 36
+    # of 558 functions contain a write statement: the report then covers a thin slice, and nothing
+    # used to say so (E-M37, E-M40).
+    funcs_total = count_functions(a) or 0
+    funcs_writing = len({p["entry"] for p in paths if p["entry"].startswith("function:")})
+    density = round(funcs_writing / funcs_total, 3) if funcs_total else None
+
     # A flat list is fine for a machine and useless for a reader: on a 400-function schema this
     # produced 480 paths (E-M34). The summary comes first so a human can triage, and the full list
     # stays for the machine.
@@ -117,6 +135,9 @@ def main() -> int:
 
     source = {
         "summary": {
+            "db_logic_density": density,
+            "functions_total": funcs_total,
+            "functions_writing": funcs_writing,
             "paths_total": len(paths),
             "distinct_entries": len({p_["entry"] for p_ in paths}),
             "by_kind": by_kind,

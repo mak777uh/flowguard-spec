@@ -288,6 +288,21 @@ def main() -> int:
             f"<= {coverage:.3f} (recomputed from the inventory)", f"{claimed:.3f} (claimed)",
             "lower the claim to the recomputed coverage or supply evidence for the missing paths")
 
+    # ---- 3a. is this system even the kind this tool can see? -------------
+    # GitLab's public schema has 36 functions with a write statement out of 558: the report covers a
+    # thin slice of the write path, and nothing said so (E-M37, E-M40). If most logic lives in the
+    # application, a strong verdict reads as a statement about the system, which it is not.
+    densities = [s.get("db_logic_density") for s in inventory.get("sources", [])
+                 if s.get("db_logic_density") is not None]
+    density = min(densities) if densities else None
+    thin_floor = policy.get("min_db_logic_density", 0.15)
+    if (density is not None and density < thin_floor
+            and ORDER.get(claim.get("declared_level", "CONSISTENT_DECLARED"), 0) > 0):
+        err("THIN_DB_LOGIC_COVERAGE", "coverage_basis",
+            "at least %s of the schema's functions writing to tables" % thin_floor,
+            "db_logic_density %s: most write logic sits outside the database" % round(density, 3),
+            "this report covers database-level paths only; state that, or lower the level", True)
+
     # ---- 3b. the denominator must be big enough to carry the level -------
     # A ratio over one or two paths is noise: a single-path inventory reached PROVEN with coverage
     # 1.0 (attack A1, E-M36). The floor is on the denominator, not on the work done.
@@ -540,6 +555,7 @@ def main() -> int:
         "coverage_basis_kinds": denominator_kinds,
         "ambiguous_attributions": len(conflicted),
         "coverage_states": {k: cov.get(k) for k in ("covered", "unobserved", "unenumerable", "counts")},
+        "db_logic_density": density,
         "outside_weighted_risk": risk.get("outside_weighted_risk"),
         "unclassified_paths": risk.get("unclassified_paths"),
         "risk_policy_digest": risk.get("policy_digest"),

@@ -1,0 +1,5 @@
+GitLab structure.sql (public)    tables 1102  functions 558  density 0.065  projects 0.005
+Pagila v2.1.0 (public.payment)   tables   15  functions  10  density 0.100
+Synthetic 400-function schema    tables   50  functions 400  density 0.812
+verdict with density 0.005 at SCOPED_ASSURANCE -> CONSISTENT_DECLARED + THIN_DB_LOGIC_COVERAGE
+verdict with density 0.812                       -> no THIN_DB_LOGIC_COVERAGE
