@@ -28,7 +28,7 @@ This is our declaration, as agreed; theirs is in `VecDHT docs/STATUS-v1.md`.
 identified the declared control point; row precision 11/12. Log digest in `docs/METRICS.md`. This is the first number
 in this repository that was produced rather than cited.
 
-Kit conformance measured by [`lab/check-interop.py`](../lab/check-interop.py): **6 / 7**.
+Kit conformance measured by [`lab/check-interop.py`](../lab/check-interop.py): **7 / 7**.
 
 ## What works
 
