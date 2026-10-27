@@ -78,6 +78,12 @@ The second rule: **their improvisation is data.** When VecDHT solves a MIG-*item
 a kit proposal, not an incompatibility. When it solves something differently and worse, that is their call, and
 we say nothing in the repository — a shared format is not a mandate to redesign someone's project.
 
+## 4a. The channel
+
+Notes travel through [interop/](../interop/README.md): one dated file per message, append-only, header pinning
+the commit it came from and the commit it addresses. A note is pinned to a state of code, so in a month it is
+still clear what was being discussed. Nothing but files in that folder ever goes into another repository.
+
 ## 5. What compatibility is not
 
 - Not a shared dependency. If one repository cannot be built without the other, the boundary has failed.
