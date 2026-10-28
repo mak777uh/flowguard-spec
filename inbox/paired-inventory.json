@@ -1,0 +1,122 @@
+{
+ "manifest_version": "inventory/0.1",
+ "target_lock": "sample@1",
+ "independent_of_agent": false,
+ "sources": [
+  {
+   "source_id": "migrations",
+   "kind": "static",
+   "what": "1 migration files read as text",
+   "completeness_claim": "partial",
+   "notes": "a migration directory is not a database: what a later ALTER drops is still here"
+  }
+ ],
+ "paths": [
+  {
+   "path_id": "wp_mig_1eb4c43be996",
+   "entry": "function:sample.update_updated_at_column",
+   "target": "sample.accounts",
+   "kind": "function",
+   "how": "defined in migration sample; body uses INSERT, UPDATE",
+   "verbs": [
+    "stmt:INSERT",
+    "stmt:UPDATE"
+   ],
+   "dynamic_sql": true,
+   "completeness_claim": "partial",
+   "not_covered_reason": "dynamic SQL: the body cannot be read as text",
+   "attribution": {
+    "to": "none",
+    "method": "migration_text",
+    "sources": [
+     "migrations"
+    ]
+   },
+   "vanished": false
+  },
+  {
+   "path_id": "wp_mig_da45f55b3383",
+   "entry": "function:sample.apply_transfer",
+   "target": "sample.accounts",
+   "kind": "function",
+   "how": "defined in migration sample; body uses INSERT, UPDATE",
+   "verbs": [
+    "stmt:INSERT",
+    "stmt:UPDATE"
+   ],
+   "dynamic_sql": false,
+   "completeness_claim": "exhaustive_within_covers",
+   "not_covered_reason": null,
+   "attribution": {
+    "to": "none",
+    "method": "migration_text",
+    "sources": [
+     "migrations"
+    ]
+   },
+   "vanished": false
+  },
+  {
+   "path_id": "wp_mig_70b494c6921b",
+   "entry": "trigger:sample_accounts_updated_at",
+   "target": "table:sample.accounts",
+   "kind": "trigger_chain",
+   "how": "trigger on sample.accounts executes sample.update_updated_at_column; a write to the table reaches the body without passing the declared control point",
+   "verbs": [
+    "stmt:UPDATE",
+    "stmt:INSERT"
+   ],
+   "completeness_claim": "exhaustive_within_covers",
+   "not_covered_reason": null,
+   "attribution": {
+    "to": "none",
+    "method": "migration_text",
+    "sources": [
+     "migrations"
+    ]
+   },
+   "vanished": false
+  },
+  {
+   "path_id": "wp_mig_9f8ea01ded6f",
+   "entry": "role:app_rw",
+   "target": "table:sample.accounts",
+   "kind": "privilege",
+   "how": "GRANT INSERT, UPDATE ON sample.accounts TO app_rw in migration sample",
+   "verbs": [
+    "stmt:INSERT",
+    "stmt:UPDATE"
+   ],
+   "completeness_claim": "exhaustive_within_covers",
+   "not_covered_reason": null,
+   "attribution": {
+    "to": "none",
+    "method": "migration_text",
+    "sources": [
+     "migrations"
+    ]
+   },
+   "vanished": false
+  },
+  {
+   "path_id": "wp_mig_096f278a5c3e",
+   "entry": "stmt:UPDATE sample.accounts",
+   "target": "table:sample.accounts",
+   "kind": "observed_write",
+   "how": "the migration script itself runs UPDATE on sample.accounts",
+   "verbs": [
+    "stmt:UPDATE"
+   ],
+   "completeness_claim": "partial",
+   "not_covered_reason": "a migration runs once; it is not a path that exists afterwards",
+   "attribution": {
+    "to": "none",
+    "method": "migration_text",
+    "sources": [
+     "migrations"
+    ]
+   },
+   "vanished": false
+  }
+ ]
+}
