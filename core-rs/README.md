@@ -42,6 +42,18 @@ Either of these, both of which are an environment change rather than a code chan
 
 Both need a download measured in hundreds of megabytes and, for the MSVC route, possibly administrator rights.
 
+## How to build it here
+
+```powershell
+winget install --id BrechtSanders.WinLibs.POSIX.UCRT --accept-package-agreements --accept-source-agreements
+# then add the WinGet package's mingw64\bin to PATH, or let the harness do it:
+cd core-rs; cargo test --offline; cargo build --offline
+```
+
+`lab/e-m67-run.py` finds that toolchain by globbing the WinGet package directory, so the harness works without
+a manual export; a bare `cargo build` in a shell that lacks MinGW will fail to link, which is the state recorded
+below.
+
 ## Meanwhile
 
 - The Python core remains the reference implementation and the only one that produces verdicts.

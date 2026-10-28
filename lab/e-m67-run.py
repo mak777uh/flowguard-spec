@@ -73,9 +73,24 @@ def main() -> int:
         print("build the Rust core first: cd core-rs && cargo build --offline")
         return 1
     cargo = Path.home() / ".cargo" / "bin" / "cargo.exe"
+    # The windows-gnu host needs a working MinGW on PATH; without it every build script fails to link
+    # (core-rs/README.md records why). Discover the WinLibs package rather than hardcoding one path.
+    env = dict(**__import__("os").environ)
+    mingw = None
+    winget = Path.home() / "AppData" / "Local" / "Microsoft" / "WinGet" / "Packages"
+    if winget.exists():
+        for cand in winget.glob("*WinLibs*/mingw64/bin"):
+            mingw = cand
+            break
+    if mingw:
+        env["PATH"] = str(mingw) + ";" + env.get("PATH", "")
     print("Rust arithmetic is asserted by cargo test; running it here as the machine-checked half:")
+    if mingw:
+        print(f"  toolchain: {mingw}")
+    else:
+        print("  toolchain: not found - set PATH to a mingw64/bin or the build will fail to link")
     r = subprocess.run([str(cargo), "test", "--offline", "--quiet"], cwd=ROOT / "core-rs",
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, env=env)
     ok = r.returncode == 0
     for line in (r.stdout or "").splitlines():
         if "test result" in line:
