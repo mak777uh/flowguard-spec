@@ -6,5 +6,5 @@ sakila              21    10 payment              2   1.4  {'dynamic_sql': 1, 'f
 adventureworks       0    11 -                    -     -  loaded (717 errors), no target table
 
 schemas run: 4/5, total paths reported: 4
-summary: C:\Users\Admin\AppData\Local\Temp\tmp7vo_n8tf\summary.json
+summary: <temp>\tmp7vo_n8tf\summary.json
 RESULT: PASS

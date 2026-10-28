@@ -17,7 +17,7 @@
 ограничения                перечислены кодами NC-01…NC-11 и обязательны для уровня
 ```
 
-Состояние, посчитанное из репозитория: ядро 100%, продукт 0%, общая 60%, уровень T2. Замеров: 61. Карточек экспериментов: 35, из них провальных: 2.
+Состояние, посчитанное из репозитория: ядро 100%, продукт 0%, общая 60%, уровень T2. Замеров: 62. Карточек экспериментов: 35, из них провальных: 2.
 
 ## Где неопределённость
 
@@ -133,8 +133,8 @@ python lab/e-m12-run.py          # 19 сценариев верификатор�
 
 ## Мои провалы — чтобы ты не тратил время на их поиск
 
-- **E-M38** — Address reproduced exactly (c3a2e79b…), both signatures verified, all four objects matched - BUT the description was not in the directory at all: a packaging error removed it. The rebuilder matched the address by fitting sixteen candidate canonicalisations, and said so plainly. It then produced seve
-- **E-M9** — 3 of 6 caught. D-1a/b/c (code, build, config) rejected on digest mismatch. D-1d accepted: swapping the signer for another key still returned SIGNED_AND_CONSISTENT, because the bundle carries its own public key and any key that signs the bundle's own address verifies. D-2a/b accepted: a validly signe
+- **E-M38** — Address reproduced exactly (c3a2e79b…), both signatures verified, all four objects matched - BUT the description was not in the directory at all: a packaging error removed it. The rebuilder matched the address by fitting sixteen candidate canonicalisations, and said so plainly. It then produced …
+- **E-M9** — 3 of 6 caught. D-1a/b/c (code, build, config) rejected on digest mismatch. D-1d accepted: swapping the signer for another key still returned SIGNED_AND_CONSISTENT, because the bundle carries its own public key and any key that signs the bundle's own address verifies. D-2a/b accepted: a validly …
 
 Провалы не переписаны задним числом: карточка остаётся с вердиктом `refutes`, починка — отдельной карточкой.
 

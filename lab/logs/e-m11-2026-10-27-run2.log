@@ -1,5 +1,5 @@
 fixture: applied
-source: 12 paths, 1 control point(s) -> C:\Users\Admin\AppData\Local\Temp\e-m11-source.json
+source: 12 paths, 1 control point(s) -> <temp>\e-m11-source.json
 
 plant class              detectable_by result
 P1    direct_privilege   catalog      DETECTED

@@ -74,6 +74,15 @@ def pick(m, needle):
     return "?"
 
 
+def _clip(text, n):
+    """Cut a quote at a word boundary: a sentence ending mid-word is not a quote."""
+    text = str(text)
+    if len(text) <= n:
+        return text
+    cut = text[:n].rsplit(' ', 1)[0]
+    return cut + ' …'
+
+
 def build() -> str:
     m = metrics()
     cs = cards()
@@ -223,7 +232,7 @@ def build() -> str:
     if refuted:
         A("## Мои провалы — чтобы ты не тратил время на их поиск\n")
         for c in refuted:
-            A(f"- **{c.get('id')}** — {c.get('result','')[:300]}")
+            A(f"- **{c.get('id')}** — " + _clip(c.get('result', ''), 300))
         A("")
         A("Провалы не переписаны задним числом: карточка остаётся с вердиктом `refutes`, починка — отдельной "
           "карточкой.\n")

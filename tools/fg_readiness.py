@@ -50,7 +50,8 @@ def ok_enumerator_grants():
     if not psql:
         return False, "psql not found"
     r = run([PY, "lab/e-m11-run.py", "--psql", psql, "--port", "54329"])
-    return r.returncode == 0, "E-M11 recall 8/8 on the planted fixture" if r.returncode == 0 else "E-M11 failed"
+    tail = [x for x in r.stdout.strip().splitlines() if "RESULT" in x or "recall" in x.lower()]
+    return r.returncode == 0, (tail[-1] if tail else f"exit {r.returncode}")
 
 
 def ok_attribution():
@@ -58,7 +59,8 @@ def ok_attribution():
     if not psql:
         return False, "psql not found"
     r = run([PY, "lab/e-m13-run.py", "--psql", psql, "--port", "54329"])
-    return r.returncode == 0, "E-M13 attribution 2/2, false 0/9" if r.returncode == 0 else "E-M13 failed"
+    tail = [x for x in r.stdout.strip().splitlines() if "RESULT" in x or "attribution" in x.lower()]
+    return r.returncode == 0, (tail[-1] if tail else f"exit {r.returncode}")
 
 
 def ok_bundle():

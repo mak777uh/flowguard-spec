@@ -17,7 +17,7 @@ jobs:
       - name: relative links resolve
         run: python3 lab/check-links.py
       - name: claim registry
-        run: python3 lab/check-claims.py
+        run: python3 lab/check-claims.py --strict
       - name: attack suites and refusal coverage
         run: |
           python3 lab/e-m36-run.py

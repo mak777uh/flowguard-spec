@@ -1,0 +1,2 @@
+C:\111\_schemas  # historical: a harness hardcoded this path and it was removed in E-M34; cannot be excised without rewriting history
+C:\111\_pagila  # historical: same, the schema dump path was parameterised in E-M34
