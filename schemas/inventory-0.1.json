@@ -262,6 +262,25 @@
         "integer",
         "array"
       ]
+    },
+    "inventory_attestation": {
+      "type": "object",
+      "description": "Reserved for a third party's signature over this inventory. Not produced by any tool here; a verifier must ignore it until an anchor exists (ADR-0010).",
+      "properties": {
+        "issuer": {
+          "type": "string"
+        },
+        "public_key_pem": {
+          "type": "string"
+        },
+        "signature_base64": {
+          "type": "string"
+        },
+        "covers": {
+          "type": "string",
+          "description": "the canonical digest of the inventory this signature covers"
+        }
+      }
     }
   }
 }

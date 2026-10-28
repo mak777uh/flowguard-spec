@@ -446,16 +446,18 @@ def main() -> int:
                                    and s.get("source_id") in ((p_.get("attribution") or {}).get("sources") or [])
                                    for p_ in paths))]
     density = min(densities) if densities else None
-    thin_floor = policy.get("min_db_logic_density", 0.15)
+    # Bands, because 0.15 was a number nobody calibrated. The band names what the report can see;
+    # only the lowest band forbids a strong level, and the band is published beside the number.
+    band_floor = policy.get("min_db_logic_density", 0.15)
     if silent and ORDER.get(claim.get("declared_level", "CONSISTENT_DECLARED"), 0) > 0:
         err("MISSING_EVIDENCE", "coverage_basis",
             "db_logic_density from every catalogue source",
             "not reported by: " + ", ".join(str(x) for x in silent),
             "re-run the enumerator; an absent field is not a passing check", True)
-    if (density is not None and density < thin_floor
+    if (density is not None and density < band_floor
             and ORDER.get(claim.get("declared_level", "CONSISTENT_DECLARED"), 0) > 0):
         err("THIN_DB_LOGIC_COVERAGE", "coverage_basis",
-            "at least %s of the schema's functions writing to tables" % thin_floor,
+            "at least %s of the schema's functions writing to tables" % band_floor,
             "db_logic_density %s: most write logic sits outside the database" % round(density, 3),
             "this report covers database-level paths only; state that, or lower the level", True)
 
@@ -750,6 +752,15 @@ def main() -> int:
                 err("REPORT_BUNDLE_INCONSISTENT", "coverage",
                     "within 0.05 of the inventory's own arithmetic", round(float(reported), 3),
                     "the report and the inventory describe different worlds; reconcile them", True)
+        # A report that omits the list it is supposed to analyse cannot support a strong level: the
+        # cross-check below would simply not run (E-M60 found this still open after E-M48).
+        if "analysed_paths" not in report and ORDER.get(
+                claim.get("declared_level", "CONSISTENT_DECLARED"), 0) > 0:
+            err("MISSING_EVIDENCE", "report.analysed_paths",
+                "the list of paths the analysis covered",
+                "absent: a report without its denominator cannot be checked against the inventory",
+                "state which paths were analysed, or lower the level", True)
+
         in_core_flags = [rp.get("in_core") for rp in report.get("analysed_paths", [])
                          if isinstance(rp, dict) and "in_core" in rp]
         if in_core_flags and not any(in_core_flags) and in_core:
@@ -821,6 +832,9 @@ def main() -> int:
         "ambiguous_attributions": len(conflicted),
         "coverage_states": {k: cov.get(k) for k in ("covered", "unobserved", "unenumerable", "counts")},
         "db_logic_density": density,
+        "db_logic_band": (None if density is None else
+                          ("thin" if density < 0.15 else
+                           "mixed" if density < 0.40 else "dense")),
         "outside_weighted_risk": risk.get("outside_weighted_risk"),
         "unclassified_paths": risk.get("unclassified_paths"),
         "risk_policy_digest": risk.get("policy_digest"),
