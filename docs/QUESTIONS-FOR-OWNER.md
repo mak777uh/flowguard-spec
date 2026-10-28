@@ -3,7 +3,7 @@
 Everything else is being decided and built by the agent. This file holds only what **cannot** be decided here, with
 what is blocked, what happens while waiting, and what it costs. Reviewed every round; answers land as edits here.
 
-Last updated: 2026-10-27, after round 8.
+Last updated: 2026-10-28, after the coordination check with VecDHT.
 
 ---
 
@@ -14,8 +14,10 @@ Last updated: 2026-10-27, after round 8.
 Every measurement so far is on a fixture **I wrote**. That is the strongest criticism available against this
 repository, and it is correct: eight planted bypasses in a schema I designed prove the mechanism, not the utility.
 
-**What I can do alone:** a public schema (Pagila, dvdrental, or any open-source project's migrations) — no secrets,
-no client data, fully reproducible. I will start there.
+**What I have done alone:** four public schemas loaded and measured (Pagila, Sakila, Chinook, Northwind), plus
+GitLab's production structure.sql — 1436 tables, 558 functions. On GitLab only 36 functions contain a write
+statement, which is why db_logic_density now refuses a strong verdict on such a system. Q1 is therefore half
+answered: public evidence exists, your schema or a client's does not.
 
 **What I cannot do alone:** anything of yours, or a client's, which is where the real test is.
 
@@ -67,7 +69,7 @@ Requires your account data to claim. Low value; ignored unless you want it.
 ## Вопросы, накопившиеся за последние круги
 
 1. **Принятие риска связано с адресом, но не покрыто им полностью.** С ADR-0015 подпись роли покрывает все её
-   поля, кроме ccepted_scope (он обязан равняться адресу, и адрес не может содержать собственный дайджест).
+   поля, кроме ccepted_scope (он обязан равняться адресу, и адрес не может содержать собственный дайджест).
    Верификатор сверяет его отдельно. Вопрос владельцу: достаточно ли этого, или принятие должно быть
    криптографически привязано к адресу иначе — например, второй подписью поверх адрес + дайджест роли?
    Решение меняет формат и инвалидирует выданные артефакты, поэтому это вопрос к вам, не ко мне.
