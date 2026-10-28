@@ -45,7 +45,7 @@ family**, not by a human stranger. Readiness P1 therefore still scores zero — 
 | experiment cards | **49** (46 supports, 3 refutes) | `ls lab/experiments` |
 | metric rows, each with a command | **79** | `python lab/check-metric-digests.py --cards` |
 | verifier acceptance scenarios | **25 / 25** | `python lab/e-m12-run.py` |
-| adversarial breaks found and closed | **11 + 14 + 9 = 34** | `python lab/e-m42-run.py`, `lab/e-m50` cases |
+| adversarial breaks found and closed | **11 + 14 + 9 = 34** | `python lab/e-m42-run.py`, `the E-M50 cases` cases |
 | differential mutations, two implementations | **44**, 1 known divergence | `python lab/e-m57-run.py` |
 
 ## What the product half is zero for
