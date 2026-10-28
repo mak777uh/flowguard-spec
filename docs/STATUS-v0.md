@@ -1,6 +1,6 @@
 # STATUS — generated, not edited
 
-*Produced by `python tools/fg_status.py` at 2026-10-28 22:18 UTC from commit `fbeefd5`. Editing this file by
+*Produced by `python tools/fg_status.py` at 2026-10-28 22:49 UTC from commit `e4a5898`. Editing this file by
 hand is what produced the contradictions a reviewer found (M1 absent and present in one page, 84 links
 against 122, three guards against six CI steps). Regenerate it instead; the build fails when it is stale.*
 
@@ -24,7 +24,7 @@ third party, or signed an acceptance. That is not modesty, it is the measured st
 | metric rows, each with a command | 95 |
 | experiment cards | 62 (refutes 5, supports 57) |
 | decisions | 17 |
-| markdown links checked | 130, broken 0 |
+| markdown links checked | 131, broken 0 |
 
 ## Method kit
 

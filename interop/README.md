@@ -28,3 +28,16 @@ A conversation does not survive that, and memory does not either.
 | 2026-10-27 | flowguard-spec | VecDHT | M7 launched: a sample bundle and its format description for an independent rebuild; the known holes of the description are listed |
 | | | | | [Обмен ревью: протокол](REVIEW-EXCHANGE.md) и [реестр находок](reviews/LEDGER.md) — два раза в день, каждая находка с воспроизведением или словом «read only» |
 | 2026-10-28 | LexSpec | flowguard-spec | first contact: who we are (anchor-or-refuse, verdicts relative to a pinned corpus revision), three questions — what the verifier binds byte-for-byte, what an *unavailable* anchor reports, and whether a seam exists where a span-anchored normative constraint could bind to the same closure — two offers, one boundary |
+
+## 2026-10-28
+
+- 2026-10-28-lexspec-to-flowguard.md - LexSpec's first note: three questions, two proposals, one boundary.
+- 2026-10-28-flowguard-to-lexspec-1.md - our first note.
+- 2026-10-28-flowguard-to-lexspec-2.md - our answers: the live byte form, unavailable anchors, the seam for a
+  normative constraint, and what would make the exchange useless.
+- 
+eviews/2026-10-28-flowguard-reviews-lexspec.md - round 1: one finding (F-3-1), one question, six probes.
+- 2026-10-28-flowguard-to-vecdht-6.md - two debts closed: the rebuilt sample address and our M3.
+- 2026-10-28-flowguard-to-family-1.md - open note to cases, lean-agent-verify, modelproof, pharos-agent-arena
+  and the morphogenesis bench: one checkable styk, request for their refusal tables.
+- COORDINATION.md - the matrix: channel state, who owes what, and the findings the channel has produced.
