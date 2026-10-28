@@ -3,37 +3,37 @@
  "subjects": {
   "code": {
    "sha256": "14d268ad504f20416920223e6c1bd2eecc19e4a5beb54b0684baf766b4d467a7",
-   "source": "target.py"
+   "source": "code.bin"
   },
   "build": {
    "sha256": "b29cc00005a85cafaef8968b5864f9d3393e54a4b37016f493f278c0eec2de2b",
-   "source": "build.json"
+   "source": "build.bin"
   },
   "config": {
    "sha256": "b2fdb2fb436ec7fc63874272c3261ed0f66b4c32b1b4dd1ac7f03b75964ef5e8",
-   "source": "config.yml"
+   "source": "config.bin"
   },
   "identity": {
    "sha256": "2094cfbe86a061c5a2aa307d74a0e2478be0db393327ef3dafb4e5b1d52b18b1",
-   "source": "identity.txt"
+   "source": "identity.bin"
   }
  },
  "objects": {
   "14d268ad504f20416920223e6c1bd2eecc19e4a5beb54b0684baf766b4d467a7": {
    "bytes": 113,
-   "name": "target.py"
+   "name": "code.bin"
   },
   "b29cc00005a85cafaef8968b5864f9d3393e54a4b37016f493f278c0eec2de2b": {
    "bytes": 35,
-   "name": "build.json"
+   "name": "build.bin"
   },
   "b2fdb2fb436ec7fc63874272c3261ed0f66b4c32b1b4dd1ac7f03b75964ef5e8": {
    "bytes": 12,
-   "name": "config.yml"
+   "name": "config.bin"
   },
   "2094cfbe86a061c5a2aa307d74a0e2478be0db393327ef3dafb4e5b1d52b18b1": {
    "bytes": 18,
-   "name": "identity.txt"
+   "name": "identity.bin"
   },
   "b1ccd4bc4be5b5a40b112b20d2408727034f293692aace3fdf928704638cfaf0": {
    "bytes": 544,

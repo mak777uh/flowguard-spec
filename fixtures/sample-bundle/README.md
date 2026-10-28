@@ -1,6 +1,6 @@
 # Sample bundle — the format description, written for someone who will not read our code
 
-Address of this bundle: `e3699948…` (full value in `manifest.sha256`).
+Address of this bundle: `27a4c3977982779d…` (full value in `manifest.sha256`).
 
 This description was rewritten after an independent rebuild (`E-M38`) found that the previous version was missing the
 details that actually decide the address. Every rule below is stated because a rebuilder got it wrong or had to guess.
@@ -62,6 +62,19 @@ two conventions in one file, which is a trap, and it is gone.
 
 ## Roles
 
+A role signature is **not** over the address alone. From `ADR-0015` it covers:
+
+```
+address || "\n" || "role:" || sha256( canonical( role document without accepted_scope ) )
+```
+
+`accepted_scope` is excluded because it must equal the address; every other term — `issuer`,
+`residual_risk`, `valid_until`, `statement`, `policy_digest` — is inside the digest. Editing any of them
+breaks that party's signature, which is the point: before this rule an acceptance could be rewritten
+after signing and the bundle would still verify. A role bound only to the address is refused for
+`risk_acceptance`, and reported as the weaker binding for other roles.
+
+
 `signatures/<id>.role` carries `asserts` (the role) and `issuer`. Roles are defined in `policies/signature-roles.json`:
 
 | role | must carry |
@@ -90,3 +103,21 @@ cannot be created by a JSON field.
 - **Sort order IS tested here, contrary to what this page said before.** `claim_id` and `claimed_coverage` sort differently under code-point order and under punctuation-ignoring collation, so a locale-aware implementation produces a different address. That was found by the second rebuilder.
 
 If you hit something this page does not answer, that is a defect in the page — report it, and it becomes a card.
+
+## What a role signature covers
+
+Not the address alone. From `ADR-0015`:
+
+```
+address || "\n" || "role:" || sha256( canonical( role document without accepted_scope ) )
+```
+
+`accepted_scope` is excluded because it must equal the address. Every other term — `issuer`,
+`residual_risk`, `valid_until`, `statement`, `policy_digest` — is inside the digest, so editing any of
+them breaks that party's signature. Before this rule an acceptance could be rewritten after signing and
+the bundle still verified (`E-M50` B2). A role bound only to the address is refused for
+`risk_acceptance` and reported as the weaker binding for everything else:
+
+```
+"signature_binding": { "demo": "role", "owner": "role" }
+```

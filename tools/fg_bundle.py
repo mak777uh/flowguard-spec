@@ -59,6 +59,29 @@ def load_roles():
     return ROLES_POLICY
 
 
+
+def role_message(address: str, role_doc: dict) -> bytes:
+    """The bytes a role signature covers: the address, then the role's own terms.
+
+    ADR-0015. Both creation and verification call this with the parsed document, so there is exactly
+    one implementation of the message and no way for the two sides to canonicalise differently.
+    `accepted_scope` is excluded: it must equal the address and is checked separately.
+    """
+    bounded = {k: v for k, v in role_doc.items() if k != "accepted_scope"}
+    digest = hashlib.sha256(
+        json.dumps(bounded, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    return address.encode("ascii") + b"\nrole:" + digest.encode("ascii")
+
+
+def role_document(asserts: str, issuer: str, **fields) -> dict:
+    """The one place a role document is built, so creation and signing cannot drift."""
+    doc = {"asserts": asserts, "issuer": issuer}
+    for key, value in fields.items():
+        if value:
+            doc[key] = value
+    return doc
+
+
 def check_roles(bundle_dir: Path, address: str):
     """Validate every signature's role against policies/signature-roles.json (E-M28).
 
@@ -163,22 +186,28 @@ def cmd_create(a) -> int:
     (out / "manifest.sha256").write_bytes((addr + "\n").encode("ascii"))  # LF, always
 
     key = load_key(Path(a.key))
-    sig = key.sign(addr.encode("ascii"))
-    (out / "signatures" / f"{a.signer}.sig").write_bytes(base64.b64encode(sig).decode("ascii").encode("ascii") + b"\n")
-    (out / "signatures" / f"{a.signer}.pub").write_bytes(
-        key.public_key().public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo))
-    role_doc = {"asserts": a.role, "issuer": a.signer}
+    # ADR-0015: sign over the document that will be written, built by the one function that builds
+    # role documents. Signing whatever exists at this moment is what made the first attempt degrade
+    # to an address-only signature (E-M52).
+    _fields = {}
     if a.role == "consistency_verdict":
-        rp = Path(__file__).resolve().parent.parent / "policies" / "risk-classes.json"
-        role_doc["policy_digest"] = hashlib.sha256(rp.read_bytes()).hexdigest()
+        _rp = Path(__file__).resolve().parent.parent / "policies" / "risk-classes.json"
+        _fields["policy_digest"] = hashlib.sha256(_rp.read_bytes()).hexdigest()
     if a.role == "risk_acceptance":
-        role_doc.update({
+        _fields.update({
             "accepted_scope": addr,
             "residual_risk": a.residual_risk or ["NC-01", "NC-02"],
             "valid_until": a.valid_until or "2027-01-01",
             "statement": a.statement or "accepted by the named party for the stated period",
         })
-    (out / "signatures" / f"{a.signer}.role").write_text(json.dumps(role_doc), encoding="utf-8")
+    _role_doc = role_document(a.role, a.signer, **_fields)
+    sig = key.sign(role_message(addr, _role_doc))
+    (out / "signatures" / f"{a.signer}.sig").write_bytes(base64.b64encode(sig).decode("ascii").encode("ascii") + b"\n")
+    (out / "signatures" / f"{a.signer}.pub").write_bytes(
+        key.public_key().public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo))
+    # The document is written exactly as it was signed. Building it twice is what let creation and
+    # verification disagree on two bytes (E-M52), so `_role_doc` from above is used here, not rebuilt.
+    (out / "signatures" / f"{a.signer}.role").write_text(json.dumps(_role_doc), encoding="utf-8")
 
     print(f"bundle: {out}  address {addr[:16]}…  subjects {', '.join(subjects)}")
     return 0
@@ -242,6 +271,7 @@ def verify_bundle(a) -> tuple:
 
     # 4. at least one signature verifies over the address, from a key supplied out-of-band
     verified = []
+    bindings = {}
     for sigf in sorted((b / "signatures").glob("*.sig")):
         name = sigf.stem
         pub = b / "signatures" / f"{name}.pub"
@@ -257,9 +287,31 @@ def verify_bundle(a) -> tuple:
             continue
         try:
             key = load_pem_public_key(pub_bytes)
-            key.verify(base64.b64decode(sigf.read_text(encoding="ascii").strip()),
-                       addr.encode("ascii"))
+            sig_bytes = base64.b64decode(sigf.read_text(encoding="ascii").strip())
+            # ADR-0015: a role signature covers the address AND the role's terms. The address-only
+            # form is the older, weaker binding; it is accepted for roles that predate the rule but
+            # reported as such, never taken silently (E-M52: silence let a tampered acceptance pass).
+            binding = "address"
+            role_path = b / "signatures" / f"{name}.role"
+            if role_path.exists():
+                try:
+                    key.verify(sig_bytes, role_message(addr, json.loads(role_path.read_text(encoding="utf-8"))))
+                    binding = "role"
+                except Exception:  # noqa: BLE001
+                    binding = "address"
+            if binding == "address":
+                key.verify(sig_bytes, addr.encode("ascii"))
+            # ADR-0015: an acceptance whose terms the signature does not cover is the defect B2 of
+            # E-M50, so it is refused rather than accepted with a weaker binding.
+            if binding == "address" and role_path.exists():
+                try:
+                    _doc_r = json.loads(role_path.read_text(encoding="utf-8"))
+                except Exception:  # noqa: BLE001
+                    _doc_r = {}
+                if _doc_r.get("asserts") == "risk_acceptance":
+                    raise ValueError("terms are not covered by this party's signature")
             verified.append(name)
+            bindings[name] = binding
         except Exception:  # noqa: BLE001
             problems.append(("MISSING_EVIDENCE", f"signature {name}", "a valid signature over the address",
                              "verification failed"))
@@ -284,6 +336,7 @@ def verify_bundle(a) -> tuple:
         "verdict": "INVALID" if problems else "SIGNED_AND_CONSISTENT",
         "address": (addr or "")[:16] + "…" if addr else None,
         "signed_by": verified,
+        "signature_binding": bindings,
         "errors": [{"code": c, "subject": s, "expected": e, "observed": o} for c, s, e, o in problems[:3]],
     }
     return out, (2 if problems else 0)
