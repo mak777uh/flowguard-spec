@@ -4,7 +4,7 @@
 conversation can fill in twenty minutes. It is deliberately not free-form: the fields below are the minimum that
 distinguishes a consumer from a compliment.
 
-`tools/fg_readiness.py` awards the nine points for P2 **only** when every field carries a real value — a placeholder
+`tools/fg_readiness.py` awards the ten points for P2 **only** when every field carries a real value — a placeholder
 like `<name>` scores zero, because a template that passes its own check is the failure mode this repository keeps
 finding in its own instruments.
 

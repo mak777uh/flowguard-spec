@@ -13,6 +13,23 @@ PY = sys.executable
 V = "tools/fg_verify.py"
 A = Path(__file__).resolve().parent.parent / "fixtures" / "attack"
 
+# Expected refusal codes per case: declared here so the suite states its intent, and so
+# lab/check-refusal-coverage.py can see which code each attack is supposed to trigger.
+EXPECTED = {
+    "B1 one path, weak claim": ["EVIDENCE_TIER_UNSUPPORTED"],
+    "B2 report says core empty": ["EVIDENCE_TIER_UNSUPPORTED"],
+    "B3 eight copies of one path": ["COVERAGE_BASIS_TOO_SMALL"],
+    "B4 truncation without label": ["MISSING_EVIDENCE"],
+    "B5 refuted confirmation": ["EVIDENCE_TIER_UNSUPPORTED"],
+    "B6 attribution sources [null]": ["CLAIM_EXCEEDS_EVIDENCE", "EVIDENCE_TIER_UNSUPPORTED"],
+    "B7 growth declared": ["POLICY_CEILING_EXCEEDED"],
+    "B8 empty commit": ["MISSING_EVIDENCE"],
+    "B9 density deleted": ["THIN_DB_LOGIC_COVERAGE", "EVIDENCE_TIER_UNSUPPORTED"],
+    "B10 observed DELETE as prose": ["REPORT_BUNDLE_INCONSISTENT"],
+    "B10 control stmt:DELETE": ["UNENUMERABLE_PATH"],
+    "A13 not independent": ["E_NO_INDEPENDENT_CLOSURE"],
+    "B11 lenient policy": ["POLICY_UNTRUSTED"],
+}
 CASES = [
     ("B1 one path, weak claim", ["--claim", A / "k-consistent.json", "--inventory", A / "a4-inv.json"]),
     ("B2 report says core empty", ["--claim", A / "k-scoped.json", "--inventory", A / "a11-inv.json",
@@ -46,9 +63,11 @@ for name, args in CASES:
         bad += 1
         continue
     codes = sorted({e["code"] for e in out.get("errors", [])})
+    want = EXPECTED.get(name, [])
+    missing_expected = [c for c in want if c not in codes]
     strong = out["verdict"] in ("PROVEN", "SCOPED_ASSURANCE")
-    flag = "STILL BREAKS" if strong else "blocked"
-    if strong:
+    flag = "STILL BREAKS" if strong else ("NO EXPECTED CODE" if missing_expected else "blocked")
+    if strong or missing_expected:
         bad += 1
     print(f"{name:32} {out['verdict']:20} {flag:14} {codes[:3]}")
 

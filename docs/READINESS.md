@@ -14,7 +14,7 @@ python tools/fg_readiness.py --json    # machine-readable
 |---|---|---|---|
 | **T0** | nothing runs | — | documents only |
 | **T1** | works for its author | E1, E2, E6 | the tools run on the author's machine |
-| **T2** | usable by an outsider on their own database | T1 + E3, E4, E5, E7 | a stranger can install, run and reproduce the measurements |
+| **T2** | reproducible by an outsider on a database they already run | T1 + E3, E4, E5, E7 | **no outsider has done it.** The seven engine checks pass on the author's machine against a PostgreSQL the author runs; there is no install step and no third-party transcript |
 | **T3** | trustworthy for someone else's decision | T2 + P1, P2 | an independent party rebuilt the artifact and a consumer said what changes |
 | **T4** | a guarantee someone may rely on | T3 + P3, P4 | risk acceptance is signed and the corpus comes from another author |
 
@@ -24,7 +24,7 @@ python tools/fg_readiness.py --json    # machine-readable
 |---|---|---|---|---|
 | E1 | engine | 10 | all guards and negative controls green | four guard commands exit 0 |
 | E2 | engine | 8 | the verifier executes and refuses | `fg_verify` returns a verdict on a probe |
-| E3 | engine | 12 | acceptance scenarios pass | `lab/e-m12-run.py` exits 0 (17 scenarios) |
+| E3 | engine | 12 | acceptance scenarios pass | `lab/e-m12-run.py` exits 0 (25 scenarios) |
 | E4 | engine | 8 | grant enumerator measured on a planted fixture | `lab/e-m11-run.py` exits 0 |
 | E5 | engine | 8 | attribution measured, decoy not fooled | `lab/e-m13-run.py` exits 0 |
 | E6 | engine | 8 | bundle with Ed25519 verifies under both anchors | sample bundle returns `SIGNED_AND_CONSISTENT` |
@@ -62,7 +62,7 @@ Measured: 6 of 6 substitution cases with anchors, 3 of 6 without; 102 generated 
 **4. Get a machine-checkable verdict and refusal.**
 `tools/fg_verify.py` recomputes coverage from the inventory, binds exclusions to real paths, refuses levels without
 the required `not_claimed` codes, and refuses an upgrade when the weighted risk outside the core is too large.
-Measured: 17 acceptance scenarios, all passing.
+Measured: 25 acceptance scenarios, all passing.
 *Does not do:* decide what a system is worth. It decides what may be said about it.
 
 **5. Weight the perimeter.**
@@ -76,7 +76,7 @@ exact weights it used.
 
 All four must hold:
 
-1. **T2 reached** — ✅ *achieved; a stranger can install and reproduce the measurements*.
+1. **T2 reached** — ✅ *the author's seven engine checks pass; no outsider has reproduced them, and the harnesses assume a running PostgreSQL on a given port with a `postgres` role*.
 2. **Reproducible in under ten minutes** — one install line, one fixture command, one expected number.
 3. **Known false positives published** — the string-literal case in the grant enumerator, the depth-8 limit in
    attribution, the "a reason can be a lie" limit on exclusions. Published, not hidden.

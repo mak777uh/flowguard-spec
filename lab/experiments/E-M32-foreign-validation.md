@@ -8,7 +8,7 @@ finished: "2026-10-28T02:40:00+03:00"
 environment: "Windows, CPython 3.13.11"
 command: "python tools/fg_confirm.py --record <record.json> --check"
 threshold: "Pre-registered: (a) a confirmation record without a named person, a role, a contact channel, a date, a verdict and the owner's own quoted sentence is refused, naming every missing field, (b) a complete record is accepted and raises the evidence tier the inventory supports to 2, (c) the verifier then accepts a tier-2 declaration that it refused before."
-result: "5 of 5 refusals named on the incomplete record; the complete record accepted and the inventory moved to tier 2; a PROVEN claim at tier 2 no longer trips EVIDENCE_TIER_UNSUPPORTED (its verdict is still CONSISTENT_DECLARED, because coverage and other errors stand — the tier is not a shortcut past them)."
+result: "6 of 6 refusals named on the incomplete record; the complete record accepted and the inventory moved to tier 2; a PROVEN claim at tier 2 no longer trips EVIDENCE_TIER_UNSUPPORTED (its verdict is still CONSISTENT_DECLARED, because coverage and other errors stand — the tier is not a shortcut past them)."
 verdict: supports
 ---
 

@@ -1,0 +1,16 @@
+{ "manifest_version":"inventory/0.1","target_lock":"t@1",
+  "sources":[{"source_id":"agent-report","kind":"agent","covers":["reported by the analysing agent"],
+              "blind_spots":["everything the agent did not read"],"completeness_claim":"exhaustive_within_covers",
+              "db_logic_density":0.6}],
+  "independent_of_agent": false,
+  "paths":[
+   {"path_id":"wp_0000000000000021","entry":"table:app.payments","kind":"privilege",
+    "attribution":{"to":"function:bank.transfer","method":"direct","sources":["agent-report"]}},
+   {"path_id":"wp_0000000000000022","entry":"table:app.audit","kind":"privilege"},
+   {"path_id":"wp_0000000000000023","entry":"table:app.notes","kind":"privilege"},
+   {"path_id":"wp_0000000000000024","entry":"table:app.users","kind":"privilege"},
+   {"path_id":"wp_0000000000000025","entry":"table:app.orders","kind":"privilege"},
+   {"path_id":"wp_0000000000000026","entry":"table:app.refunds","kind":"privilege"},
+   {"path_id":"wp_0000000000000027","entry":"table:app.ledger","kind":"privilege"},
+   {"path_id":"wp_0000000000000028","entry":"table:app.owners","kind":"privilege"},
+   {"path_id":"wp_0000000000000029","entry":"table:app.branches","kind":"privilege"}] }

@@ -77,7 +77,7 @@ because the key is compared to a set, not because "mallory" is a known name.
 
 ## Consequences
 
-`E-M9` (six cases) and `E-M10` (102 generated variants) now form the evidence for claim C-07 in `docs/CLAIMS.md`:
+`E-M9` (six cases) and `E-M10` (102 generated variants) now form the evidence for claim C-08 in `docs/CLAIMS.md`:
 the verifier rejects substitution across the declared classes. Both cards publish their own limits, and neither
 claims to cover a class that was never generated.
 

@@ -8,7 +8,7 @@ finished: "2026-10-28T04:55:00+03:00"
 environment: "Windows, CPython 3.13.11; independent agent with no access to the implementation"
 command: "spawn an agent with C:\\111\\_m7\\sample-bundle only; it may not read the repository"
 threshold: "Pre-registered: an agent that has never seen the implementation reproduces the bundle address from the written description alone, verifies both signatures, and checks every object digest. Any ambiguity in the description counts against the description, not against the rebuilder."
-result: "Address reproduced exactly (c3a2e79b…), both signatures verified, all four objects matched - BUT the description was not in the directory at all: a packaging error removed it. The rebuilder matched the address by fitting sixteen candidate canonicalisations, and said so plainly. It then produced thirteen concrete defects in the format, two of which were real bugs: inventory_digest matched nothing in the bundle, and three of four objects contained CRLF so their digests were not portable. The test as designed is invalid and must be repeated; the defects are real."
+result: "Address reproduced exactly (c3a2e79b…), both signatures verified, all four objects matched - BUT the description was not in the directory at all: a packaging error removed it. The rebuilder matched the address by fitting sixteen candidate canonicalisations, and said so plainly. It then produced seven concrete defects in the format, two of which were real bugs: inventory_digest matched nothing in the bundle, and three of four objects contained CRLF so their digests were not portable. The test as designed is invalid and must be repeated; the defects are real."
 verdict: refutes
 ---
 
@@ -36,7 +36,7 @@ It also stated the limitation in one sentence, which is the most valuable thing 
 
 So: **agreement, obtained by cheating with the answer available.** The test is invalid. The defects it listed are not.
 
-## The thirteen defects, and which were real
+## The seven defects, and which were real
 
 Two were bugs in the artifact, confirmed by inspection:
 
@@ -61,7 +61,8 @@ description was rewritten stating every rule above, including the ones this bund
 
 ## What this means for M7
 
-ebuild_result: differed would be wrong — the address agreed. greed would be worse — the agreement came from
+
+ebuild_result: differed would be wrong — the address agreed. greed would be worse — the agreement came from
 fitting. The honest record is **refuted as a test**: the description was absent, so the experiment measured the wrong
 thing. It is re-run with the description present, and that run is what M7 will be recorded from.
 

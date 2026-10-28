@@ -8,7 +8,7 @@ finished: "2026-10-28T02:24:00+03:00"
 environment: "Windows, CPython 3.13.11, cryptography 50.0.2"
 command: "python lab/e-m31-run.py"
 threshold: "Pre-registered: two independent builds of the same subject, claim and inventory, with the same key, produce byte-identical addresses."
-result: "Identical. Both builds returned 7fd84271…, so a bundle address is a function of the inputs and not of the time, the order of files, or the signature. The claim C-02 that used to point at a planned replay harness now points at this card."
+result: "Identical. Both builds returned 7fd84271…, so the address is a function of the inputs for this input. Independence from key choice and from file order is argued from the format, not measured here — a reviewer pointed that out and is right. The claim C-02 that used to point at a planned replay harness now points at this card."
 verdict: supports
 ---
 

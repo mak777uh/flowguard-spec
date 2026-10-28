@@ -78,6 +78,65 @@ CONSUMER_FIELDS = ("person", "organisation", "decision_before", "decision_after"
                    "what_they_lose", "date", "verbatim")
 
 
+
+def _foreign_validation_records():
+    """Every foreign_validation record a human would have committed, as (path, record).
+
+    Fixtures and scratch directories are demonstrations, and a demonstration is not an act — the
+    reviewer's own finding (E-M43): a synthetic record in tools/_tmp made P1 pass.
+    """
+    import json as _json
+    out = []
+    roots = [ROOT / "docs", ROOT / "interop", ROOT / "lab" / "experiments", ROOT / "reports"]
+    for base in roots:
+        if not base.exists():
+            continue
+        for f in base.rglob("*.json"):
+            if any(part in (".git", "node_modules", "_tmp", "fixtures") for part in f.parts):
+                continue
+            try:
+                doc = _json.loads(f.read_text(encoding="utf-8"))
+            except Exception:  # noqa: BLE001
+                continue
+            recs = doc.get("foreign_validation") if isinstance(doc, dict) else None
+            if isinstance(recs, list):
+                for r in recs:
+                    if isinstance(r, dict):
+                        out.append((f, r))
+    return out
+
+
+def _valid_confirmation(r):
+    owner = r.get("owner") or {}
+    return (r.get("owner_confirmed") is True
+            and r.get("verdict") in ("confirmed", "partially_correct")
+            and all(owner.get(k) for k in ("name", "role", "how_contacted", "date"))
+            and len(str(r.get("owner_statement") or "").strip()) >= 12)
+
+
+def ok_third_party_rebuild():
+    """A rebuild line plus a validated foreign confirmation of the same schema.
+
+    Text alone was enough before: a reviewer typed one line and collected 15 points (E-M43).
+    """
+    marker = has_marker(r"^rebuild_result\s*:\s*(agreed|differed)\s+by\s+(a\s+)?(third[- ]party|human|organisation|organization)")
+    records = [r for _, r in _foreign_validation_records() if _valid_confirmation(r)]
+    if not marker:
+        return False, "no rebuild line by a third party"
+    if not records:
+        return False, "the rebuild line has no validated foreign_validation record behind it"
+    return True, f"{marker} + {records[0].get('schema')} confirmed by {records[0]['owner']['name']}"
+
+
+def ok_external_corpus():
+    """An owner-produced ground-truth list, blind — not a marker in prose."""
+    records = [r for _, r in _foreign_validation_records()
+               if isinstance(r.get("ground_truth"), dict) and r.get("blind_evaluation") is True]
+    if records:
+        return True, f"blind ground truth for {records[0].get('schema')}"
+    return False, "no record with ground_truth + blind_evaluation: a marker is not a corpus"
+
+
 def ok_risk_acceptance():
     """A real acceptance, not a demonstration.
 
@@ -92,7 +151,13 @@ def ok_risk_acceptance():
             doc = json.loads(rolefile.read_text(encoding="utf-8"))
         except Exception:  # noqa: BLE001
             continue
-        if doc.get("asserts") == "risk_acceptance" and doc.get("issuer") and doc.get("valid_until"):
+        if doc.get("asserts") == "risk_acceptance":
+            required = ("issuer", "accepted_scope", "residual_risk", "valid_until", "statement")
+            missing = [k for k in required if not doc.get(k)]
+            if missing:
+                return False, f"risk_acceptance missing {', '.join(missing)}"
+            if len(str(doc.get("statement"))) < 12:
+                return False, "risk_acceptance statement is a placeholder"
             return True, f"{doc['issuer']} until {doc['valid_until']}"
     return False, "no acceptance outside fixtures/ (a demo signature is not an act)"
 
@@ -150,14 +215,12 @@ CHECKS = [
     ("E5", "engine", 8, ok_attribution, "attribution measured, decoy not fooled"),
     ("E6", "engine", 8, ok_bundle, "bundle with Ed25519 verifies under both anchors"),
     ("E7", "engine", 6, ok_corpus, "mutation corpus measured with a declared class set"),
-    ("P1", "product", 15, lambda: (bool(has_marker(r"^rebuild_result\s*:\s*(agreed|differed)\s+by\s+(a\s+)?(third[- ]party|human|organisation|organization)")),
-                                   "a third party, not an AI agent, rebuilt a bundle"),
+    ("P1", "product", 15, ok_third_party_rebuild,
      "a party that did not write the code rebuilt a bundle"),
     ("P2", "product", 10, ok_consumer, "a named consumer documented the decision that changes"),
     ("P3", "product", 8, ok_risk_acceptance,
      "someone signed risk acceptance with a reliance scope"),
-    ("P4", "product", 7, lambda: (bool(has_marker(r"^external_corpus\s*:")),
-                                  "a corpus from another author"),
+    ("P4", "product", 7, ok_external_corpus,
      "a test corpus written by someone else"),
 ]
 

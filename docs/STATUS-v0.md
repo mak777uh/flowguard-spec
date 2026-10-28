@@ -51,7 +51,7 @@ Kit conformance measured by [`lab/check-interop.py`](../lab/check-interop.py): *
 
 ## What is a stub
 
-- **Everything executable.** There is no `fg verify`, no bundle, no invariant, no attack harness. The
+- **Everything executable** — true on 2026-10-27, false now. This line said there is no `fg verify`, no bundle and no attack harness. `tools/fg_verify.py`, `tools/fg_bundle.py`, `fixtures/sample-bundle` and 27 `lab/e-m*-run.py` harnesses exist and produce verdicts. Kept with this correction: a status file that is quietly edited is worse than one that says it moved.
   specification describes them; nothing implements them.
 
 ## Bundle definition (M7), so that "bundle" is not a promise
@@ -81,7 +81,7 @@ every verifier written before, so the envelope is cut now; the meaning waits for
 ## What this document does not claim
 
 - That the specification is correct, complete, or safe to implement against.
-- That any security guarantee holds for any system. No verifier exists, therefore no verdict has ever been
+- That any security guarantee holds for any system. No verifier existed on 2026-10-27; one exists now, and this repository has produced verdicts with it — which is why the sentence you are reading was rewritten rather than deleted.
   produced by this repository.
 - That the kit is settled. It is v0 and will change; changes are recorded as ADRs.
 - That the review rounds made the design right. They made it less wrong, which is a different claim.

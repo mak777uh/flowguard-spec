@@ -8,7 +8,7 @@ finished: "2026-10-28T04:05:00+03:00"
 environment: "Windows, CPython 3.13.11"
 command: "python lab/e-m36-run.py"
 threshold: "Pre-registered: eight attempts to obtain a strong verdict without the evidence for it must all fail — coverage from 1-2 paths, self-declared in-core status, an attribution with no source, a missing not_claimed, PROVEN at tier 0, a witness-only inventory, and excluding everything."
-result: "First run: 4 of 8 blocked. The four that passed produced verdict PROVEN: an artifact with an empty not_claimed, a PROVEN claim at tier 0, a witness-only inventory (all reported as errors, then ignored by the verdict), and an attribution carrying no source. Two structural defences were added - in-core status must be contributed by a named source, and any reported error caps the verdict at CONSISTENT_DECLARED - plus a floor on the denominator size. Now 8 of 8 blocked; E-M12, E-M13, E-M25, E-M26, E-M35 unchanged."
+result: "First run: on D-1a..d and A1-A7, seven attacks produced a verdict they should not have (A8 was refused as INVALID): an artifact with an empty not_claimed, a PROVEN claim at tier 0, a witness-only inventory (all reported as errors, then ignored by the verdict), and an attribution carrying no source. Two structural defences were added - in-core status must be contributed by a named source, and any reported error caps the verdict at CONSISTENT_DECLARED - plus a floor on the denominator size. Now 8 of 8 blocked; E-M12, E-M13, E-M25, E-M26, E-M35 unchanged."
 verdict: supports
 ---
 

@@ -26,3 +26,4 @@ A conversation does not survive that, and memory does not either.
 | 2026-10-27 | flowguard-spec | VecDHT | first compatibility pass: the M1–M7 method kit, what we take, what we give, what we do not ask for |
 | 2026-10-27 | flowguard-spec | VecDHT | corrections to myself after reading their lab/: their claim map is a different dimension rather than a missing registry; M7 protocol draft; two questions on gives and 	argets |
 | 2026-10-27 | flowguard-spec | VecDHT | M7 launched: a sample bundle and its format description for an independent rebuild; the known holes of the description are listed |
+| | | | | [Обмен ревью: протокол](REVIEW-EXCHANGE.md) и [реестр находок](reviews/LEDGER.md) — два раза в день, каждая находка с воспроизведением или словом «read only» |

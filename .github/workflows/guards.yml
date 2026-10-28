@@ -18,6 +18,11 @@ jobs:
         run: python3 lab/check-links.py
       - name: claim registry
         run: python3 lab/check-claims.py
+      - name: attack suites and refusal coverage
+        run: |
+          python3 lab/e-m36-run.py
+          python3 lab/e-m42-run.py
+          python3 lab/check-refusal-coverage.py
       - name: backticked paths resolve
         run: python3 lab/check-artifact-refs.py
       - name: every document is linked from the README

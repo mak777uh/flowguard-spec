@@ -8,7 +8,7 @@ finished: "2026-10-28T07:05:00+03:00"
 environment: "Windows, CPython 3.13.11; an independent adversarial agent with repository read access and no brief"
 command: "python lab/e-m42-run.py"
 threshold: "Pre-registered: an independent agent instructed to obtain SCOPED_ASSURANCE or PROVEN without the evidence for it may break the gate. Every break it reports must be reproduced, fixed, and then re-run as a permanent regression. Its fifteen negative controls must keep passing, so the fixes do not simply refuse everything."
-result: "Eleven breaks, all reproducible, all closed. The worst three needed no fabrication at all: declaring a WEAKER level deleted the denominator floor and let coverage manufacture PROVEN from a single path; eight copies of one path satisfied the floor; and a report asserting 'the core is empty' changed nothing. Also closed: truncation gated on a self-reported label, a refuted confirmation raising the tier, attribution satisfied by [null], declared perimeter growth not blocking, an empty commit disabling target binding, a deleted density field deleting the check, prose descriptions of an observed write evading detection, and a caller policy zeroing every floor. The suite is now fixtures/attack + lab/e-m42-run.py; 13 cases, 0 still breaking; the agent's 15 negative controls still refuse correctly and E-M12 25/25, E-M36 8/8, E-M11, E-M13, E-M25, E-M41 unchanged."
+result: "Eleven breaks, all reproducible, all closed. The worst three needed no fabrication at all: declaring a WEAKER level deleted the denominator floor and let coverage manufacture PROVEN from a single path; eight copies of one path satisfied the floor; and a report asserting 'the core is empty' changed nothing. Also closed: truncation gated on a self-reported label, a refuted confirmation raising the tier, attribution satisfied by [null], declared perimeter growth not blocking, an empty commit disabling target binding, a deleted density field deleting the check, prose descriptions of an observed write evading detection, and a caller policy zeroing every floor. The suite is now fixtures/attack + lab/e-m42-run.py; the suite has 13 entries of which 12 attack cases execute (B10 appears twice, C1 is a shape test) and 0 still break; at the time of writing one case (C1) skipped for a missing fixture, and the agent's 15 negative controls live in its report, not in the harness and E-M12 25/25, E-M36 8/8, E-M11, E-M13, E-M25, E-M41 unchanged."
 verdict: supports
 ---
 
@@ -57,7 +57,8 @@ Plus four uncaught tracebacks in fields alidate_shapes did not inspect — the 
 - the printed level is clamped to the claim, and the floor is looked up under **the level being printed**, over
   **distinct** (entry, kind) pairs;
 - truncation is refused from the numbers, not from the label;
-- a confirmation must pass the same checks g_confirm.py applies, and a efuted record does not raise a tier;
+- a confirmation must pass the same checks g_confirm.py applies, and a 
+efuted record does not raise a tier;
 - an attribution must name sources that exist as strings in the inventory;
 - declared perimeter growth blocks; an empty commit is a refusal;
 - a catalogue source that does not report its density cannot support a strong level;

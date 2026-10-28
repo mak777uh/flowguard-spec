@@ -1,6 +1,6 @@
 # METRICS — every number carries its command and its log
 
-**Status:** contract in force, **two rows**. The first measurement in this repository: `E-M11`, the grant
+**Status:** contract in force, 59 rows. The first measurement in this repository: `E-M11`, the grant
 enumerator against eight planted bypasses. Both rows were produced by a command and carry the log digest; neither
 was typed from memory.
 
@@ -39,14 +39,14 @@ lab/metrics.py --card E-M10 --log lab/logs/e-m10-<timestamp>.log --write docs/ME
 ```
 
 It reads the log, extracts counts, verifies the log's sha256 against the recorded one, and fails if a printed
-number cannot be recomputed from the tree. Until that script exists, this file stays empty — an empty table is
+number cannot be recomputed from the tree. The script does not exist yet; every row here was entered by hand and names its command — an empty table is
 honest, a filled one without logs is the failure mode the whole repository is built against.
 
 ## What this file does NOT do
 
 - It does not record numbers quoted from other projects; those live in `docs/CLAIMS.md` with their artifact.
 - It does not store the logs themselves — logs are artifacts, this is the index with digests.
-- It does not claim coverage of anything. Zero rows means zero measurements, not zero risk.
+- It does not claim coverage of anything. A row without a command is not a measurement, not zero risk.
 | 5 | `E-M13` attribution on legitimate callers / false attribution | **2 / 2** and **0 / 9** | `python lab/e-m13-run.py --psql <conda>/Library/bin/psql.exe --port 54329` (decoy `transfer_fast` not attributed) | `c19388a2bb41b914d107e636f377752c175736082422deaec7f627aa6ba707fe` | 2026-10-27 tree | 2026-10-27 |
 | 6 | `E-M13` coverage after attribution | **0.133** (2 of 15 paths), was 0.000 | `python tools/merge_inventory.py s-grants.json s-calls.json && python tools/fg_verify.py ...` | `c19388a2bb41b914d107e636f377752c175736082422deaec7f627aa6ba707fe` | 2026-10-27 tree | 2026-10-27 |
 | 7 | `E-M9` substitution, run 1 without anchors | **3 / 6** (refutes) | `python lab/e-m9-run.py --no-anchors` | `-` | 2026-10-27 tree | 2026-10-27 |
@@ -102,3 +102,5 @@ honest, a filled one without logs is the failure mode the whole repository is bu
 | 57 | `E-M41` false negatives found before the fix | **2** (cascade keys `namespaces -> projects`, `organizations -> projects`) | `python lab/e-m41-run.py --db fg_gitlab --schema public --table projects` (before fk_cascade existed) | `3770f6a59ceb3948b1699f21f7c67d13cfb9433ee1bd8b37428a44f10f5d0fde` | 2026-10-28 GitLab structure.sql | 2026-10-28 |
 | 58 | `E-M42` independent adversarial breaks of the verdict gate | **11 found, 11 closed** | `python lab/e-m42-run.py` | `55ca75309b913524b4e3dd2b41e85797dd16fc87b8b92d6528bd6771be19f10d` | 2026-10-28 tree | 2026-10-28 |
 | 59 | `E-M42` attack suite as a permanent regression | **13 cases, 0 still breaking** | `python lab/e-m42-run.py` | `55ca75309b913524b4e3dd2b41e85797dd16fc87b8b92d6528bd6771be19f10d` | 2026-10-28 tree | 2026-10-28 |
+| 60 | `E-M43` hostile documentation review: findings fixed | **11 of 21** (see the card for the open ten) | `python tools/fg_readiness.py` after the T4 attack | `76dfe344483dcfc5e4856045aa35d12a047bee3ad4727e83201303b5f56b48de` | 2026-10-28 tree | 2026-10-28 |
+| 61 | `E-M43` T4 reachable by typing, before the fix | **yes** (one card line + one role file + invented M8 fields) | `python tools/fg_readiness.py` in a scratch copy | `76dfe344483dcfc5e4856045aa35d12a047bee3ad4727e83201303b5f56b48de` | 2026-10-28 tree | 2026-10-28 |

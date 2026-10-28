@@ -8,7 +8,7 @@ finished: "2026-10-28T02:05:00+03:00"
 environment: "PostgreSQL 17.2, five public sample schemas, CPython 3.13.11"
 command: "python lab/e-m30-run.py --psql <psql> --port 54329 --schemas <dir> --pagila <file>"
 threshold: "Pre-registered BEFORE the run: five public schemas (pagila, chinook, northwind, sakila, adventureworks), target table per schema chosen by an ordered name rule, not by looking at results; one run each, no tuning between runs; zero findings is a valid result and must be reported as such; a schema that cannot be loaded is reported with its reason rather than dropped."
-result: "4 of 5 loaded and measured in under 3 seconds each. pagila: 20 tables, 10 functions, payment, 2 paths (SECURITY DEFINER + dynamic SQL, the same rewards_report). sakila: identical shape and identical finding - both are the same DVD-rental model. chinook: 11 tables, 0 functions, invoice, ZERO paths. northwind: 14 tables, 0 functions, order_details, ZERO paths. adventureworks: could not load - it requires the uuid-ossp extension, which is not installed here (717 errors); reported, not dropped."
+result: "4 of 5 loaded and measured in 1.5, 1.4, 2.0 and 3.2 seconds respectively (see the log). pagila: 20 tables, 10 functions, payment, 2 paths (SECURITY DEFINER + dynamic SQL, the same rewards_report). sakila: identical shape and identical finding - both are the same DVD-rental model. chinook: 11 tables, 0 functions, invoice, ZERO paths. northwind: 14 tables, 0 functions, order_details, ZERO paths. adventureworks: could not load - it requires the uuid-ossp extension, which is not installed here (717 errors); reported, not dropped."
 verdict: supports
 ---
 

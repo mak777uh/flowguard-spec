@@ -1,5 +1,81 @@
-manifest: 13 paths from 1 source(s)
-independent_of_agent: True (grants-pg-v0.1)
-manifest: 14 paths from 1 source(s)
-independent_of_agent: True (grants-pg-v0.1)
+manifest: 16 paths from 2 source(s)
+independent_of_agent: True (grants-pg-v0.1, pgcalls-v0.1)
+manifest: 17 paths from 2 source(s)
+independent_of_agent: True (grants-pg-v0.1, pgcalls-v0.1)
 delta: +1 new, -0 vanished, net +1; perimeter_growth=True
+{
+ "verdict": "INVALID",
+ "computed_coverage": 0.118,
+ "errors": [
+  {
+   "code": "TARGET_MISMATCH",
+   "subject": "target_lock",
+   "expected": "commit fgfix@after",
+   "observed": "commit fgfix@e19",
+   "next_action": "re-run the analysis on the claimed target",
+   "retryable": false
+  },
+  {
+   "code": "CLAIM_EXCEEDS_EVIDENCE",
+   "subject": "coverage",
+   "expected": "<= 0.118 (recomputed from the inventory)",
+   "observed": "0.900 (claimed)",
+   "next_action": "lower the claim to the recomputed coverage or supply evidence for the missing paths",
+   "retryable": true
+  },
+  {
+   "code": "MISSING_EVIDENCE",
+   "subject": "not_claimed",
+   "expected": "codes required by level SCOPED_ASSURANCE: NC-01, NC-02, NC-04, NC-05, NC-11",
+   "observed": "missing: NC-11",
+   "next_action": "state what the attestation does not assert, using the vocabulary",
+   "retryable": true
+  }
+ ],
+ "perimeter": {
+  "known_paths": 17,
+  "core_paths": 2,
+  "outside_paths": 15,
+  "coverage_basis_kinds": [
+   "grants",
+   "static"
+  ],
+  "ambiguous_attributions": 0,
+  "coverage_states": {
+   "covered": [],
+   "unobserved": [
+    "DELETE",
+    "INSERT",
+    "UPDATE"
+   ],
+   "unenumerable": [],
+   "counts": {
+    "covered": 0,
+    "unobserved": 3,
+    "unenumerable": 0
+   }
+  },
+  "db_logic_density": 0.727,
+  "outside_weighted_risk": 0.867,
+  "unclassified_paths": 5,
+  "risk_policy_digest": "sha256:77a733d988dc32a34799a7687e1c54874a9b1625a5494d6945e3dfc72e0da4e9",
+  "delta_since_previous": {
+   "new_paths": 1,
+   "vanished_paths": 0,
+   "net_change": 1,
+   "additive": [
+    "wp_6bf02db0893b632a"
+   ],
+   "substitutive": [],
+   "subtractive": [],
+   "classification": {
+    "additive": 1,
+    "substitutive": 0,
+    "subtractive": 0
+   },
+   "published": true
+  },
+  "perimeter_growth": true,
+  "level_upgrade_allowed": false
+ }
+}

@@ -1,0 +1,3 @@
+{ "claim_id":"atk-c1","target_lock":{"commit":"t@1"},"declared_control_point":"function:bank.transfer",
+  "declared_level":"CONSISTENT_DECLARED","claimed_coverage":1.0,"excluded":[],"evidence_tier":"2",
+  "not_claimed":["NC-01","NC-02"] }

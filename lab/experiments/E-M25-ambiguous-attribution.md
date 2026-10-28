@@ -7,7 +7,7 @@ started: "2026-10-28T00:30:00+03:00"
 finished: "2026-10-28T00:46:00+03:00"
 environment: "PostgreSQL 17.2 fixture with an added 4-argument overload, CPython 3.13.11"
 command: "python lab/e-m25-run.py --psql <psql> --port 54329"
-threshold: "Pre-registered: (a) with two functions named transfer, a route declaring a call to transfer is NOT attributed to the control point, (b) the path carries an attribution_conflict listing both candidates, (c) the verdict raises AMBIGUOUS_ATTRIBUTION and level_upgrade_allowed is false, (d) E-M11, E-M12 and E-M13 do not regress."
+threshold: "Pre-registered: (a) with two functions named transfer, a route declaring a call to transfer is NOT attributed to the control point, (b) the path carries an attribution_conflict naming the ambiguous name (the two candidates print with the same identifier — a reviewer noted a human cannot tell which one bypasses), (c) the verdict raises AMBIGUOUS_ATTRIBUTION and level_upgrade_allowed is false, (d) E-M11, E-M12 and E-M13 do not regress."
 result: "All four hold. Route attribution becomes None, conflict names both candidates, verdict carries AMBIGUOUS_ATTRIBUTION with upgrade blocked, and the three earlier harnesses still pass. Two defects were found on the way, both ours: the grant enumerator excluded the control point by name (so the overload vanished and the direct writer was invisible), and level_upgrade_allowed ignored blocking errors entirely."
 verdict: supports
 ---

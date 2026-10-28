@@ -6,7 +6,7 @@ base_commit: "uncommitted tree"
 started: "2026-10-27T23:34:00+03:00"
 finished: "2026-10-27T23:42:00+03:00"
 environment: "Windows, PostgreSQL 17.2 local cluster, CPython 3.13.11"
-command: "python lab/e-m19-run.py  (or the manual sequence in the Run section)"
+command: "python tools/merge_inventory.py after.json cafter.json --previous m-before.json --out m-after.json (then tools/fg_verify.py; no dedicated harness exists)"
 threshold: "Pre-registered: (a) the merger computes the delta itself rather than accepting it from the caller, (b) adding one writer to a live database produces new_paths = 1 and perimeter_growth = true, (c) the verifier then reports level_upgrade_allowed = false, (d) a path that disappears does not cancel a path that appeared."
 result: "16 paths after, 15 before; delta +1 new, -0 vanished, net +1; perimeter_growth true; level_upgrade_allowed false. The claim at coverage 0.9 was refused twice over: the recomputed coverage is 0.125, and the weighted risk outside the core exceeds the ceiling."
 verdict: supports

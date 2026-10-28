@@ -45,6 +45,9 @@ stage "acceptance scenarios" "$PY" lab/e-m12-run.py
 stage "instrument corpus" "$PY" lab/e-m10-run.py --per-class 4 --valid 4
 # A10 (clean worktree) is skipped here: a round is checked before its commit. Run
 # `python tools/fg_audit.py` after the commit to include it.
+stage "attack suite (own attempts)" "$PY" lab/e-m36-run.py >/dev/null
+stage "attack suite (independent attacker)" "$PY" lab/e-m42-run.py
+stage "every refusal code is exercised" "$PY" lab/check-refusal-coverage.py
 stage "dossier is current" "$PY" tools/fg_dossier.py --check
 stage "repository and method audit" "$PY" tools/fg_repo_audit.py >/dev/null
 stage "process audit (without A10)" "$PY" tools/fg_audit.py --allow-dirty
