@@ -23,6 +23,7 @@
     "stmt:UPDATE"
    ],
    "dynamic_sql": true,
+   "security_definer": false,
    "completeness_claim": "partial",
    "not_covered_reason": "dynamic SQL: the body cannot be read as text",
    "attribution": {
@@ -45,6 +46,7 @@
     "stmt:UPDATE"
    ],
    "dynamic_sql": false,
+   "security_definer": false,
    "completeness_claim": "exhaustive_within_covers",
    "not_covered_reason": null,
    "attribution": {

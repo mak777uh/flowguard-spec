@@ -1,0 +1,122 @@
+{
+ "manifest_version": "inventory/0.1",
+ "target_lock": "hidden@1",
+ "independent_of_agent": false,
+ "sources": [
+  {
+   "source_id": "migrations",
+   "kind": "static",
+   "what": "1 migration files read as text",
+   "completeness_claim": "partial",
+   "notes": "a migration directory is not a database: what a later ALTER drops is still here"
+  }
+ ],
+ "paths": [
+  {
+   "path_id": "wp_mig_619d26278d1f",
+   "entry": "function:sample2.accounts_v_update",
+   "target": "sample2.accounts",
+   "kind": "function",
+   "how": "defined in migration hidden; body uses UPDATE",
+   "verbs": [
+    "stmt:UPDATE"
+   ],
+   "dynamic_sql": true,
+   "security_definer": true,
+   "completeness_claim": "partial",
+   "not_covered_reason": "dynamic SQL: the body cannot be read as text",
+   "attribution": {
+    "to": "none",
+    "method": "migration_text",
+    "sources": [
+     "migrations"
+    ]
+   },
+   "vanished": false
+  },
+  {
+   "path_id": "wp_mig_67ba3a257b0e",
+   "entry": "function:sample2.set_balance",
+   "target": "sample2.accounts",
+   "kind": "function",
+   "how": "defined in migration hidden; body uses UPDATE",
+   "verbs": [
+    "stmt:UPDATE"
+   ],
+   "dynamic_sql": true,
+   "security_definer": true,
+   "completeness_claim": "partial",
+   "not_covered_reason": "dynamic SQL: the body cannot be read as text",
+   "attribution": {
+    "to": "none",
+    "method": "migration_text",
+    "sources": [
+     "migrations"
+    ]
+   },
+   "vanished": false
+  },
+  {
+   "path_id": "wp_mig_289f9edb859f",
+   "entry": "trigger:accounts_v_write",
+   "target": "table:sample2.accounts_v",
+   "kind": "trigger_chain",
+   "how": "trigger on sample2.accounts_v executes sample2.accounts_v_update; a write to the table reaches the body without passing the declared control point",
+   "verbs": [
+    "stmt:UPDATE",
+    "stmt:INSERT"
+   ],
+   "completeness_claim": "exhaustive_within_covers",
+   "not_covered_reason": null,
+   "attribution": {
+    "to": "none",
+    "method": "migration_text",
+    "sources": [
+     "migrations"
+    ]
+   },
+   "vanished": false
+  },
+  {
+   "path_id": "wp_mig_2bc05bfaf248",
+   "entry": "role:app_rw",
+   "target": "table:sample2.accounts",
+   "kind": "view_trigger",
+   "how": "GRANT IS ON A VIEW, THE WRITE LANDS ON THE TABLE.\n-- A READER OF THE CATALOGUE SEES \"GRANT UPDATE ON view sample2.accounts_v TO app_rw; the view is writable and its write lands on sample2.accounts",
+   "verbs": [
+    "stmt:IS ON A VIEW",
+    "stmt:THE WRITE LANDS ON THE TABLE.\n-- A READER OF THE CATALOGUE SEES \"GRANT UPDATE"
+   ],
+   "completeness_claim": "exhaustive_within_covers",
+   "not_covered_reason": null,
+   "attribution": {
+    "to": "none",
+    "method": "migration_text",
+    "sources": [
+     "migrations"
+    ]
+   },
+   "vanished": false
+  },
+  {
+   "path_id": "wp_mig_2defa32f6675",
+   "entry": "stmt:UPDATE sample2.accounts",
+   "target": "table:sample2.accounts",
+   "kind": "observed_write",
+   "how": "the migration script itself runs UPDATE on sample2.accounts",
+   "verbs": [
+    "stmt:UPDATE"
+   ],
+   "completeness_claim": "partial",
+   "not_covered_reason": "a migration runs once; it is not a path that exists afterwards",
+   "attribution": {
+    "to": "none",
+    "method": "migration_text",
+    "sources": [
+     "migrations"
+    ]
+   },
+   "vanished": false
+  }
+ ]
+}

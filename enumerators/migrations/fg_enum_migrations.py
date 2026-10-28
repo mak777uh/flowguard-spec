@@ -36,6 +36,8 @@ TRIGGER_RE = re.compile(
     r"CREATE\s+(?:CONSTRAINT\s+)?TRIGGER\s+([\w\"]+)\s+.*?ON\s+([\w.\"]+).*?EXECUTE\s+(?:PROCEDURE|FUNCTION)\s+([\w.\"]+)",
     re.I | re.S)
 GRANT_RE = re.compile(r"GRANT\s+(.*?)\s+ON\s+(?:TABLE\s+)?([\w.\"]+)\s+TO\s+([\w\"]+)", re.I | re.S)
+VIEW_RE = re.compile(r"CREATE\s+(?:OR\s+REPLACE\s+)?VIEW\s+([\w.\"]+)\s+AS\s+(.*?);",
+                       re.I | re.S)
 TABLE_RE = re.compile(r"\b(?:FROM|INTO|UPDATE|JOIN|TABLE)\s+([\w.\"]+)", re.I)
 
 
@@ -65,7 +67,9 @@ def tables_in(text: str) -> list[str]:
         if name.split(".")[0].lower() in {"new", "old", "excluded"}:
             continue
         if name.upper() in {"SELECT", "SET", "VALUES", "WHERE", "ON", "OF", "FOR", "TABLE",
-                            "NEW", "OLD", "EXCLUDED", "CURRENT_DATE", "NOW"}:
+                            "NEW", "OLD", "EXCLUDED", "CURRENT_DATE", "NOW",
+                            "GRANT", "REVOKE", "FUNCTION", "PROCEDURE", "TRIGGER", "PRIVILEGES",
+                            "CONFLICT", "DO", "RETURNING", "LANGUAGE", "SECURITY", "DEFINER"}:
             continue
         if "." not in name:
             name = f"public.{name}"
@@ -75,6 +79,12 @@ def tables_in(text: str) -> list[str]:
 
 def paths_from_file(path: Path, schema: str, control: str, lock: str) -> list[dict]:
     text = path.read_text(encoding="utf-8", errors="replace")
+    # Only identifiers this file brings into being can be targets; everything else is a word that happened
+    # to follow FROM in a comment (the fixture caught `public.without`).
+    known_tables = set()
+    for m in re.finditer(r"CREATE\s+(?:TABLE|VIEW)\s+(?:IF\s+NOT\s+EXISTS\s+)?([\w.\"]+)", text, re.I):
+        name = strip_ident(m.group(1))
+        known_tables.add(name if "." in name else f"{schema}.{name}")
     paths: list[dict] = []
     stems = path.name.split("__", 1)
     migration = stems[1].replace(".sql", "") if len(stems) == 2 else path.stem
@@ -98,11 +108,13 @@ def paths_from_file(path: Path, schema: str, control: str, lock: str) -> list[di
         paths.append({
             "path_id": pid,
             "entry": f"function:{fname}",
-            "target": tables_in(body)[0] if tables_in(body) else f"table:{schema}.*",
+            "target": next((b for b in tables_in(body) if b in known_tables),
+                           f"table:{schema}.*"),
             "kind": "function",
             "how": f"defined in migration {migration}; body uses " + ", ".join(writes),
             "verbs": [f"stmt:{v}" for v in writes] + [f"stmt:{v}" for v in vs if v == "CALL"],
             "dynamic_sql": "EXECUTE" in body,
+            "security_definer": bool(re.search(r"SECURITY\s+DEFINER", text[m.end():m.end() + 2000], re.I)),
             "completeness_claim": "exhaustive_within_covers" if "EXECUTE" not in body
                                   else "partial",
             "not_covered_reason": None if "EXECUTE" not in body
@@ -137,12 +149,39 @@ def paths_from_file(path: Path, schema: str, control: str, lock: str) -> list[di
             "vanished": False,
         })
 
+    # a grant on a view is a write path to the table the view reads, and nothing in the grant says so
+    view_to_base = {}
+    for m in VIEW_RE.finditer(text):
+        view = strip_ident(m.group(1))
+        if "." not in view:
+            view = f"{schema}.{view}"
+        bases = tables_in(m.group(2))
+        if bases:
+            view_to_base[view] = bases[0]
+
     for m in GRANT_RE.finditer(text):
         privs, table, role = m.group(1).upper(), strip_ident(m.group(2)), strip_ident(m.group(3))
         if not any(p in privs for p in ("INSERT", "UPDATE", "DELETE", "ALL")):
             continue
         if "." not in table:
             table = f"{schema}.{table}"
+        base = view_to_base.get(table)
+        if base:
+            # the privilege is on a view; the write lands on the table behind it
+            pid = "wp_mig_" + hashlib.sha256(f"{path.name}|grant|{role}|{table}|base".encode()).hexdigest()[:12]
+            paths.append({
+                "path_id": pid,
+                "entry": f"role:{role}",
+                "target": f"table:{base}",
+                "kind": "view_trigger",
+                "how": f"GRANT {privs} ON view {table} TO {role}; the view is writable and its write lands on {base}",
+                "verbs": [f"stmt:{p.strip()}" for p in privs.split(",") if p.strip()],
+                "completeness_claim": "exhaustive_within_covers",
+                "not_covered_reason": None,
+                "attribution": {"to": "none", "method": "migration_text", "sources": ["migrations"]},
+                "vanished": False,
+            })
+            continue
         pid = "wp_mig_" + hashlib.sha256(f"{path.name}|grant|{role}|{table}".encode()).hexdigest()[:12]
         paths.append({
             "path_id": pid,
