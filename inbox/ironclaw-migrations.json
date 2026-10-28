@@ -1,0 +1,141 @@
+{
+ "manifest_version": "inventory/0.1",
+ "target_lock": "ironclaw@2026-10-28",
+ "independent_of_agent": false,
+ "sources": [
+  {
+   "source_id": "migrations",
+   "kind": "static",
+   "what": "5 migration files read as text",
+   "completeness_claim": "partial",
+   "notes": "a migration directory is not a database: what a later ALTER drops is still here"
+  }
+ ],
+ "paths": [
+  {
+   "path_id": "wp_mig_5f324157f685",
+   "entry": "function:public.update_updated_at_column",
+   "target": "public.length",
+   "kind": "function",
+   "how": "defined in migration initial; body uses UPDATE",
+   "verbs": [
+    "stmt:UPDATE"
+   ],
+   "dynamic_sql": true,
+   "completeness_claim": "partial",
+   "not_covered_reason": "dynamic SQL: the body cannot be read as text",
+   "attribution": {
+    "to": "none",
+    "method": "migration_text",
+    "sources": [
+     "migrations"
+    ]
+   },
+   "vanished": false
+  },
+  {
+   "path_id": "wp_mig_08e5b8a8f33c",
+   "entry": "trigger:update_memory_documents_updated_at",
+   "target": "table:public.memory_documents",
+   "kind": "trigger_chain",
+   "how": "trigger on public.memory_documents executes public.update_updated_at_column; a write to the table reaches the body without passing the declared control point",
+   "verbs": [
+    "stmt:UPDATE",
+    "stmt:INSERT"
+   ],
+   "completeness_claim": "exhaustive_within_covers",
+   "not_covered_reason": null,
+   "attribution": {
+    "to": "none",
+    "method": "migration_text",
+    "sources": [
+     "migrations"
+    ]
+   },
+   "vanished": false
+  },
+  {
+   "path_id": "wp_mig_831bb38970dc",
+   "entry": "trigger:update_secrets_updated_at",
+   "target": "table:public.secrets",
+   "kind": "trigger_chain",
+   "how": "trigger on public.secrets executes public.update_updated_at_column; a write to the table reaches the body without passing the declared control point",
+   "verbs": [
+    "stmt:UPDATE",
+    "stmt:INSERT"
+   ],
+   "completeness_claim": "exhaustive_within_covers",
+   "not_covered_reason": null,
+   "attribution": {
+    "to": "none",
+    "method": "migration_text",
+    "sources": [
+     "migrations"
+    ]
+   },
+   "vanished": false
+  },
+  {
+   "path_id": "wp_mig_72652f1c2e2c",
+   "entry": "trigger:update_wasm_tools_updated_at",
+   "target": "table:public.wasm_tools",
+   "kind": "trigger_chain",
+   "how": "trigger on public.wasm_tools executes public.update_updated_at_column; a write to the table reaches the body without passing the declared control point",
+   "verbs": [
+    "stmt:UPDATE",
+    "stmt:INSERT"
+   ],
+   "completeness_claim": "exhaustive_within_covers",
+   "not_covered_reason": null,
+   "attribution": {
+    "to": "none",
+    "method": "migration_text",
+    "sources": [
+     "migrations"
+    ]
+   },
+   "vanished": false
+  },
+  {
+   "path_id": "wp_mig_4cc613febd6b",
+   "entry": "trigger:update_tool_capabilities_updated_at",
+   "target": "table:public.tool_capabilities",
+   "kind": "trigger_chain",
+   "how": "trigger on public.tool_capabilities executes public.update_updated_at_column; a write to the table reaches the body without passing the declared control point",
+   "verbs": [
+    "stmt:UPDATE",
+    "stmt:INSERT"
+   ],
+   "completeness_claim": "exhaustive_within_covers",
+   "not_covered_reason": null,
+   "attribution": {
+    "to": "none",
+    "method": "migration_text",
+    "sources": [
+     "migrations"
+    ]
+   },
+   "vanished": false
+  },
+  {
+   "path_id": "wp_mig_2e5d64515eba",
+   "entry": "stmt:INSERT public.leak_detection_patterns",
+   "target": "table:public.leak_detection_patterns",
+   "kind": "observed_write",
+   "how": "the migration script itself runs INSERT on public.leak_detection_patterns",
+   "verbs": [
+    "stmt:INSERT"
+   ],
+   "completeness_claim": "partial",
+   "not_covered_reason": "a migration runs once; it is not a path that exists afterwards",
+   "attribution": {
+    "to": "none",
+    "method": "migration_text",
+    "sources": [
+     "migrations"
+    ]
+   },
+   "vanished": false
+  }
+ ]
+}

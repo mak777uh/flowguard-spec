@@ -1,0 +1,1 @@
+{"claim_id":"ironclaw-migrations","target_lock":{"commit":"ironclaw@2026-10-28"},"declared_control_point":"function:public.audit_write","declared_level":"CONSISTENT_DECLARED","claimed_coverage":0.0,"evidence_tier":0,"not_claimed":["NC-01","NC-02"]}

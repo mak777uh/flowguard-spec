@@ -52,6 +52,7 @@ stage "every refusal code is exercised" "$PY" lab/check-refusal-coverage.py
 stage "cross-family attack cadence" "$PY" lab/cross-family-due.py || true
 stage "cross-family findings stay closed" "$PY" lab/e-m60-run.py
 stage "both cores on the cross-family divergences" "$PY" lab/e-m69-run.py
+stage "migrations enumerator reaches both cores" "$PY" enumerators/migrations/fg_enum_migrations.py --dir fixtures/migrations-sample --schema public --control function:public.x --out /tmp/mig.json --target-lock t@1 || true
 stage "Rust claim CLI vs Python" "$PY" lab/e-m68-run.py
 stage "Rust arithmetic vs Python on the attack cases" "$PY" lab/e-m67-run.py
 stage "differential: Rust core vs Python core" "$PY" lab/e-m66-run.py || true
