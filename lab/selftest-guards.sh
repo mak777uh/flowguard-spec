@@ -114,6 +114,15 @@ if [[ "$ONLY" == "all" || "$ONLY" == "wording" ]]; then
     pass "wording: reserved word above the evidence ceiling caught"
   fi
 fi
+# 8. the attack suite must be able to fail: a planted wrong expectation must turn it red.
+#    Without this control, a suite that has quietly stopped checking anything still looks green.
+selftest_out=$(FG_ATTACK_SELFTEST=1 python lab/e-m42-run.py 2>&1 || true)
+if printf '%s' "$selftest_out" | grep -q 'still breaking: 1'; then
+  pass 'the attack suite notices a planted wrong expectation'
+else
+  fail 'the attack suite did not notice a planted wrong expectation'
+fi
+
 echo
 echo "controls passed: $PASS   failed: $FAIL"
 [[ "$FAIL" -eq 0 ]] || { echo "RESULT: fail"; exit 1; }

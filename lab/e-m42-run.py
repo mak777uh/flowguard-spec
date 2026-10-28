@@ -5,6 +5,7 @@ harness fails. Inputs are reconstructed here rather than read from the attacker 
 the suite survives a clean checkout.
 """
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -12,6 +13,8 @@ from pathlib import Path
 PY = sys.executable
 V = "tools/fg_verify.py"
 A = Path(__file__).resolve().parent.parent / "fixtures" / "attack"
+# --self-test plants a wrong expectation and requires the suite to go red.
+SELF_TEST = os.environ.get("FG_ATTACK_SELFTEST") == "1"
 
 # Expected refusal codes per case: declared here so the suite states its intent, and so
 # lab/check-refusal-coverage.py can see which code each attack is supposed to trigger.
@@ -51,6 +54,9 @@ CASES = [
 bad = 0
 for name, args in CASES:
     args = [str(x) for x in args]
+    if SELF_TEST and name == "B1 one path, weak claim":
+        # Deliberately wrong expectation: if the suite still reports green, the suite is a comment.
+        EXPECTED[name] = ["THIS_CODE_NEVER_FIRES"]
     missing = [x for x in args if x.startswith(str(A)) and not Path(x).exists()]
     if missing:
         print(f"{name:32} SKIP (missing {[Path(m).name for m in missing]})")

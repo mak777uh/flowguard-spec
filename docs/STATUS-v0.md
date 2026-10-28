@@ -1,17 +1,17 @@
 # STATUS — generated, not edited
 
-*Produced by `python tools/fg_status.py` at 2026-10-28 04:41 UTC from commit `bf1aed8`. Editing this file by
+*Produced by `python tools/fg_status.py` at 2026-10-28 04:46 UTC from commit `c4d5938`. Editing this file by
 hand is what produced the contradictions a reviewer found (M1 absent and present in one page, 84 links
 against 122, three guards against six CI steps). Regenerate it instead; the build fails when it is stale.*
 
 ## Where it stands
 
 ```
-engine (the tool)     100%
+engine (the tool)     83%
 product (reliance)    0%
-overall               60%
-tier                  T2 — usable by an outsider on their own database
-next tier             T3 (trustworthy for someone else's decision), blocked by P1, P2
+overall               50%
+tier                  T0 — nothing runs
+next tier             T1 (works for its author), blocked by E1
 ```
 
 The product half is zero because nobody outside has confirmed a finding, rebuilt the bundle as a
@@ -21,8 +21,8 @@ third party, or signed an acceptance. That is not modesty, it is the measured st
 
 | artifacts | count |
 |---|---|
-| metric rows, each with a command | 67 |
-| experiment cards | 39 (refutes 2, supports 37) |
+| metric rows, each with a command | 68 |
+| experiment cards | 40 (refutes 2, supports 38) |
 | decisions | 14 |
 | markdown links checked | 117, broken 0 |
 
@@ -32,7 +32,7 @@ Conformance measured by `lab/check-interop.py`: **7/7**
 
 | item | state | evidence |
 |---|---|---|
-| M1 experiment cards | present | 39 experiment cards, 0 hypothesis cards, 0 unclassified |
+| M1 experiment cards | present | 40 experiment cards, 0 hypothesis cards, 0 unclassified |
 | M2 metrics with commands | present | METRICS.md, 1 command blocks |
 | M3 claim registry | present | CLAIMS.md: 18 claims, evidence types used: false as stated, judgment, not established, sta |
 | M5 falsifiable status doc | present | STATUS-v0.md |
@@ -43,7 +43,7 @@ Conformance measured by `lab/check-interop.py`: **7/7**
 
 | check | what it verifies | earned / weight |
 |---|---|---|
-| E1 | all guards and negative controls green | 10 / 10 |
+| E1 | all guards and negative controls green | 0 / 10 |
 | E2 | the verifier executes and refuses | 8 / 8 |
 | E3 | acceptance scenarios pass | 12 / 12 |
 | E4 | grant enumerator measured on a planted fixture | 8 / 8 |
