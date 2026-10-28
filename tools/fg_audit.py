@@ -174,6 +174,15 @@ def a9_claims_artifact_status():
     return (r.returncode == 0, f"{missing} claims cite missing artifacts (to-do list); status publishes the number: {published}")
 
 
+def a12_status_current():
+    """docs/STATUS-v0.md is generated; a hand edit turns the build red (E-M43: hand edits made it
+    contradict itself in six rows)."""
+    import subprocess
+    r = subprocess.run([sys.executable, str(ROOT / "tools" / "fg_status.py"), "--check"],
+                       capture_output=True, text=True)
+    return r.returncode == 0, (r.stdout.strip().splitlines() or ["no output"])[-1]
+
+
 def a11_dossier_current():
     """DOSSIER.md is generated; if it lags, the one file we hand to outside models is a lie."""
     import subprocess
@@ -200,6 +209,7 @@ CHECKS = [
     ("A8", "the README links every document", a8_readme_links_all),
     ("A9", "claims citing missing artifacts remain lint-clean", a9_claims_artifact_status),
     ("A11", "the dossier matches its generator", a11_dossier_current),
+    ("A12", "the status page matches its generator", a12_status_current),
     ("A10", "the worktree is clean", a10_worktree_clean),
 ]
 

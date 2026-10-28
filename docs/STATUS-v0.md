@@ -1,156 +1,75 @@
-# STATUS v0 — what exists, what does not
+# STATUS — generated, not edited
 
-**Snapshot:** 2026-10-27, `main` @ `f0a15ce`, Windows host, no build artifacts committed.
-**How to falsify this file:** every "works" claim below names an artifact you can open. If one is missing or
-does something else, this document is wrong — say so, and it gets fixed rather than argued.
+*Produced by `python tools/fg_status.py` at 2026-10-28 03:29 UTC from commit `57f475b`. Editing this file by
+hand is what produced the contradictions a reviewer found (M1 absent and present in one page, 84 links
+against 122, three guards against six CI steps). Regenerate it instead; the build fails when it is stale.*
 
-Method: [`docs/95-CLOSED-LOOP.md`](95-CLOSED-LOOP.md) · kit: [`docs/96-INTEROP.md`](96-INTEROP.md) ·
-claims: [`docs/CLAIMS.md`](CLAIMS.md) · eliminated: [`docs/eliminations.md`](eliminations.md)
-
----
-
-## Kit v0 declaration
-
-The shared kit with [VecDHT](https://github.com/mak777uh/VecDHT) — seven items, each side keeping its own copy.
-This is our declaration, as agreed; theirs is in `VecDHT docs/STATUS-v1.md`.
-
-| item | ours | evidence | what is missing |
-|---|---|---|---|
-| **M1** experiment cards | **absent** | — | `lab/experiments/` does not exist. First card is `E-M9`, the substitution test |
-| **M2** metrics with a command | **absent** | — | every number in this repository is a citation, not a measurement |
-| **M3** evidence types | **works** | [`docs/CLAIMS.md`](CLAIMS.md): 18 claims, 7 evidence types, enforced by [`lab/check-claims.py`](../lab/check-claims.py) | one column to add: `instrument` (VecDHT's claim map fills it) |
-| **M4** eliminations with revival | **works** | [`docs/eliminations.md`](eliminations.md): 19 entries, 17 revival conditions | — |
-| **M5** status document | **works** | this file | it is v0 and will be wrong within a week unless regenerated |
-| **M6** guards | **works** | [`lab/check-secrets.sh`](../lab/check-secrets.sh) (files + full history), [`lab/check-links.py`](../lab/check-links.py) (84 links, 0 broken), [`lab/check-claims.py`](../lab/check-claims.py), wired into `.github/workflows/guards.yml` | — |
-| **M7** independent rebuild | **present in the weaker form** | `fixtures/sample-bundle/` — a real `fg-bundle/1` with a one-page format description | a stranger has not rebuilt it. Asked of VecDHT in `interop/2026-10-27-flowguard-to-vecdht-5.md`; until they answer, this row stays absent |
-
-**First measurement exists** (`E-M11`, 2026-10-27): the Postgres grant enumerator found 8 of 8 planted bypasses and
-identified the declared control point; row precision 11/12. Log digest in `docs/METRICS.md`. This is the first number
-in this repository that was produced rather than cited.
-
-Kit conformance measured by [`lab/check-interop.py`](../lab/check-interop.py): **7 / 7**.
-
-## What works
-
-- **A claim registry with a wording ceiling.** 18 claims, each carrying an evidence type; three words
-  (`PROVEN`, `ENFORCED_TESTED`, `guarantee`) are reserved for `proof` and `test`. The linter fails on an
-  unknown type, a duplicate id, a dangling claim reference, or a cited artifact that does not exist.
-- **An elimination ledger.** 19 positions we gave up, each with the evidence that killed it and what would
-  revive it.
-- **Three guards in CI**, including a secret scan over files *and* the whole commit history.
-- **A closed loop with two brakes** (external node, stop path) and a compatibility kit with a sibling
-  repository, both written as checks rather than intentions.
-
-## What is partial
-
-- **Review cycles.** Six cycles, four to five independent reviews each. They produced objections and
-  eliminations; they did not produce code.
-- **The claim registry format.** It has six of the eight agreed columns. `not_claimed` and `snapshot` are
-  adopted in principle and being added; until then a row says how strongly a claim may be worded but not what
-  it does not claim.
-
-## What is a stub
-
-- **Everything executable** — true on 2026-10-27, false now. This line said there is no `fg verify`, no bundle and no attack harness. `tools/fg_verify.py`, `tools/fg_bundle.py`, `fixtures/sample-bundle` and 27 `lab/e-m*-run.py` harnesses exist and produce verdicts. Kept with this correction: a status file that is quietly edited is worse than one that says it moved.
-  specification describes them; nothing implements them.
-
-## Bundle definition (M7), so that "bundle" is not a promise
-
-A bundle is a directory, addressed by the sha256 of its manifest:
+## Where it stands
 
 ```
-bundle.json          # version fg-bundle/1, subject digests (code, build, config, identity),
-                     # declared closure, policy_hash, coverage, verdict, excluded paths
-objects/<sha256>     # content-addressed payloads referenced by the manifest
-manifest.sha256      # digest of bundle.json, the bundle's address
-signatures/<key>.sig # detached signatures over manifest.sha256
+engine (the tool)     100%
+product (reliance)    0%
+overall               60%
+tier                  T2 — usable by an outsider on their own database
+next tier             T3 (trustworthy for someone else's decision), blocked by P1, P2
 ```
 
-**Independent rebuild** means: a party that has never read our code takes `bundle.json` plus the documents that
-define it (`CLAIMS.md`, the closure definition, the policy), recomputes the manifest from scratch, and reports
-whether the recomputed bytes equal `manifest.sha256`. Agreement on the payload, disagreement only in diagnostics
-= agreement. Any other difference is a defect, recorded with its class (document text / rebuild instrument).
+The product half is zero because nobody outside has confirmed a finding, rebuilt the bundle as a
+third party, or signed an acceptance. That is not modesty, it is the measured state.
 
-Until such a run exists and is recorded in an `E-` card, M7 stays absent — a definition is not a result.
+## What exists, counted
 
+| artifacts | count |
+|---|---|
+| metric rows, each with a command | 62 |
+| experiment cards | 35 (refutes 2, supports 33) |
+| decisions | 14 |
+| markdown links checked | 117, broken 0 |
 
-**Three reserved fields (ADR-0002).** `issuer`, `valid_until`, `reliance_scope` are defined in the format and may
-stay unused. They reserve the shape of a liability surface — the thing a buyer would need before relying on a
-bundle — without claiming semantics we cannot yet define. Adding them later would invalidate every bundle and
-every verifier written before, so the envelope is cut now; the meaning waits for a counterparty.
-## What this document does not claim
+## Method kit
 
-- That the specification is correct, complete, or safe to implement against.
-- That any security guarantee holds for any system. No verifier existed on 2026-10-27; one exists now, and this repository has produced verdicts with it — which is why the sentence you are reading was rewritten rather than deleted.
-  produced by this repository.
-- That the kit is settled. It is v0 and will change; changes are recorded as ADRs.
-- That the review rounds made the design right. They made it less wrong, which is a different claim.
-- That the kit percentage means anything on its own, at any value. It is our own instrument measuring our own kit, and it has been
-  corrected twice already for false positives — see the interop reports.
+Conformance measured by `lab/check-interop.py`: **7/7**
 
----
-
-## Review points (round 6)
-
-Five independent reviews of the round-6 packet converged on a plan change and one open question. Two dates are
-recorded here because a stop condition that is not dated is a wish.
-
-| date | what must exist | if it does not |
+| item | state | evidence |
 |---|---|---|
-| **2026-11-10** | a conversation with a named person, in a named role, about what evidence would change their decision | the product question moves ahead of all engineering; no further design work until it is answered |
-| **2026-11-26** | one executable measurement: `E-M9` recorded with its pre-registered thresholds, result published including failure | the method is not extended; the project narrows to the piece that can be measured |
+| M1 experiment cards | present | 35 experiment cards, 0 hypothesis cards, 0 unclassified |
+| M2 metrics with commands | present | METRICS.md, 1 command blocks |
+| M3 claim registry | present | CLAIMS.md: 18 claims, evidence types used: false as stated, judgment, not established, sta |
+| M5 falsifiable status doc | present | STATUS-v0.md |
+| M6 guards | present | secrets, links, claims |
+| M7 independent-rebuild test | present | E-M39-independent-rebuild.md |
 
-The second date is the binding one. Five reviewers gave 21–30 days; the median is 26 November. One gave 90 days,
-but that was a threshold for external integration, not for producing a first measurement.
+## Readiness checks
 
-### The open question, recorded as central
-
-> **Who is the specific person whose decision changes when the first line says `coverage: 11/14` — and what does
-> the publisher of the bundle lose if the bundle is wrong?**
-
-All five reviews arrived at this independently, and three added the liability half unprompted. It decides the
-artifact: a consumer who must act needs a liability surface — who signed, on what authority, for what period,
-with what effect. No amount of coverage arithmetic substitutes for it.
-
-**This is not answerable by design review.** It is answerable by one conversation, which is what 2026-11-10 is
-for.
-
-### Kit status after this change
-
-M1 experiment cards: **present** (`lab/experiments/E-M9-substitution.md`, thresholds fixed before the run).
-M2 metrics with commands: absent. M7 independent rebuild: absent. Conformance recomputed by
-`lab/check-interop.py`.
-
----
-
-## Capability ceiling after round 7 (ADR-0005)
-
-Five independent reviews established what this artifact does and does not do. Recorded here because a status
-document that omits its own ceiling is a brochure.
-
-**What a positive verdict will mean, and what it will not.**
-
-| verdict | means | does not mean |
+| check | what it verifies | earned / weight |
 |---|---|---|
-| `CONSISTENT_DECLARED(R)` | report, policy and bundle agree at the declared coverage; **no independent inventory** | that the declared scope is complete |
-| `SCOPED_ASSURANCE(R, level)` | as above, plus an independent obligation manifest and per-flow evidence | that anything outside the scope is safe |
-| `PROVEN(R)` | one flow, independent inventory, all obligations discharged | anything about the surrounding system |
+| E1 | all guards and negative controls green | 10 / 10 |
+| E2 | the verifier executes and refuses | 8 / 8 |
+| E3 | acceptance scenarios pass | 12 / 12 |
+| E4 | grant enumerator measured on a planted fixture | 8 / 8 |
+| E5 | attribution measured, decoy not fooled | 8 / 8 |
+| E6 | bundle with Ed25519 verifies under both anchors | 8 / 8 |
+| E7 | mutation corpus measured with a declared class set | 6 / 6 |
+| P4 | a test corpus written by someone else | 0 / 7 |
 
-**Three mandatory inputs** (a bundle without them is invalid): `target_lock`, `obligation_manifest`,
-`previous_bundle`. If the manifest's generator is the analysing agent or its harness, the verifier returns
-`E_NO_INDEPENDENT_CLOSURE` and the verdict is capped at `CONSISTENT_DECLARED`. There is no override.
+## Open findings, from the cards
 
-**Not claimed, permanently:** complete discovery of all relevant paths; absence of vulnerabilities outside the
-verified scope; correctness of unvalidated agent interpretations; equivalence between the repository and the
-deployed system; independence of evidence that shares common assumptions.
+- E: **high** — `check-secrets.sh` scans history for token shapes only, and the local-path rule covers four extensions;
+- E: **high** — `lab/check-claims.py` still treats a missing artifact as a warning rather than a failure in CI (the rule
+- E: **high** — `STATUS-v0.md` still contradicts itself in several rows (M1 absent vs present; 84 links vs 122; "three
+- E: **medium** — four METRICS rows carry digests that match no file in `lab/logs/` (E-M21 and three others). The numbers
+- E: **medium** — the same GitLab dump is counted as 1436 and 1102 tables in two logs, and Pagila as 20 and 15; no counting
+- E: **medium** — E-M21's 0.4 s has no artifact and the only logged run of the same command says 1.5 s.
+- E: **medium** — `fg_readiness.py` prints hard-coded result strings ("E-M11 recall 8/8") whenever a harness exits 0, which
+- E: **medium** — The harness named in E-M19's command field does not exist (the card now points at the merge and verify commands instead).
+- E: **low** — DOSSIER truncates quoted results mid-word (`result[:300]`).
+- E: **low** — four METRICS merge commands omit `--out` and cannot run as written.
 
-The fifth cannot be engineered away. It is the reason the artifact is called a scoped consistency attestation and
-not an attestation of security.
+## What this page is not
 
-### The blocking item is now attribution, not the verifier
+- Not a claim of security. Every verdict carries `NC-01`…`NC-11`; the vocabulary is in
+  [NOT-CLAIMED.md](NOT-CLAIMED.md) and the verifier refuses a claim that omits its required codes.
+- Not a review. Reviews come from outside: [the exchange protocol](../interop/REVIEW-EXCHANGE.md) and
+  [the ledger](../interop/reviews/LEDGER.md).
+- Not written by hand. `python tools/fg_status.py --check` fails when this file and the tools disagree.
 
-`E-M12` found that the grant enumerator sees writers, not callers. Without a call graph (static or runtime), no
-path can be attributed to the declared control point, so coverage computes to 0 and the verdict is capped at
-`CONSISTENT_DECLARED` no matter how many bypasses are found. That is honest and nearly worthless. The attribution-capable source now exists (`E-M13`: 2/2 callers attributed, 0/9 false, including a decoy
-named like the flow). Coverage moved from 0.000 to 0.133 — still capped, and honest. The next artifact is the
-bundle format and `E-M9`; the older sentence follows. `E-M9` (substitution) is unblocked but secondary.
