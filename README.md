@@ -53,7 +53,8 @@ commits a token, CI goes red instead of the reputation.
 | Crypto | [in scope from day one](docs/61-CRYPTO-IN-SCOPE.md) · [crypto and auto-payout](docs/60-CRYPTO-AND-AUTOPAY.md) |
 | Economics | [SKUs and services](docs/70-SERVICE-TIERS.md) · [pricing doctrine](docs/80-PRICING-DOCTRINE.md) |
 | Decisions | lab/decisions/ — 14 ADRs, each stating its own limits |
-| Exchange | [review exchange protocol](interop/REVIEW-EXCHANGE.md) · [ledger](interop/reviews/LEDGER.md) |`n| Audit | [whole-repository and method audit, 2026-10-28](docs/18-AUDIT-2026-10-28.md) · [how attacks are part of development](docs/19-ATTACK-PRACTICE.md) |
+| Exchange | [review exchange protocol](interop/REVIEW-EXCHANGE.md) · [ledger](interop/reviews/LEDGER.md) |`n| Assessment | [what this repository reached, and what it did not](docs/21-FINAL-ASSESSMENT.md) |
+| Audit | [whole-repository and method audit, 2026-10-28](docs/18-AUDIT-2026-10-28.md) · [how attacks are part of development](docs/19-ATTACK-PRACTICE.md) |
 | Hand-off | **[DOSSIER.md](DOSSIER.md)** — one generated, self-contained file to paste into any model (Russian) |
 | Validate | [how a schema owner confirms or denies a finding](docs/FOREIGN-VALIDATION.md) — the door to evidence tier 2 |
 | Open | [questions for the owner](docs/QUESTIONS-FOR-OWNER.md) · [round 8 review pack](docs/16-ROUND8-QUESTIONS.md) · [round 8 disposition](docs/17-ROUND8-DISPOSITION.md) — only what cannot be decided here |
