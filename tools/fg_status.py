@@ -187,8 +187,13 @@ def main() -> int:
     a = ap.parse_args()
     text = build()
     if a.check:
+        def _body(s):
+            # The stamp names the commit the page was generated from, so the file is always one commit
+            # behind itself. Compare content, not the stamp: the content is what must not drift.
+            return re.sub(r"\*Produced by [^*]*\*", "STAMP", s, count=1)
+
         current = OUT.read_text(encoding="utf-8") if OUT.exists() else ""
-        if current != text:
+        if _body(current) != _body(text):
             print("STATUS-v0.md is stale — run python tools/fg_status.py")
             return 1
         print("STATUS-v0.md is current")
