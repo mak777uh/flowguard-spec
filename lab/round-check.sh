@@ -51,6 +51,7 @@ stage "attack suite (independent attacker)" "$PY" lab/e-m42-run.py
 stage "every refusal code is exercised" "$PY" lab/check-refusal-coverage.py
 stage "cross-family attack cadence" "$PY" lab/cross-family-due.py || true
 stage "cross-family findings stay closed" "$PY" lab/e-m60-run.py
+stage "Rust claim CLI vs Python" "$PY" lab/e-m68-run.py
 stage "Rust arithmetic vs Python on the attack cases" "$PY" lab/e-m67-run.py
 stage "differential: Rust core vs Python core" "$PY" lab/e-m66-run.py || true
 stage "differential against a third-party verifier" "$PY" lab/e-m57-run.py

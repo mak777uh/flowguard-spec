@@ -27,9 +27,46 @@ fn read_json(path: &Path) -> Result<serde_json::Value, String> {
 
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
-    if args.first().map(String::as_str) != Some("verify") {
-        eprintln!("usage: fg-core verify --bundle <dir> [--trusted-keys k1 k2]");
-        return ExitCode::from(2);
+    match args.first().map(String::as_str) {
+        Some("verify") => {}
+        Some("verify-claim") => {
+            let mut claim: Option<PathBuf> = None;
+            let mut inventory: Option<PathBuf> = None;
+            let mut report: Option<PathBuf> = None;
+            let mut i = 1;
+            while i < args.len() {
+                match args[i].as_str() {
+                    "--claim" => {
+                        claim = args.get(i + 1).map(PathBuf::from);
+                        i += 2;
+                    }
+                    "--inventory" => {
+                        inventory = args.get(i + 1).map(PathBuf::from);
+                        i += 2;
+                    }
+                    "--report" => {
+                        report = args.get(i + 1).map(PathBuf::from);
+                        i += 2;
+                    }
+                    other => {
+                        eprintln!("unknown argument: {other}");
+                        return ExitCode::from(2);
+                    }
+                }
+            }
+            return match (claim, inventory) {
+                (Some(c), Some(i)) => verify_claim_cmd(&c, &i, report.as_deref()),
+                _ => {
+                    eprintln!("usage: fg-core verify-claim --claim c.json --inventory i.json [--report r.json]");
+                    ExitCode::from(2)
+                }
+            };
+        }
+        _ => {
+            eprintln!("usage: fg-core verify --bundle <dir> [--trusted-keys k1 k2]");
+            eprintln!("       fg-core verify-claim --claim c.json --inventory i.json [--report r.json]");
+            return ExitCode::from(2);
+        }
     }
     let mut dir: Option<PathBuf> = None;
     let mut trusted: Vec<PathBuf> = Vec::new();
@@ -59,6 +96,53 @@ fn main() -> ExitCode {
             eprintln!("usage: fg-core verify --bundle <dir> [--trusted-keys k1 k2]");
             ExitCode::from(2)
         }
+    }
+}
+
+
+/// Answer the claim question with the Rust arithmetic. Exit 0 only when the verdict is what the claim
+/// asked for or stronger; 1 when the claim was lowered; 2 when the input could not be read.
+
+fn refuse_document(subject: &str, reason: &str) -> ExitCode {
+    let doc = json!({
+        "verdict": "INVALID",
+        "errors": [{"code": "REPORT_BUNDLE_INCONSISTENT", "subject": subject,
+                     "expected": "a JSON document", "observed": reason}],
+    });
+    println!("{}", serde_json::to_string_pretty(&doc).unwrap());
+    ExitCode::from(1)
+}
+
+fn verify_claim_cmd(claim_path: &Path, inv_path: &Path, report_path: Option<&Path>) -> ExitCode {
+    // A malformed document is a refusal, not a crash: the format page says so, and a caller reading only
+    // the exit code must be able to tell a refusal from a broken tool.
+    let claim = match read_json(claim_path) {
+        Ok(v) => v,
+        Err(e) => return refuse_document("claim", &e),
+    };
+    let inventory = match read_json(inv_path) {
+        Ok(v) => v,
+        Err(e) => return refuse_document("inventory", &e),
+    };
+    let report = report_path.and_then(|p| read_json(p).ok());
+
+    let outcome = claim::verify_claim(&claim, &inventory, report.as_ref());
+    let doc = json!({
+        "verdict": outcome.verdict.as_str(),
+        "claimed_level": outcome.claimed.to_string(),
+        "computed_coverage": outcome.coverage,
+        "distinct_paths": outcome.distinct_paths,
+        "db_logic_band": outcome.band,
+        "errors": outcome.refusals.iter().map(|r| json!({
+            "code": r.code, "subject": r.subject, "expected": r.expected, "observed": r.observed
+        })).collect::<Vec<_>>(),
+    });
+    println!("{}", serde_json::to_string_pretty(&doc).unwrap());
+
+    match &outcome.verdict {
+        claim::Verdict::Invalid => ExitCode::from(1),
+        claim::Verdict::Level(l) if l.rank() >= outcome.claimed.rank() => ExitCode::SUCCESS,
+        claim::Verdict::Level(_) => ExitCode::FAILURE,
     }
 }
 

@@ -13,6 +13,124 @@ use crate::canonical::sha256_hex;
 use crate::levels::{clamp, floor_for, level_for_distinct_paths, distinct_paths, Level};
 use serde_json::Value;
 
+
+/// The codes a level must declare, read from `docs/NOT-CLAIMED.md` so the two cores cannot drift.
+/// A missing table is not a pass: if the document cannot be read, the requirement is unknown and the claim
+/// is refused rather than accepted.
+pub fn required_codes(level: Level) -> Option<Vec<String>> {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()?
+        .join("docs")
+        .join("NOT-CLAIMED.md");
+    let text = std::fs::read_to_string(path).ok()?;
+    let mut in_table = false;
+    for line in text.lines() {
+        if line.trim_start().starts_with("## Required by level") {
+            in_table = true;
+            continue;
+        }
+        if in_table {
+            if line.trim_start().starts_with("## ") {
+                break;
+            }
+            let cells: Vec<&str> = line.trim().trim_matches('|').split('|').map(str::trim).collect();
+            if cells.len() < 2 {
+                continue;
+            }
+            let want = match level {
+                Level::ConsistentDeclared => "`CONSISTENT_DECLARED`",
+                Level::ScopedAssurance => "`SCOPED_ASSURANCE`",
+                Level::Proven => "`PROVEN`",
+            };
+            if cells[0] == want {
+                return Some(
+                    cells[1]
+                        .split(',')
+                        .map(|c| c.trim().to_string())
+                        .filter(|c| !c.is_empty())
+                        .collect(),
+                );
+            }
+        }
+    }
+    None
+}
+
+pub fn missing_codes(claim: &Value, level: Level) -> Option<Vec<String>> {
+    let required = required_codes(level)?;
+    let declared: Vec<String> = claim
+        .get("not_claimed")
+        .and_then(|v| v.as_array())
+        .map(|a| a.iter().filter_map(|v| v.as_str().map(str::to_string)).collect())
+        .unwrap_or_default();
+    let missing: Vec<String> = required.into_iter().filter(|c| !declared.contains(c)).collect();
+    if missing.is_empty() {
+        None
+    } else {
+        Some(missing)
+    }
+}
+
+
+/// A confirmation is valid when the record that `fg_confirm.py` would accept is present: an owner with all
+/// four contact fields, a statement, a verdict that is not a refutation, and a finding that names a path.
+fn _valid_confirmation(record: &Value) -> bool {
+    if record.get("owner_confirmed") != Some(&Value::Bool(true)) {
+        return false;
+    }
+    match record.get("verdict").and_then(|v| v.as_str()) {
+        Some("confirmed") | Some("partially_correct") => {}
+        _ => return false,
+    }
+    let owner = match record.get("owner").and_then(|v| v.as_object()) {
+        Some(o) => o,
+        None => return false,
+    };
+    for field in ["name", "role", "how_contacted", "date"] {
+        let ok = owner
+            .get(field)
+            .and_then(|v| v.as_str())
+            .map(|s| !s.trim().is_empty())
+            .unwrap_or(false);
+        if !ok {
+            return false;
+        }
+    }
+    let statement = record.get("owner_statement").and_then(|v| v.as_str()).unwrap_or("");
+    if statement.trim().chars().count() < 12 {
+        return false;
+    }
+    record
+        .get("finding")
+        .and_then(|f| f.get("path_id"))
+        .and_then(|v| v.as_str())
+        .map(|s| !s.trim().is_empty())
+        .unwrap_or(false)
+}
+
+fn tier_ceiling(claim: &Value, inventory: &Value) -> Option<u8> {
+    let tier = claim.get("evidence_tier").and_then(|v| v.as_u64()).unwrap_or(0) as u8;
+    let records: Vec<&Value> = inventory
+        .get("foreign_validation")
+        .and_then(|v| v.as_array())
+        .map(|a| a.iter().collect())
+        .unwrap_or_default();
+    let valid = records.iter().filter(|r| _valid_confirmation(r)).count();
+    let tier3 = records.iter().any(|r| {
+        _valid_confirmation(r)
+            && r.get("blind_evaluation") == Some(&Value::Bool(true))
+            && r.get("ground_truth").map(|g| g.is_object()).unwrap_or(false)
+    });
+    match tier {
+        0 | 1 => Some(tier),
+        2 if valid >= 1 => Some(2),
+        2 => Some(1),
+        3 if tier3 => Some(3),
+        3 if valid >= 1 => Some(2),
+        _ => Some(1),
+    }
+}
+
 pub struct Refusal {
     pub code: &'static str,
     pub subject: String,
@@ -27,8 +145,23 @@ impl Refusal {
     }
 }
 
+#[derive(Debug, PartialEq, Eq)]
+pub enum Verdict {
+    Invalid,
+    Level(Level),
+}
+
+impl Verdict {
+    pub fn as_str(&self) -> String {
+        match self {
+            Verdict::Invalid => "INVALID".to_string(),
+            Verdict::Level(l) => l.to_string(),
+        }
+    }
+}
+
 pub struct Outcome {
-    pub verdict: Level,
+    pub verdict: Verdict,
     pub claimed: Level,
     pub coverage: Option<f64>,
     pub distinct_paths: usize,
@@ -48,6 +181,7 @@ fn finite(v: &Value) -> Option<f64> {
 
 pub fn verify_claim(claim: &Value, inventory: &Value, report: Option<&Value>) -> Outcome {
     let mut refusals: Vec<Refusal> = Vec::new();
+    let mut shape_errors = 0usize;
     let mut refuse = |code: &'static str, subject: &str, expected: &str, observed: &str| {
         refusals.push(Refusal::new(code, subject, expected, observed));
     };
@@ -58,9 +192,17 @@ pub fn verify_claim(claim: &Value, inventory: &Value, report: Option<&Value>) ->
     if claimed.is_none() {
         refuse("REPORT_BUNDLE_INCONSISTENT", "claim.declared_level",
                "CONSISTENT_DECLARED | SCOPED_ASSURANCE | PROVEN", claimed_raw);
+        shape_errors += 1;
     }
     let claimed = claimed.unwrap_or(Level::ConsistentDeclared);
     let control = claim.get("declared_control_point").and_then(|v| v.as_str()).unwrap_or("");
+
+    match missing_codes(claim, claimed) {
+        Some(missing) => refuse("MISSING_EVIDENCE", "claim.not_claimed",
+                                 "every NC code the declared level requires",
+                                 &missing.join(", ")),
+        None => {}
+    }
 
     // --- the inventory: shape before arithmetic ------------------------------------------------
     let sources: Vec<&Value> = inventory
@@ -91,8 +233,11 @@ pub fn verify_claim(claim: &Value, inventory: &Value, report: Option<&Value>) ->
                     }
                     density = Some(density.map_or(f, |cur| cur.min(f)));
                 }
-                None => refuse("REPORT_BUNDLE_INCONSISTENT", "inventory.sources[].db_logic_density",
-                               "a finite number 0..1", &d.to_string()),
+                None => {
+                    refuse("REPORT_BUNDLE_INCONSISTENT", "inventory.sources[].db_logic_density",
+                           "a finite number 0..1", &d.to_string());
+                    shape_errors += 1;
+                }
             }
         }
     }
@@ -105,6 +250,7 @@ pub fn verify_claim(claim: &Value, inventory: &Value, report: Option<&Value>) ->
     for dup in duplicates.iter().take(3) {
         refuse("REPORT_BUNDLE_INCONSISTENT", &format!("inventory.paths[path_id={dup}]"),
                "a unique path_id", "repeated: one finding written several times is one finding");
+        shape_errors += 1;
     }
 
     for path in &paths {
@@ -205,6 +351,16 @@ pub fn verify_claim(claim: &Value, inventory: &Value, report: Option<&Value>) ->
         }
     }
 
+    // --- the tier ceiling: a confirmation is what raises the level, and a self-declared one is not one ---
+    let tier = claim.get("evidence_tier").and_then(|v| v.as_u64()).unwrap_or(0) as u8;
+    if let Some(ceiling) = tier_ceiling(claim, inventory) {
+        if tier > ceiling && claimed != Level::ConsistentDeclared {
+            refuse("EVIDENCE_TIER_UNSUPPORTED", "evidence_tier",
+                   &format!("evidence tier {ceiling} or lower"),
+                   &format!("declared tier {tier} with no valid confirmation behind it"));
+        }
+    }
+
     // --- the verdict: floors keyed to the level being printed, then clamped to the claim ---------
     let mut verdict = level_for_distinct_paths(distinct);
     if let Some(floor) = floor_for(verdict) {
@@ -226,6 +382,7 @@ pub fn verify_claim(claim: &Value, inventory: &Value, report: Option<&Value>) ->
 
     let band = density.map(|d| if d < 0.15 { "thin" } else if d < 0.40 { "mixed" } else { "dense" });
 
+    let verdict = if shape_errors > 0 { Verdict::Invalid } else { Verdict::Level(verdict) };
     Outcome { verdict, claimed, coverage, distinct_paths: distinct, band, refusals }
 }
 
@@ -251,6 +408,14 @@ mod tests {
             "target_lock": "t@1",
             "independent_of_agent": true,
             "sources": [{"source_id": "s", "kind": "static", "completeness_claim": "exhaustive_within_covers", "db_logic_density": 0.9}],
+            // a tier-2 claim needs a confirmation that `fg_confirm.py` would accept, otherwise the
+            // ceiling caps it and every test below would be measuring the ceiling instead of the rule
+            "foreign_validation": [{
+                "schema": "s", "owner_confirmed": true, "verdict": "confirmed",
+                "owner": {"name": "A", "role": "b", "how_contacted": "c", "date": "d"},
+                "owner_statement": "confirmed the findings",
+                "finding": {"path_id": "wp_001", "claim": "x"}
+            }],
             "paths": paths(n)
         });
         if let (Value::Object(b), Value::Object(e)) = (&mut base, extra) {
@@ -264,20 +429,22 @@ mod tests {
     fn claim(level: &str) -> Value {
         json!({"claim_id": "t", "target_lock": {"commit": "t@1"},
                "declared_control_point": "function:bank.transfer", "declared_level": level,
-               "claimed_coverage": 1.0, "evidence_tier": 2, "not_claimed": ["NC-01", "NC-02"]})
+               "claimed_coverage": 1.0, "evidence_tier": 2,
+               "not_claimed": ["NC-01", "NC-02", "NC-03", "NC-04", "NC-05", "NC-10", "NC-11"]})
     }
 
     #[test]
     fn eight_distinct_paths_reach_proven() {
         let out = verify_claim(&claim("PROVEN"), &inv(8, json!({})), None);
-        assert_eq!(out.verdict, Level::Proven);
+        assert_eq!(out.verdict, Verdict::Level(Level::Proven));
         assert!(out.refusals.is_empty(), "{:?}", out.refusals.iter().map(|r| r.code).collect::<Vec<_>>());
     }
 
     #[test]
     fn a_nearly_correct_level_is_not_a_level() {
         let out = verify_claim(&claim("PROVEN "), &inv(8, json!({})), None);
-        assert_eq!(out.verdict, Level::ConsistentDeclared);
+        // a shape error is not a lowered claim, it is an unanswerable one
+        assert_eq!(out.verdict, Verdict::Invalid);
         assert_eq!(out.refusals[0].code, "REPORT_BUNDLE_INCONSISTENT");
     }
 
@@ -286,7 +453,7 @@ mod tests {
         let out = verify_claim(&claim("PROVEN"),
                                &inv(8, json!({"sources": [{"source_id": "s", "kind": "grants",
                                                            "db_logic_density": 1e308}]})), None);
-        assert_eq!(out.verdict, Level::ConsistentDeclared, "an infinite density is not a density");
+        assert_eq!(out.verdict, Verdict::Level(Level::ConsistentDeclared), "an infinite density is not a density");
     }
 
     #[test]
@@ -295,7 +462,7 @@ mod tests {
                                &inv(8, json!({"sources": [{"source_id": "s", "kind": "static",
                                                            "completeness_claim": "sampled",
                                                            "db_logic_density": 0.9}]})), None);
-        assert_eq!(out.verdict, Level::ConsistentDeclared);
+        assert_eq!(out.verdict, Verdict::Level(Level::ConsistentDeclared));
         assert!(out.refusals.iter().any(|r| r.code == "MISSING_EVIDENCE"));
     }
 
@@ -313,7 +480,7 @@ mod tests {
                                &inv(8, json!({"delta_since_previous": {"new_paths": 8,
                                                                        "published": false,
                                                                        "baseline": false}})), None);
-        assert_eq!(out.verdict, Level::Proven, "no baseline means nothing to grow from");
+        assert_eq!(out.verdict, Verdict::Level(Level::Proven), "no baseline means nothing to grow from");
     }
 
     #[test]
@@ -336,7 +503,8 @@ mod tests {
         inventory["paths"] = json!(rows);
         let out = verify_claim(&claim("PROVEN"), &inventory, None);
         assert_eq!(out.distinct_paths, 1);
-        assert_eq!(out.verdict, Level::ConsistentDeclared);
+        // repeated identifiers are a shape error, so the claim cannot be answered at all
+        assert_eq!(out.verdict, Verdict::Invalid);
     }
 
     #[test]
@@ -344,8 +512,9 @@ mod tests {
         let inventory = inv(8, json!({}));
         let honest = json!({"coverage": 1.0, "analysed_paths": []});
         let lying = json!({"coverage": 0.5, "analysed_paths": []});
-        assert_eq!(verify_claim(&claim("PROVEN"), &inventory, Some(&honest)).verdict, Level::Proven);
+        assert_eq!(verify_claim(&claim("PROVEN"), &inventory, Some(&honest)).verdict,
+                   Verdict::Level(Level::Proven));
         assert_eq!(verify_claim(&claim("PROVEN"), &inventory, Some(&lying)).verdict,
-                   Level::ConsistentDeclared);
+                   Verdict::Level(Level::ConsistentDeclared));
     }
 }
