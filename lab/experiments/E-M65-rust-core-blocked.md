@@ -20,7 +20,7 @@ verdict: refutes
 artifact format untouched. The argument is not taste:
 
 1. **It can be verified itself.** `hax` (Rust → F*/Coq/Lean), `Aeneas` (Rust → Lean), `Kani` (bounded model
-   checking) all take Rust and none take Python, Go or TypeScript. `docs/22` proposed formalising the verdict
+   checking) all take Rust and none take Python, Go or TypeScript. [docs/22](../docs/22-FORMAL-TOOLING.md) proposed formalising the verdict
    algebra; Rust is the only candidate where the code and the proof can be about the same artifact.
 2. **Five of our 34 breaks are unrepresentable in it by type** — the level string that was nearly right
    (`E-M42` B1), `NaN` clearing a density floor (`E-M60`), `vanished: "false"` counted as coverage, a missing

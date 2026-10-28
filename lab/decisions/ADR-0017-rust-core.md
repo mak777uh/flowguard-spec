@@ -22,7 +22,7 @@ never enumerates, never connects to a database, and never writes into the reposi
 **1. It can be verified itself.** The product's thesis is that a claim should be checkable rather than
 trusted. A verifier written in a language with no verification path is a weak place to stand: `hax`
 (Rust → F*/Coq/Lean), `Aeneas` (Rust → Lean), `Kani` (bounded model checking) and `Creosot`/`Prusti` all take
-Rust as input and none take Python, Go or TypeScript. `docs/22` proposed formalising the verdict algebra;
+Rust as input and none take Python, Go or TypeScript. `docs/22-FORMAL-TOOLING.md` proposed formalising the verdict algebra;
 Rust is the only candidate language where the code and the proof can be about the *same* artifact.
 
 **2. Half of this repository's 34 adversarial breaks are unrepresentable in it.**
@@ -38,7 +38,7 @@ That is not aesthetics. It is five named defects, each of which cost a card and 
 
 **3. Deployment matches how the tool is used.** A single static binary in CI, no interpreter, no virtualenv,
 no dependency on the host's Python patch level; and it can be embedded through FFI or compiled to WASM the
-first time the gate has to run inside somebody else's process — the trigger `docs/22` named for revisiting the
+first time the gate has to run inside somebody else's process — the trigger `docs/22-FORMAL-TOOLING.md` named for revisiting the
 language question at all.
 
 ## Why not the others
