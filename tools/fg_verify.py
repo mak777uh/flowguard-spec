@@ -796,6 +796,15 @@ def main() -> int:
                 "%d distinct path(s)" % len(distinct_paths),
                 "a ratio over a handful of paths is noise", False)
             verdict = "CONSISTENT_DECLARED"
+        # A claim whose covered set is empty is true for a trivial reason: it must not carry a level
+        # (E-M69, after the PutnamBench agent showed that a vacuous statement is the easy way to "prove").
+        if not in_core and ORDER.get(verdict, 0) > 0:
+            err("COVERAGE_BASIS_TOO_SMALL", "coverage_basis",
+                "at least one path inside the core",
+                "the covered set is empty, so the claim is vacuously true",
+                "state a control point something actually passes through", True)
+            verdict = "CONSISTENT_DECLARED"
+
         if ORDER.get(claimed_level, 0) > ORDER.get(verdict, 0):
             if not any(e["code"] == "CLAIM_EXCEEDS_EVIDENCE" for e in errors):
                 err("CLAIM_EXCEEDS_EVIDENCE", "level", f"<= {verdict}", claimed_level,

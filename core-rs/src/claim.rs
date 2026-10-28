@@ -131,6 +131,30 @@ fn tier_ceiling(claim: &Value, inventory: &Value) -> Option<u8> {
     }
 }
 
+
+/// The codes the vocabulary defines, read from the same document as the requirements.
+pub fn known_codes() -> Option<Vec<String>> {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()?
+        .join("docs")
+        .join("NOT-CLAIMED.md");
+    let text = std::fs::read_to_string(path).ok()?;
+    let mut codes = Vec::new();
+    for line in text.lines() {
+        // the table writes the code in bold, not in backticks: | **NC-01** | ...
+        let trimmed = line.trim();
+        if let Some(rest) = trimmed.strip_prefix("| **NC-") {
+            if let Some(head) = rest.split("**").next() {
+                let digits: String = head.chars().take_while(|c| c.is_ascii_digit()).collect();
+                if !digits.is_empty() {
+                    codes.push(format!("NC-{digits}"));
+                }
+            }
+        }
+    }
+    if codes.is_empty() { None } else { Some(codes) }
+}
+
 pub struct Refusal {
     pub code: &'static str,
     pub subject: String,
@@ -196,6 +220,20 @@ pub fn verify_claim(claim: &Value, inventory: &Value, report: Option<&Value>) ->
     }
     let claimed = claimed.unwrap_or(Level::ConsistentDeclared);
     let control = claim.get("declared_control_point").and_then(|v| v.as_str()).unwrap_or("");
+
+    if let Some(known) = known_codes() {
+        let declared: Vec<String> = claim
+            .get("not_claimed")
+            .and_then(|v| v.as_array())
+            .map(|a| a.iter().filter_map(|v| v.as_str().map(str::to_string)).collect())
+            .unwrap_or_default();
+        for code in declared.iter().filter(|c| !known.contains(c)) {
+            refuse("REPORT_BUNDLE_INCONSISTENT", "claim.not_claimed",
+                   "a code from docs/NOT-CLAIMED.md",
+                   &format!("{code} is not an entry in the vocabulary"));
+            shape_errors += 1;
+        }
+    }
 
     match missing_codes(claim, claimed) {
         Some(missing) => refuse("MISSING_EVIDENCE", "claim.not_claimed",
@@ -335,6 +373,29 @@ pub fn verify_claim(claim: &Value, inventory: &Value, report: Option<&Value>) ->
     let total = paths.len();
     let coverage = if total > 0 { Some(in_core as f64 / total as f64) } else { None };
 
+    // --- exclusions must not contradict the coverage ------------------------------------------
+    if let Some(excluded) = claim.get("excluded").and_then(|v| v.as_array()) {
+        for item in excluded {
+            let pid = item.get("path_id").and_then(|v| v.as_str()).unwrap_or("");
+            if pid.is_empty() {
+                continue;
+            }
+            let in_core = paths.iter().any(|p| {
+                p.get("path_id").and_then(|v| v.as_str()) == Some(pid)
+                    && p.get("attribution").and_then(|a| a.get("to")).and_then(|v| v.as_str())
+                        == Some(control)
+            });
+            if in_core {
+                // a path cannot be both covered and excluded: that is a contradiction in the claim
+                // itself, so the claim is unanswerable rather than merely lowered (E-M69)
+                refuse("REPORT_BUNDLE_INCONSISTENT", &format!("excluded {pid}"),
+                       "an exclusion outside the core",
+                       "the path is inside the declared core");
+                shape_errors += 1;
+            }
+        }
+    }
+
     // --- the report, as an input rather than decoration ------------------------------------------
     if let Some(report) = report {
         if report.get("analysed_paths").is_none() && claimed != Level::ConsistentDeclared {
@@ -361,6 +422,19 @@ pub fn verify_claim(claim: &Value, inventory: &Value, report: Option<&Value>) ->
         }
     }
 
+    // --- independence: an inventory produced only by the analysing agent is not closure ---------
+    let kinds: Vec<&str> = sources
+        .iter()
+        .filter_map(|s| s.get("kind").and_then(|v| v.as_str()))
+        .collect();
+    let independent = inventory.get("independent_of_agent") == Some(&Value::Bool(true))
+        && kinds.iter().any(|k| *k != "agent");
+    if !independent && claimed != Level::ConsistentDeclared {
+        refuse("E_NO_INDEPENDENT_CLOSURE", "independent_of_agent",
+               "at least one source that is not the analysing agent",
+               "the inventory is the agent's own word");
+    }
+
     // --- the verdict: floors keyed to the level being printed, then clamped to the claim ---------
     let mut verdict = level_for_distinct_paths(distinct);
     if let Some(floor) = floor_for(verdict) {
@@ -375,6 +449,24 @@ pub fn verify_claim(claim: &Value, inventory: &Value, report: Option<&Value>) ->
                    "at least 0.15 of the schema's functions writing to tables", &d.to_string());
         }
     }
+    // coverage thresholds: PROVEN needs everything, SCOPED needs a clear majority
+    let cov = coverage.unwrap_or(0.0);
+    if verdict == Level::Proven && cov < 1.0 {
+        refuse("CLAIM_EXCEEDS_EVIDENCE", "coverage", "full coverage is required for PROVEN",
+               &format!("coverage {cov:.3}"));
+    }
+    if verdict.rank() >= Level::ScopedAssurance.rank() && cov < 0.75 {
+        refuse("CLAIM_EXCEEDS_EVIDENCE", "coverage", "at least 0.75 for SCOPED_ASSURANCE",
+               &format!("coverage {cov:.3}"));
+    }
+
+    // an empty covered set makes the claim true for a trivial reason
+    if in_core == 0 && claimed != Level::ConsistentDeclared {
+        refuse("COVERAGE_BASIS_TOO_SMALL", "coverage_basis",
+               "at least one path inside the core",
+               "the covered set is empty, so the claim is vacuously true");
+    }
+
     if !refusals.is_empty() || truncated || grew {
         verdict = Level::ConsistentDeclared;
     }

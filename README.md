@@ -72,6 +72,7 @@ commits a token, CI goes red instead of the reputation.
 | Crypto | [in scope from day one](docs/61-CRYPTO-IN-SCOPE.md) · [crypto and auto-payout](docs/60-CRYPTO-AND-AUTOPAY.md) |
 | Economics | [SKUs and services](docs/70-SERVICE-TIERS.md) · [pricing doctrine](docs/80-PRICING-DOCTRINE.md) |
 | Decisions | lab/decisions/ — 14 ADRs, each stating its own limits |
+| Methods | [what a PutnamBench-solving agent teaches us](docs/26-PUTNAM-AGENT.md) |
 | Ecosystem | [Lean ecosystem scan](docs/25-LEAN-SCAN.md) |
 | Ecosystem | [Rust core status](core-rs/README.md) |
 | Provers | [Harmonic Aristotle: what it changes here](docs/24-ARISTOTLE.md) |
