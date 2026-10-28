@@ -1,5 +1,5 @@
 {
- "bundle_version": "fg-bundle/1",
+ "bundle_version": "fg-bundle/2",
  "subjects": {
   "code": {
    "sha256": "14d268ad504f20416920223e6c1bd2eecc19e4a5beb54b0684baf766b4d467a7",
@@ -56,5 +56,11 @@
   ]
  },
  "inventory_digest": "b1ccd4bc4be5b5a40b112b20d2408727034f293692aace3fdf928704638cfaf0",
- "plaintext_notified": true
+ "plaintext_notified": true,
+ "nc_vocabulary": {
+  "version": "nc-1",
+  "sha256": "bdc36c88674d5ad938b5c7857ae1d9214c73b3449eb660fcafb5f487017e91c2",
+  "text_included": true,
+  "text": "# NOT-CLAIMED — the vocabulary of what an attestation refuses to assert\n\nRound 7, review 2 and review 5 both flagged the same weakness: `not_claimed` is where a vendor writes \"results may\nvary\" and calls it honesty. A free-text list cannot be checked, so it becomes boilerplate.\n\nThis file fixes the vocabulary. A claim carries **codes**, not sentences:\n\n```json\n\"not_claimed\": [\"NC-01\", \"NC-02\", \"NC-04\", \"NC-05\"]\n```\n\n`tools/fg_verify.py` reads this table, rejects unknown codes, and rejects a claim that omits the codes its declared\nlevel requires. Adding a code is a deliberate act: it means a new kind of thing we refuse to assert.\n\n## The codes\n\n| code | refuses to assert | why it cannot be asserted |\n|---|---|---|\n| **NC-01** | that the inventory contains every relevant path | the inventory is a merge of sources, each with declared blind spots; completeness is unprovable |\n| **NC-02** | that anything outside the verified scope is safe | nothing outside the scope was examined |\n| **NC-03** | that an agent's reading of the code is correct | interpretation errors are the dominant agent failure mode and are not instrument-checked |\n| **NC-04** | that the repository equals the deployed system | establishing that requires a runtime binding (extcodehash, build receipt), which is out of the offline path |\n| **NC-05** | that evidence from one source is independent of another | two sources can share a blind spot; corroboration counts what was found twice, not what was missed twice |\n| **NC-06** | that the policy matches business intent | we check conformance to a policy; whether the policy is the right one is not a technical question |\n| **NC-07** | that risk weights are objective | weighting residual risk requires an agreed classification; until one exists, weights are a convention |\n| **NC-08** | that the issuer of a trust anchor was authorised to issue it | a trusted key list is a file; who may sign it is a governance question |\n| **NC-09** | that a third party can reproduce the analysis | only the bundle address is reproducible; the analysis is reproducible only after M7 |\n| **NC-11** | that these numbers generalise beyond the schemas actually validated | a result on one corpus says nothing about an unmeasured population; generalisability is a property of the sample, not of the tool |\n| **NC-10** | that observed runtime behaviour matches the static model | static paths and exercised paths are different sets; runtime evidence is a separate source |\n\n## Required by level\n\n| declared level | codes that must be present |\n|---|---|\n| `CONSISTENT_DECLARED` | NC-01, NC-02 |\n| `SCOPED_ASSURANCE` | NC-01, NC-02, NC-04, NC-05, NC-11 |\n| `PROVEN` | NC-01, NC-02, NC-03, NC-04, NC-05, NC-10, NC-11 |\n\nA claim that declares a level without the codes it requires is refused, with the missing codes named.\n\n## What this does not do\n\n- It does not make the refusals complete. A code that nobody thought to add is absent from this table.\n- It does not prevent a claim from *also* refusing more than required — that is always allowed.\n- It does not check that the refusal is *true*. A claim that lists NC-01 while its prose says otherwise is a\n  contradiction a human has to catch; the machine checks presence, not sincerity.\n"
+ }
 }

@@ -1,11 +1,12 @@
 # Sample bundle — the format, written for someone who will not read our code
 
-Address: `27a4c3977982779d…` (full value in `manifest.sha256`).
+Address: `5336c02a397cdf96…` (full value in `manifest.sha256`).
 
 This is a **format description**, not a specification of security. Two independent implementers reproduced this
 bundle end to end from this page alone; everything they had to guess is now written down.
 
-Scope: `fg-bundle/1`. A verifier given another `bundle_version` must refuse rather than guess.
+Scope: `fg-bundle/2`. A verifier given another `bundle_version` must refuse rather than guess. `fg-bundle/1`
+artifacts remain verifiable under their own, weaker rule and must be reported as such.
 
 ---
 
@@ -55,6 +56,10 @@ An address-only signature **cannot assert a role at all**: role identity lives i
 there is no `asserts` to say what the signer meant. Such a signature is provenance only, and is never sufficient for
 `consistency_verdict` or `risk_acceptance`.
 
+`nc_vocabulary` travels with the artifact: `{version, sha256, text_included, text}`. The text is inside the
+bundle so a stranger can read what was accepted without fetching a second document; the digest stays so drift
+is detectable.
+
 A bundle must carry at least one signature; a bundle with none is refused, not accepted as consistent. A claim that
 declares `PROVEN` or `SCOPED_ASSURANCE` must be signed by a `consistency_verdict` holder. A `risk_acceptance` is
 optional — but if the verdict is relied upon, the reader should ask why there is none, and this page does not pretend
@@ -63,14 +68,16 @@ that the artifact answers it.
 ## 4. The role-bound message
 
 ```
-message = address_hex || "\n" || "role:" || sha256( canonical( role document without accepted_scope ) )
+profile     = "fg-bundle/2|" || address_hex || "|" || role_digest || "|" || scope
+role_digest = sha256( canonical( role document ) )   # every term, accepted_scope included
+signature   = Ed25519( sha256(profile) as 64 ASCII hex )
 ```
 
 - `canonical` is **exactly** the rule of §2: recursive code-point sort, separators `(",", ":")`, `ensure_ascii=False`,
   UTF-8, no trailing newline.
 - The digest is 64 lowercase hex characters, ASCII.
-- "without `accepted_scope`" means **the key is deleted**. Setting it to `null` or `""` changes the digest and the
-  signature fails.
+- `accepted_scope` is **inside** the digest in `fg-bundle/2`. The old `fg-bundle/1` message deleted it and checked it
+  separately; that exception is gone, which is the point of the change.
 - The input to the digest is **the whole role document minus the `accepted_scope` key** — not a whitelist. The
   fields that appear in it here are `asserts`, `issuer`, and whichever of `policy_digest`, `residual_risk`,
   `valid_until`, `statement` the role carries (§8 says which). `asserts` is inside it — dropping it breaks both

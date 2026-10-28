@@ -81,7 +81,7 @@ def main() -> int:
         import base64
         # ADR-0015: sign the role-bound message, not the address alone. Signing the address
         # made every acceptance's terms editable after signing (E-M52).
-        sig = (fgb_key.sign(fgb.role_message(address, doc)) if fgb_key else b"")
+        sig = (fgb_key.sign(fgb.signature_payload(address, doc)) if fgb_key else b"")
         (d / "signatures" / f"{name}.sig").write_text(base64.b64encode(sig).decode("ascii") + "\n", encoding="ascii")
         (d / "signatures" / f"{name}.pub").write_bytes(
             fgb_key.public_key().public_bytes(fgb.Encoding.PEM, fgb.PublicFormat.SubjectPublicKeyInfo))

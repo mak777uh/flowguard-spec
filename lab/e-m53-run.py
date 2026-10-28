@@ -76,7 +76,7 @@ def main() -> int:
     k = fgb.load_key(ok)
     import base64
     (base / "signatures" / "owner.sig").write_text(
-        base64.b64encode(k.sign(fgb.role_message(address, doc))).decode("ascii") + "\n", encoding="ascii")
+        base64.b64encode(k.sign(fgb.signature_payload(address, doc))).decode("ascii") + "\n", encoding="ascii")
 
     trusted = [str(base / "signatures" / "verifier.pub"), str(base / "signatures" / "owner.pub")]
 

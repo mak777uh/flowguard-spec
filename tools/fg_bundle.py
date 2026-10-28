@@ -103,11 +103,18 @@ def signature_payload(addr: str, role_doc: dict) -> bytes:
     return hashlib.sha256(body.encode()).hexdigest().encode("ascii")
 
 
-def nc_commitment(vocab_text: str, version: str) -> dict:
-    """The bundle must commit to the NC vocabulary it was written against, not merely reference it."""
-    return {"version": version,
-            "sha256": hashlib.sha256(vocab_text.encode()).hexdigest(),
-            "text_included": False}
+def nc_commitment(vocab_path) -> dict:
+    """The NC vocabulary travels with the artifact: text AND digest.
+
+    A hash alone forces a reader to fetch the dictionary from somewhere and prove it matches; the text
+    lets a stranger see what the accepting party accepted without leaving the bundle. The digest stays
+    so drift is detectable.
+    """
+    text = vocab_path.read_text(encoding="utf-8")
+    return {"version": "nc-1",
+            "sha256": hashlib.sha256(text.encode()).hexdigest(),
+            "text_included": True,
+            "text": text}
 
 def check_roles(bundle_dir: Path, address: str):
     """Validate every signature's role against policies/signature-roles.json (E-M28).
@@ -197,9 +204,9 @@ def cmd_create(a) -> int:
     objects[inv_hash] = {"bytes": len(inv_bytes), "name": "inventory.json"}
 
     _nc_path = Path(__file__).resolve().parent.parent / "docs" / "NOT-CLAIMED.md"
-    _nc = nc_commitment(_nc_path.read_text(encoding="utf-8"), "nc-1") if _nc_path.exists() else None
+    _nc = nc_commitment(_nc_path) if _nc_path.exists() else None
     bundle = {
-        "bundle_version": getattr(a, "envelope", "v1") == "v2" and V2 or VERSION,
+        "bundle_version": getattr(a, "envelope", "v2") == "v1" and VERSION or V2,
         "subjects": subjects,
         "objects": objects,
         "claim": claim,
@@ -232,8 +239,8 @@ def cmd_create(a) -> int:
             "statement": a.statement or "accepted by the named party for the stated period",
         })
     _role_doc = role_document(a.role, a.signer, **_fields)
-    sig = (key.sign(signature_payload(addr, _role_doc))
-           if getattr(a, "envelope", "v1") == "v2" else key.sign(role_message(addr, _role_doc)))
+    sig = (key.sign(role_message(addr, _role_doc))
+           if getattr(a, "envelope", "v2") == "v1" else key.sign(signature_payload(addr, _role_doc)))
     (out / "signatures" / f"{a.signer}.sig").write_bytes(base64.b64encode(sig).decode("ascii").encode("ascii") + b"\n")
     (out / "signatures" / f"{a.signer}.pub").write_bytes(
         key.public_key().public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo))
@@ -269,9 +276,10 @@ def verify_bundle(a) -> tuple:
         return {"verdict": "INVALID", "errors": [{"code": "REPORT_BUNDLE_INCONSISTENT",
                                                     "subject": "bundle.json", "observed": str(e)}]}, 2
 
-    if bundle.get("bundle_version") != VERSION:
+    _ver = bundle.get("bundle_version")
+    if _ver not in (VERSION, V2):
         problems.append(("REPORT_BUNDLE_INCONSISTENT", "bundle_version",
-                         f"expected {VERSION}", str(bundle.get("bundle_version"))))
+                         f"expected one of {VERSION}, {V2}", str(_ver)))
 
     # 1. objects exist and hash to their names
     for h, meta in (bundle.get("objects") or {}).items():
@@ -488,7 +496,7 @@ def main() -> int:
     c.add_argument("--signer", required=True)
     c.add_argument("--role", default="consistency_verdict")
     c.add_argument("--canonical", action="store_true")
-    c.add_argument("--envelope", choices=["v1", "v2"], default="v1",
+    c.add_argument("--envelope", choices=["v1", "v2"], default="v2",
                    help="v2 = ADR-0016 single signature binding address+role+scope; NOT yet adopted")
     c.add_argument("--residual-risk", nargs="*")
     c.add_argument("--valid-until")
