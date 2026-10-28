@@ -3,7 +3,7 @@
 Everything else is being decided and built by the agent. This file holds only what **cannot** be decided here, with
 what is blocked, what happens while waiting, and what it costs. Reviewed every round; answers land as edits here.
 
-Last updated: 2026-10-28, after the coordination check with VecDHT.
+Last updated: 2026-10-28, after the cross-project canonical-form check (E-M71).
 
 ---
 

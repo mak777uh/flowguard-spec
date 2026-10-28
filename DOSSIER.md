@@ -17,7 +17,7 @@
 ограничения                перечислены кодами NC-01…NC-11 и обязательны для уровня
 ```
 
-Состояние, посчитанное из репозитория: ядро 100%, продукт 0%, общая 60%, уровень T2. Замеров: 93. Карточек экспериментов: 61, из них провальных: 4.
+Состояние, посчитанное из репозитория: ядро 100%, продукт 0%, общая 60%, уровень T2. Замеров: 95. Карточек экспериментов: 62, из них провальных: 5.
 
 ## Где неопределённость
 
@@ -136,6 +136,7 @@ python lab/e-m12-run.py          # 19 сценариев верификатор�
 - **E-M38** — Address reproduced exactly (c3a2e79b…), both signatures verified, all four objects matched - BUT the description was not in the directory at all: a packaging error removed it. The rebuilder matched the address by fitting sixteen candidate canonicalisations, and said so plainly. It then produced …
 - **E-M52** — FAILED AND REVERTED. The design is written down (ADR-0015, message = address + the role's canonical digest, with accepted_scope excluded because it must equal the address). Implementation was attempted twice and both attempts were wrong in the same way: the create path signs before the role file …
 - **E-M65** — DECISION MADE, EXECUTION BLOCKED. Rust is the right language for the verifying core and the ADR records why: it is the only candidate with a credible path to being verified itself (hax, Aeneas, Kani), and five of the 34 adversarial breaks are unrepresentable in it by type (a level string that is …
+- **E-M71** — Fourteen documents produce identical bytes under both canonicalisers - keys sorted at every depth, minimal separators, non-ASCII literal, arrays in order, astral plane and control characters included. One class disagrees: non-integer numbers. LexSpec refuses them (CanonError); FlowGuard accepts …
 - **E-M9** — 3 of 6 caught. D-1a/b/c (code, build, config) rejected on digest mismatch. D-1d accepted: swapping the signer for another key still returned SIGNED_AND_CONSISTENT, because the bundle carries its own public key and any key that signs the bundle's own address verifies. D-2a/b accepted: a validly …
 
 Провалы не переписаны задним числом: карточка остаётся с вердиктом `refutes`, починка — отдельной карточкой.
