@@ -810,7 +810,10 @@ def main() -> int:
             # A declared `false` does not cancel a delta that reports unpublished new paths: the
             # inventory would be contradicting itself, and the contradiction must block, not the
             # flag (E-M60, mimo: growth=false with new_paths=3 printed PROVEN).
-            if (delta.get("new_paths") or 0) > 0 and delta.get("published") is not True:
+            # Only a delta taken against a real baseline can describe growth: a first inventory has
+            # every path "new" against nothing (found when E-M13 turned red, E-M61).
+            if (delta.get("new_paths") or 0) > 0 and delta.get("published") is not True \
+                    and delta.get("baseline") is not False:
                 grew = True
         if grew:
             err("POLICY_CEILING_EXCEEDED", "perimeter_growth",

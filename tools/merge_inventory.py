@@ -226,9 +226,11 @@ def main() -> int:
             "subtractive": len(subtractive),
         },
         "published": bool(previous),
+        "baseline": bool(previous),
     }
     # Growth now means NEW SURFACE, not any change: a replacement of the same shape and control-point
     # status is a re-attestation event, not growth.
+    # A first inventory has no baseline: every path is "new" against nothing, which is not growth.
     perimeter_growth = bool(previous) and len(additive) > 0
 
     # target_lock is carried by the manifest, not left in the SourceRecords: without it a verdict
