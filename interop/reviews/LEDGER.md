@@ -19,3 +19,4 @@ Format and rules: [REVIEW-EXCHANGE.md](../REVIEW-EXCHANGE.md).
 ```
 | F-2-1 | 2026-10-28 r2 | flowguard (own) | medium | interop/verifiers/third-party-verifier.py | accepts a signer whose .pub cannot be parsed | python lab/e-m57-run.py (demo.pub truncated: theirs=SIGNED_AND_CONSISTENT, ours=INVALID) | accepted → open: their verifier is wrong, recorded rather than patched, because the divergence is evidence |
 | F-4-1 | 2026-10-28 | LexSpec (external reader) | `docs/37-REFUSAL-CODES.md` heading said "six" above a table of seventeen codes | fixed; the heading is gone and the file credits the finder | accepted |
+| F-3-1 | 2026-10-28 | flowguard (Lead) | LexSpec tools/lexcheck.py: verdict depends on whether the tree carries a repository marker; the refusal blames S2_HASH_MISMATCH and accuses the corpus | open - reported in interop/reviews/2026-10-28-flowguard-reviews-lexspec.md with lab/lexspec-root.py as the reproduction | sent |
