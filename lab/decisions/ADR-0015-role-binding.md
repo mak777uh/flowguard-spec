@@ -66,7 +66,7 @@ rather than hidden.
 3. **A second address per acceptance** — correct in principle, but two addresses for one artifact is a new class of
    confusion, and `E-M9` already showed how much a rebound address costs to explain.
 
-## Limits of this decision
+## What this decision does NOT do
 
 - **Not implemented.** Nothing in the code enforces it yet; a reader must not treat this ADR as a description of
   behaviour (E-M52).
