@@ -163,6 +163,10 @@ def main() -> int:
     for name, path in (("inventory", inv), ("claim", claim)):
         print(f"  {name:10} {path}")
     print()
+    print("note: the database this command creates is left in place on purpose - drop it when you are done,")
+    print("      or a fixture that expects to own the schema will refuse to rebuild (found when fg_try held")
+    print("      a role the fixture wanted to drop).")
+    print()
     print("next steps, in order of what they buy:")
     print("  1. read the inventory: every path is a way to write the table without the control point")
     print("  2. raise the claim only when the evidence raises it - the verifier refuses a claim above it")
