@@ -82,3 +82,10 @@ Requires your account data to claim. Low value; ignored unless you want it.
    но каждая проверка читает документ, который пишет заявитель. Потолок конструкции: «документ лжеца
    противоречит сам себе», а не «лжец не пройдёт». Вопрос: нужна ли внешняя привязка (подпись третьей
    стороны над инвентарём), или этот потолок приемлем для первого продукта?
+
+## Q5 — does a bundle need a freshness binding (challenge) and tool provenance?
+
+A bundle today can be produced for nobody and presented later as an answer: the claim has no nonce, no challenge, and no record of which tool version produced it. NEAR AI's attestation stack binds all three, and their separation is instructive (quote+nonce+signer, image provenance, verifier-owned policy).
+
+Proposed, additive: claim.challenge (hex, supplied by the relying party) and claim.tool {name, version, digest}. Verifier refuses a challenge mismatch when one is expected; reports an absent tool digest. It changes the canonical bytes of new artifacts only, but it is a format decision, so it is queued rather than applied. Full reasoning: docs/27-NEAR-ATTESTATION.md.
+
