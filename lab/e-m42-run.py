@@ -21,7 +21,7 @@ SELF_TEST = os.environ.get("FG_ATTACK_SELFTEST") == "1"
 EXPECTED = {
     "B1 one path, weak claim": ["EVIDENCE_TIER_UNSUPPORTED"],
     "B2 report says core empty": ["EVIDENCE_TIER_UNSUPPORTED"],
-    "B3 eight copies of one path": ["COVERAGE_BASIS_TOO_SMALL"],
+    "B3 eight copies of one path": ["REPORT_BUNDLE_INCONSISTENT"],  # duplicate path_id is now a shape error
     "B4 truncation without label": ["MISSING_EVIDENCE"],
     "B5 refuted confirmation": ["EVIDENCE_TIER_UNSUPPORTED"],
     "B6 attribution sources [null]": ["CLAIM_EXCEEDS_EVIDENCE", "EVIDENCE_TIER_UNSUPPORTED"],
@@ -59,7 +59,11 @@ for name, args in CASES:
         EXPECTED[name] = ["THIS_CODE_NEVER_FIRES"]
     missing = [x for x in args if x.startswith(str(A)) and not Path(x).exists()]
     if missing:
-        print(f"{name:32} SKIP (missing {[Path(m).name for m in missing]})")
+        # A skipped case is evidence that has stopped running. It used to print SKIP and continue,
+        # so twelve of thirteen cases could vanish while the suite and its own self-test stayed green
+        # (E-M50 B6). Missing fixture = failure.
+        print(f"{name:32} SKIP (missing {[Path(m).name for m in missing]}) -> counted as failure")
+        bad += 1
         continue
     r = subprocess.run([PY, V] + args, capture_output=True, text=True)
     try:

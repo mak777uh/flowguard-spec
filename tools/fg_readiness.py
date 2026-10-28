@@ -25,11 +25,19 @@ def run(cmd, cwd=None):
     return subprocess.run(cmd, cwd=cwd or ROOT, capture_output=True, text=True)
 
 
+def _bash():
+    """`bash` may resolve to WSL's, which cannot run a Git-style path; that made E1 flap."""
+    for c in (r"C:\Program Files\Git\bin\bash.exe", "/bin/bash", "/usr/bin/bash"):
+        if Path(c).exists():
+            return c
+    return "bash"
+
+
 def ok_guards():
-    a = run(["bash", "lab/check-secrets.sh"])
+    a = run([_bash(), "lab/check-secrets.sh"])
     b = run([PY, "lab/check-links.py"])
     c = run([PY, "lab/check-claims.py"])
-    d = run(["bash", "lab/selftest-guards.sh"])
+    d = run([_bash(), "lab/selftest-guards.sh"])
     green = [x.returncode == 0 for x in (a, b, c, d)]
     return all(green), f"secrets/links/claims/negative-controls: {sum(green)}/4 green"
 

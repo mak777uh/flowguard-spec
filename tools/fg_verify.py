@@ -175,6 +175,11 @@ def validate_shapes(claim, inventory):
         if "excluded" in claim and not isinstance(claim.get("excluded"), list):
             problems.append(("claim.excluded", "a list", type(claim.get("excluded")).__name__))
     if isinstance(inventory, dict):
+        ids = [p_.get("path_id") for p_ in inventory.get("paths", []) if isinstance(p_, dict)]
+        dupes = {i for i in ids if ids.count(i) > 1}
+        for d in sorted(x for x in dupes if isinstance(x, str)):
+            problems.append((f"inventory.paths[path_id={d}]", "a unique path_id",
+                             "repeated: one finding written several times is one finding"))
         srcs = inventory.get("sources")
         if srcs is not None and not isinstance(srcs, list):
             problems.append(("inventory.sources", "a list of objects", type(srcs).__name__))
@@ -185,6 +190,14 @@ def validate_shapes(claim, inventory):
                 elif not isinstance(s.get("kind"), str):
                     problems.append((f"inventory.sources[{i}].kind", "a string",
                                      type(s.get("kind")).__name__))
+        for s in inventory.get("sources", []) if isinstance(inventory.get("sources"), list) else []:
+            d = s.get("db_logic_density") if isinstance(s, dict) else None
+            if d is not None and (not isinstance(d, (int, float)) or isinstance(d, bool)):
+                problems.append(("inventory.sources[].db_logic_density", "a number 0..1", repr(d)[:30]))
+        dl = inventory.get("delta_since_previous")
+        if isinstance(dl, dict) and not isinstance(dl.get("new_paths", 0), int):
+            problems.append(("inventory.delta_since_previous.new_paths", "an integer",
+                             repr(dl.get("new_paths"))[:30]))
         if not isinstance(inventory.get("target_lock", ""), str):
             problems.append(("inventory.target_lock", "a string",
                              type(inventory.get("target_lock")).__name__))
@@ -408,7 +421,8 @@ def main() -> int:
     # thin slice of the write path, and nothing said so (E-M37, E-M40). If most logic lives in the
     # application, a strong verdict reads as a statement about the system, which it is not.
     densities = [s.get("db_logic_density") for s in inventory.get("sources", [])
-                 if s.get("db_logic_density") is not None]
+                 if isinstance(s.get("db_logic_density"), (int, float))
+                 and not isinstance(s.get("db_logic_density"), bool)]
     # Deleting the field must not delete the check (break B9): a catalogue source that does not say
     # how much of the logic is in the database cannot support a strong claim about the system.
     denominator_kinds = {"grants", "static", "routes", "manual"}
@@ -417,8 +431,11 @@ def main() -> int:
     # exemption is a structured field, not a label the claimant can retype freely (E-M47).
     silent = [s.get("source_id") for s in inventory.get("sources", [])
               if s.get("kind") in denominator_kinds
-              and s.get("enumerates") != "calls"
-              and s.get("db_logic_density") is None]
+              and s.get("db_logic_density") is None
+              and not (s.get("enumerates") == "calls"
+                       and not any(str(p_.get("entry", "")).startswith("table:")
+                                   and s.get("source_id") in ((p_.get("attribution") or {}).get("sources") or [])
+                                   for p_ in paths))]
     density = min(densities) if densities else None
     thin_floor = policy.get("min_db_logic_density", 0.15)
     if silent and ORDER.get(claim.get("declared_level", "CONSISTENT_DECLARED"), 0) > 0:
@@ -451,7 +468,16 @@ def main() -> int:
     # A ratio over one or two paths is noise: a single-path inventory reached PROVEN with coverage
     # 1.0 (attack A1, E-M36). The floor is on the denominator, not on the work done.
     floors = policy.get("min_paths_for_level") or {}
-    distinct_paths = {(p_.get("entry"), p_.get("kind")) for p_ in paths}
+    # Distinct means distinct rows, not distinct labels: one path relabelled eight ways passed an
+    # eight-path floor twice (E-M47 #2, E-M50 B1). path_id is the identifier; a repeated one is not
+    # eight findings, it is one finding written eight times, and that is a shape error.
+    distinct_paths = {p_.get("path_id") for p_ in paths if p_.get("path_id")}
+    _seen_ids, _dupes = set(), []
+    for p_ in paths:
+        pid = p_.get("path_id")
+        if pid in _seen_ids:
+            _dupes.append(pid)
+        _seen_ids.add(pid)
     # Keyed to the level the tool is willing to print, not to the one the caller asked for: asking
     # for LESS used to delete the floor and let coverage manufacture PROVEN (breaks B1/B2/B3).
     need = floors.get(claim.get("declared_level", "CONSISTENT_DECLARED"))
@@ -635,6 +661,7 @@ def main() -> int:
             type(fv).__name__, "fix the document shape", True)
         fv = []
     confirmed = [f for f in fv if isinstance(f, dict) and _valid_confirmation(f)]
+    confirmed_tier3 = [f for f in fv if isinstance(f, dict) and _valid_confirmation_tier3(f)]
     supported = 1 if denominator_kinds else 0
     if confirmed:
         supported = 2
@@ -704,9 +731,10 @@ def main() -> int:
         # open through two adversarial rounds because the report was read for control_point only.
         reported = report.get("coverage")
         if isinstance(reported, (int, float)) and not isinstance(reported, bool):
-            computed = cov.get("counts", {})
-            total = sum(v for v in computed.values() if isinstance(v, int)) or 0
-            recomputed = (computed.get("covered", 0) / total) if total else 0.0
+            # Path coverage, the same number the verdict is computed from. Comparing against the
+            # SQL-verb ratio made the honest report fail and the contradictory one pass (E-M50 B3).
+            total_paths = len(paths) + len(outside)
+            recomputed = (len(in_core) / total_paths) if total_paths else 0.0
             if abs(float(reported) - recomputed) > 0.05:
                 err("REPORT_BUNDLE_INCONSISTENT", "coverage",
                     "within 0.05 of the inventory's own arithmetic", round(float(reported), 3),
@@ -753,13 +781,11 @@ def main() -> int:
 
         growth = inventory.get("perimeter_growth")
         delta = inventory.get("delta_since_previous")
-        # Growth is only meaningful against a previous attested inventory: without a delta the flag
-        # describes the first inventory, where everything is new by definition (E-M47 follow-up).
-        grew = False
-        if isinstance(delta, dict):
-            if growth is not None and growth is not False and str(growth).lower() != "false":
-                grew = True
-            if growth is None and (delta.get("new_paths") or 0) > 0 and delta.get("published") is not True:
+        # A declared growth blocks whatever the delta looks like. E-M47 made this depend on the delta
+        # being a dict, so a string or an absent delta restored the original break (E-M50 B5).
+        grew = growth is not None and growth is not False and str(growth).lower() != "false"
+        if isinstance(delta, dict) and growth is None:
+            if (delta.get("new_paths") or 0) > 0 and delta.get("published") is not True:
                 grew = True
         if grew:
             err("POLICY_CEILING_EXCEEDED", "perimeter_growth",
