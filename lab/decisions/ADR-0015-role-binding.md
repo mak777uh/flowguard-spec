@@ -65,3 +65,17 @@ rather than hidden.
    someone who was not in the room.
 3. **A second address per acceptance** — correct in principle, but two addresses for one artifact is a new class of
    confusion, and `E-M9` already showed how much a rebound address costs to explain.
+
+## Limits of this decision
+
+- **Not implemented.** Nothing in the code enforces it yet; a reader must not treat this ADR as a description of
+  behaviour (E-M52).
+- **It binds terms, not truth.** A signed acceptance still says only that this key accepted these words about this
+  address; whether the risk is acceptable is the accepting party's judgement, not the format's.
+- **It does not identify the party.** A key is a key; who holds it is outside the artifact (NC-08, ADR-0010).
+- **Backwards compatibility is a decision, not a default.** Refusing an address-only acceptance invalidates every
+  artifact issued before the change; allowing it means the defect persists in old bundles. The ADR chooses refusal for
+  
+isk_acceptance and tolerates the weaker binding for other roles, with the binding printed.
+- **The message format is now load-bearing documentation.** A rebuilder who implements the address but not this
+  message will produce a bundle that verifies for them and not for us, which is precisely the failure E-M39 found.
