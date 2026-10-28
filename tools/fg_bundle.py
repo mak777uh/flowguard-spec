@@ -316,6 +316,22 @@ def verify_bundle(a) -> tuple:
             problems.append(("MISSING_EVIDENCE", f"signature {name}", "a valid signature over the address",
                              "verification failed"))
 
+    # A file in objects/ that the manifest does not declare is evidence nobody accounted for: the
+    # page forbids it, the third-party verifier refused it, and we did not (found by the differential
+    # harness E-M57 - our own attacks had never added an undeclared object).
+    try:
+        declared = set(json.loads((b / "bundle.json").read_text(encoding="utf-8")).get("objects") or {})
+    except Exception:  # noqa: BLE001
+        declared = set()
+    present = {f.name for f in (b / "objects").glob("*") if f.is_file()}
+    for extra in sorted(present - declared):
+        problems.append(("REPORT_BUNDLE_INCONSISTENT", f"object {extra[:12]}…",
+                         "every file under objects/ declared in the manifest",
+                         "present but undeclared"))
+    for missing in sorted(declared - present):
+        problems.append(("MISSING_EVIDENCE", f"object {missing[:12]}…",
+                         "a declared object present on disk", "declared but absent"))
+
     if not verified:
         problems.append(("MISSING_EVIDENCE", "signatures", "at least one valid signature", "none"))
 
