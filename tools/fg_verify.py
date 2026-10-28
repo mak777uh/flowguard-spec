@@ -162,6 +162,10 @@ def validate_shapes(claim, inventory):
                 claim.get("claimed_coverage"), bool):
             problems.append(("claim.claimed_coverage", "a number", repr(claim.get("claimed_coverage"))[:40]))
     if isinstance(claim, dict):
+        lvl = claim.get("declared_level")
+        if lvl is not None and lvl not in ("CONSISTENT_DECLARED", "SCOPED_ASSURANCE", "PROVEN"):
+            problems.append(("claim.declared_level",
+                             "CONSISTENT_DECLARED | SCOPED_ASSURANCE | PROVEN", repr(lvl)[:40]))
         tier = claim.get("evidence_tier")
         if tier is not None and (not isinstance(tier, int) or isinstance(tier, bool)):
             problems.append(("claim.evidence_tier", "an integer 0-3", repr(tier)[:40]))
@@ -183,6 +187,13 @@ def validate_shapes(claim, inventory):
                     if not isinstance(p_.get(key), str):
                         problems.append((f"inventory.paths[{i}].{key}", "a string",
                                          type(p_.get(key)).__name__))
+                kinds = ("privilege", "function", "trigger_chain", "fk_cascade", "dynamic_sql",
+                         "disabled_control", "view_trigger", "route", "http_entry", "caller",
+                         "observed_write", "report", "static", "runtime", "agent", "manual",
+                         "catalog", "grant")
+                if p_.get("kind") not in kinds:
+                    problems.append((f"inventory.paths[{i}].kind",
+                                     "one of the declared path kinds", repr(p_.get("kind"))[:40]))
                 at = p_.get("attribution")
                 if at is not None and not isinstance(at, dict):
                     problems.append((f"inventory.paths[{i}].attribution", "an object",
@@ -236,7 +247,7 @@ def main() -> int:
             merged_floors[level] = max(int(merged_floors.get(level, 0)), int(n))
         policy = {**DEFAULT_POLICY, **policy,
                   "min_paths_for_level": merged_floors,
-                  "min_db_logic_density": min(
+                  "min_db_logic_density": max(
                       float(DEFAULT_POLICY.get("min_db_logic_density", 0.15)),
                       float(policy.get("min_db_logic_density",
                                        DEFAULT_POLICY.get("min_db_logic_density", 0.15)))),
@@ -322,7 +333,10 @@ def main() -> int:
             return False
         return all(isinstance(s, str) and s and s in known_source_ids for s in srcs)
 
-    in_core = [p for p in paths if control and _attributed(p)]
+    # A path that disappeared from the target cannot be evidence that the target is covered.
+    k_core = [p_ for p_ in paths if control and _attributed(p_)]
+    in_core = [p_ for p_ in k_core if p_.get("vanished") is not True]
+    vanished_core = len(k_core) - len(in_core)
     # A path that points at the control point but is not *supported* by an attribution naming a
     # source is self-declared, even when it carries a to-field with an empty sources list
     # (attack A4, E-M36).
@@ -355,8 +369,14 @@ def main() -> int:
                  if s.get("db_logic_density") is not None]
     # Deleting the field must not delete the check (break B9): a catalogue source that does not say
     # how much of the logic is in the database cannot support a strong claim about the system.
+    denominator_kinds = {"grants", "static", "routes", "manual"}
+    # A source that enumerates calls is not claiming to see the schema's write logic; one that
+    # enumerates tables is, and must report how much of that logic lives in the database. The
+    # exemption is a structured field, not a label the claimant can retype freely (E-M47).
     silent = [s.get("source_id") for s in inventory.get("sources", [])
-              if s.get("kind") == "grants" and s.get("db_logic_density") is None]
+              if s.get("kind") in denominator_kinds
+              and s.get("enumerates") != "calls"
+              and s.get("db_logic_density") is None]
     density = min(densities) if densities else None
     thin_floor = policy.get("min_db_logic_density", 0.15)
     if silent and ORDER.get(claim.get("declared_level", "CONSISTENT_DECLARED"), 0) > 0:
@@ -370,6 +390,20 @@ def main() -> int:
             "at least %s of the schema's functions writing to tables" % thin_floor,
             "db_logic_density %s: most write logic sits outside the database" % round(density, 3),
             "this report covers database-level paths only; state that, or lower the level", True)
+
+    # ---- 3a2. the core must be reachable by a catalogue, not only by a witness ------
+    # A witness source that happens to describe every path is a report about the witness, not a
+    # denominator (E-M47): the inventory schema says independent_of_agent is recomputed from source
+    # kinds, and it was read as a boolean.
+    denom_ids = {s.get("source_id") for s in inventory.get("sources", [])
+                 if s.get("kind") in ("grants", "static", "routes", "manual")}
+    witness_only = [p_ for p_ in in_core
+                    if not (set((p_.get("attribution") or {}).get("sources") or []) & denom_ids)]
+    if witness_only and control:
+        err("UNKNOWN_OR_UNBOUND_PATH", "coverage_basis",
+            "every core path attributable to a catalogue source",
+            "%d of %d core path(s) come only from a witness" % (len(witness_only), len(in_core)),
+            "a witness describes what happened, not what exists", False)
 
     # ---- 3b. the denominator must be big enough to carry the level -------
     # A ratio over one or two paths is noise: a single-path inventory reached PROVEN with coverage
@@ -540,7 +574,19 @@ def main() -> int:
         owner = f.get("owner") or {}
         if not all(owner.get(k) for k in ("name", "role", "how_contacted", "date")):
             return False
-        return len(str(f.get("owner_statement") or "").strip()) >= 12
+        if len(str(f.get("owner_statement") or "").strip()) < 12:
+            return False
+        # fg_confirm requires these; E-M42 claimed the two were mirrors and they were not (E-M47).
+        if not f.get("schema"):
+            return False
+        finding = f.get("finding") or {}
+        if not finding.get("path_id") or not str(finding.get("claim") or "").strip():
+            return False
+        return True
+
+    def _valid_confirmation_tier3(f):
+        return (_valid_confirmation(f) and f.get("blind_evaluation") is True
+                and isinstance(f.get("ground_truth"), dict))
 
     if not isinstance(fv, list):
         err("REPORT_BUNDLE_INCONSISTENT", "foreign_validation", "a list of records",
@@ -642,7 +688,17 @@ def main() -> int:
                 err("CLAIM_EXCEEDS_EVIDENCE", "level", f"<= {verdict}", claimed_level,
                     f"lower the claim to {verdict}")
 
-        if inventory.get("perimeter_growth") is True:
+        growth = inventory.get("perimeter_growth")
+        delta = inventory.get("delta_since_previous")
+        # Growth is only meaningful against a previous attested inventory: without a delta the flag
+        # describes the first inventory, where everything is new by definition (E-M47 follow-up).
+        grew = False
+        if isinstance(delta, dict):
+            if growth is not None and growth is not False and str(growth).lower() != "false":
+                grew = True
+            if growth is None and (delta.get("new_paths") or 0) > 0 and delta.get("published") is not True:
+                grew = True
+        if grew:
             err("POLICY_CEILING_EXCEEDED", "perimeter_growth",
                 "no new surface since the previous inventory",
                 "the inventory declares growth", "re-attest before raising the level", False)

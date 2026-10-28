@@ -68,6 +68,7 @@ def main() -> int:
 
     source = {
         "source_id": "pgcalls-v0.1",
+        "enumerates": "calls",
         "kind": "static",
         "tool": {"name": "fg-enum-pgcalls", "version": "0.1.0",
                  "digest": "sha256:" + sha256(SQL.read_bytes()).hexdigest()},

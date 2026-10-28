@@ -23,24 +23,29 @@ VERBS = ("INSERT", "SELECT", "UPDATE", "DELETE", "TRUNCATE", "MERGE")
 
 
 def _verbs_from_catalogue(inventory):
-    """Verbs the catalogue says are possible, from privilege paths whose detail names the privilege.
+    """Verbs the catalogue says are possible, from structured fields only.
 
     Paths of kind `observed_write` are skipped: they are the observation, not the enumeration, and
     counting them here made every observed verb look catalogued - which silently emptied the
     `unenumerable` list this file exists to produce (found while testing E-M23).
+
+    `detail` is free text and is NOT read. Typing "DELETE" into it used to satisfy the check that
+    exists in order not to be satisfied (E-M47): the whole point is that an event the enumeration
+    cannot explain must block a strong verdict, and an unconstrained string let the claimant decide.
+    A verb counts only when a path names it in a structured way: `stmt:VERB ...` or `VERB ...`.
     """
     found = set()
     for p in inventory.get("paths", []):
         if p.get("kind") == "observed_write":
             continue
-        detail = (p.get("detail") or "").upper()
-        for v in VERBS:
-            if v in detail:
-                found.add(v)
-        entry = (p.get("entry") or "").upper()
-        for v in VERBS:
-            if f":{v} " in entry or entry.startswith(f"{v} ") or f" {v} " in entry:
-                found.add(v)
+        entry = str(p.get("entry") or "")
+        m = re.match(r"^stmt:([A-Z]+)\b", entry)
+        if m and m.group(1) in VERBS:
+            found.add(m.group(1))
+            continue
+        head = entry.split(" ", 1)[0].rstrip(":").upper()
+        if head in VERBS:
+            found.add(head)
     return found
 
 
