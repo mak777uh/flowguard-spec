@@ -40,7 +40,7 @@ def _verbs_from_catalogue(inventory):
             continue
         entry = str(p.get("entry") or "")
         m = re.match(r"^stmt:([A-Z]+)\b", entry)
-        if m and m.group(1) in VERBS:
+        if m:  # any verb: CALL, EXECUTE, GRANT …
             found.add(m.group(1))
             continue
         head = entry.split(" ", 1)[0].rstrip(":").upper()
@@ -55,7 +55,7 @@ def _verbs_observed(inventory):
         if p.get("kind") != "observed_write":
             continue
         m = re.search(r"stmt:([A-Z]+)", p.get("entry", ""))
-        if m and m.group(1) in VERBS:
+        if m:  # any verb: CALL, EXECUTE, GRANT …
             found[m.group(1)] = p.get("path_id")
     return found
 

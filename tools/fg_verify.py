@@ -192,8 +192,12 @@ def validate_shapes(claim, inventory):
                                      type(s.get("kind")).__name__))
         for s in inventory.get("sources", []) if isinstance(inventory.get("sources"), list) else []:
             d = s.get("db_logic_density") if isinstance(s, dict) else None
-            if d is not None and (not isinstance(d, (int, float)) or isinstance(d, bool)):
-                problems.append(("inventory.sources[].db_logic_density", "a number 0..1", repr(d)[:30]))
+            if d is not None:
+                import math as _m
+                if (not isinstance(d, (int, float)) or isinstance(d, bool)
+                        or not _m.isfinite(float(d))):
+                    problems.append(("inventory.sources[].db_logic_density",
+                                     "a finite number 0..1", repr(d)[:30]))
         dl = inventory.get("delta_since_previous")
         if isinstance(dl, dict) and not isinstance(dl.get("new_paths", 0), int):
             problems.append(("inventory.delta_since_previous.new_paths", "an integer",
@@ -227,6 +231,9 @@ def validate_shapes(claim, inventory):
                 if at is not None and not isinstance(at, dict):
                     problems.append((f"inventory.paths[{i}].attribution", "an object",
                                      type(at).__name__))
+                if "vanished" in p_ and not isinstance(p_.get("vanished"), bool):
+                    problems.append((f"inventory.paths[{i}].vanished", "a boolean",
+                                     repr(p_.get("vanished"))[:30]))
                 if p_.get("kind") == "observed_write" and not re.search(
                         r"^stmt:[A-Z]+ ", str(p_.get("entry") or "")):
                     problems.append((f"inventory.paths[{i}].entry",
@@ -420,9 +427,11 @@ def main() -> int:
     # GitLab's public schema has 36 functions with a write statement out of 558: the report covers a
     # thin slice of the write path, and nothing said so (E-M37, E-M40). If most logic lives in the
     # application, a strong verdict reads as a statement about the system, which it is not.
+    import math as _math
     densities = [s.get("db_logic_density") for s in inventory.get("sources", [])
                  if isinstance(s.get("db_logic_density"), (int, float))
-                 and not isinstance(s.get("db_logic_density"), bool)]
+                 and not isinstance(s.get("db_logic_density"), bool)
+                 and _math.isfinite(float(s.get("db_logic_density")))]
     # Deleting the field must not delete the check (break B9): a catalogue source that does not say
     # how much of the logic is in the database cannot support a strong claim about the system.
     denominator_kinds = {"grants", "static", "routes", "manual"}
@@ -592,7 +601,7 @@ def main() -> int:
     truncated_sources = []
     for s in inventory.get("sources", []):
         tr_any = s.get("truncated") or {}
-        truncated_in_fact = (s.get("completeness_claim") == "partial"
+        truncated_in_fact = (s.get("completeness_claim") in ("partial", "sampled")
                              or (isinstance(tr_any, dict) and tr_any.get("kept") is not None
                                  and tr_any.get("total") is not None
                                  and tr_any.get("kept") < tr_any.get("total")))
@@ -733,7 +742,9 @@ def main() -> int:
         if isinstance(reported, (int, float)) and not isinstance(reported, bool):
             # Path coverage, the same number the verdict is computed from. Comparing against the
             # SQL-verb ratio made the honest report fail and the contradictory one pass (E-M50 B3).
-            total_paths = len(paths) + len(outside)
+            # `outside` is a subset of `paths`, so adding it double-counted and made the check
+            # inverted: the honest report was refused and a lying one accepted (E-M60, glm).
+            total_paths = len(paths)
             recomputed = (len(in_core) / total_paths) if total_paths else 0.0
             if abs(float(reported) - recomputed) > 0.05:
                 err("REPORT_BUNDLE_INCONSISTENT", "coverage",
@@ -784,7 +795,10 @@ def main() -> int:
         # A declared growth blocks whatever the delta looks like. E-M47 made this depend on the delta
         # being a dict, so a string or an absent delta restored the original break (E-M50 B5).
         grew = growth is not None and growth is not False and str(growth).lower() != "false"
-        if isinstance(delta, dict) and growth is None:
+        if isinstance(delta, dict):
+            # A declared `false` does not cancel a delta that reports unpublished new paths: the
+            # inventory would be contradicting itself, and the contradiction must block, not the
+            # flag (E-M60, mimo: growth=false with new_paths=3 printed PROVEN).
             if (delta.get("new_paths") or 0) > 0 and delta.get("published") is not True:
                 grew = True
         if grew:
