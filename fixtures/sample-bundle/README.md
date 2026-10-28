@@ -10,10 +10,10 @@ details that actually decide the address. Every rule below is stated because a r
 ```
 bundle.json          the manifest (pretty-printed; this file is NOT hashed as bytes)
 objects/<sha256>     payloads, named by the SHA-256 of their exact bytes
-manifest.sha256      the address: 64 lowercase hex characters, then a single LF, nothing else (66 bytes)
+manifest.sha256      the address: 64 lowercase hex characters, then a single LF, nothing else (65 bytes)
 signatures/<id>.sig  base64 of the 64 raw Ed25519 signature bytes, then a single LF (89 bytes)
 signatures/<id>.pub  Ed25519 public key, PEM, SubjectPublicKeyInfo
-signatures/<id>.role JSON: which assertion this signature makes
+signatures/<id>.role JSON: which assertion this signature makes (no trailing newline)
 ```
 
 ## The address — exactly this, nothing else
@@ -32,8 +32,16 @@ way to fail this test.
 
 ## Signatures
 
-The signed message is **the address itself**: 64 lowercase hex characters, ASCII, no `sha256:` prefix, no newline, no
-NUL terminator.
+There are two message forms, and which one applies is decided by whether the signer publishes a role:
+
+- **a signature with a `.role` file** covers the *role-bound* message defined in "Roles" below. Every
+  signature in this bundle is of this kind.
+- **a signature without a `.role` file** covers the address alone: 64 lowercase hex characters, ASCII, no
+  `sha256:` prefix, no newline, no NUL terminator.
+
+The address-only form is the older, weaker binding; a verifier that accepts it must say so. An earlier
+version of this page stated only the address form and then contradicted itself two sections later — a
+rebuilder lost time on it (`E-M54`).
 
 Everything else fails, and it is checked: signing the raw 32 digest bytes fails; signing `"sha256:" + hex` fails;
 hex with `\n` or `\r\n` or a space fails; uppercase hex fails.
@@ -65,8 +73,17 @@ two conventions in one file, which is a trap, and it is gone.
 A role signature is **not** over the address alone. From `ADR-0015` it covers:
 
 ```
-address || "\n" || "role:" || sha256( canonical( role document without accepted_scope ) )
+message = address_hex || "\n" || "role:" || sha256( canonical( role document without accepted_scope ) )
 ```
+
+- `canonical` is **exactly** the rule used for the address: recursive key sort by code point, separators
+  `(",", ":")`, `ensure_ascii=False`, UTF-8, no trailing newline.
+- "without `accepted_scope`" means **the key is deleted**. Setting it to `null` or `""` produces a different
+  digest and the signature fails.
+- `sha256` output is 64 lowercase hex characters, ASCII.
+- `owner.sig` is the file that distinguishes these choices: `owner.role` is not in sorted key order, so an
+  implementation that hashes the file's own order fails on `owner` and passes on `demo`. Test the one that
+  disagrees with you.
 
 `accepted_scope` is excluded because it must equal the address; every other term — `issuer`,
 `residual_risk`, `valid_until`, `statement`, `policy_digest` — is inside the digest. Editing any of them
@@ -75,7 +92,9 @@ after signing and the bundle would still verify. A role bound only to the addres
 `risk_acceptance`, and reported as the weaker binding for other roles.
 
 
-`signatures/<id>.role` carries `asserts` (the role) and `issuer`. Roles are defined in `policies/signature-roles.json`:
+`signatures/<id>.role` carries `asserts` (the role) and `issuer`. The table below is the normative definition
+for this bundle; `policies/signature-roles.json` lives in the issuing repository and does **not** travel inside the
+artifact, so a verifier must not depend on reading it:
 
 | role | must carry |
 |---|---|
@@ -109,8 +128,17 @@ If you hit something this page does not answer, that is a defect in the page —
 Not the address alone. From `ADR-0015`:
 
 ```
-address || "\n" || "role:" || sha256( canonical( role document without accepted_scope ) )
+message = address_hex || "\n" || "role:" || sha256( canonical( role document without accepted_scope ) )
 ```
+
+- `canonical` is **exactly** the rule used for the address: recursive key sort by code point, separators
+  `(",", ":")`, `ensure_ascii=False`, UTF-8, no trailing newline.
+- "without `accepted_scope`" means **the key is deleted**. Setting it to `null` or `""` produces a different
+  digest and the signature fails.
+- `sha256` output is 64 lowercase hex characters, ASCII.
+- `owner.sig` is the file that distinguishes these choices: `owner.role` is not in sorted key order, so an
+  implementation that hashes the file's own order fails on `owner` and passes on `demo`. Test the one that
+  disagrees with you.
 
 `accepted_scope` is excluded because it must equal the address. Every other term — `issuer`,
 `residual_risk`, `valid_until`, `statement`, `policy_digest` — is inside the digest, so editing any of
@@ -121,3 +149,14 @@ the bundle still verified (`E-M50` B2). A role bound only to the address is refu
 ```
 "signature_binding": { "demo": "role", "owner": "role" }
 ```
+
+
+## What the signature does NOT cover
+
+`accepted_scope` is excluded from the role digest, because it must equal the address and the address cannot
+contain its own digest. The consequence has to be stated plainly:
+
+- the signature covers `issuer`, `residual_risk`, `valid_until`, `statement` and `policy_digest`;
+- it does **not** cover `accepted_scope`. A verifier must check `accepted_scope == address` itself; a
+  rebuilder who only checks signatures will find that a rewritten `accepted_scope` still verifies. That is
+  not a break of the scheme, but it is a step the description previously never asked for (`E-M54`).

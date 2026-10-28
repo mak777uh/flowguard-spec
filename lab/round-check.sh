@@ -48,6 +48,7 @@ stage "instrument corpus" "$PY" lab/e-m10-run.py --per-class 4 --valid 4
 stage "attack suite (own attempts)" "$PY" lab/e-m36-run.py >/dev/null
 stage "attack suite (independent attacker)" "$PY" lab/e-m42-run.py
 stage "every refusal code is exercised" "$PY" lab/check-refusal-coverage.py
+stage "role terms are covered by the signature" "$PY" lab/e-m53-run.py
 stage "no CRLF, every shell script parses" "$PY" lab/check-line-endings.py
 stage "published schemas accept the artifacts" "$PY" tools/fg_schema_check.py --claim fixtures/attack/k-proven.json
 stage "no tracebacks on malformed input" "$PY" lab/e-m48-run.py
