@@ -9,6 +9,25 @@ statement that can be verified without trusting its issuer.
 **What it is not.** A safety promise. Outside the declared closure the guarantee does not apply, and that
 is written into the artifact itself, not into a footnote.
 
+## Install and run it once
+
+The readiness tier T2 claims an outsider can install and reproduce. Until now there was no procedure that
+made that true; this is it, in one command, from a schema dump to a verdict:
+
+`ash
+pg_dump --schema-only -d yourdb -f schema.sql
+python tools/fg_init.py --psql /path/to/psql --port 5432 --db fg_try \
+       --dump schema.sql --schema public --table payments --control function:public.audit
+`
+
+It creates the database if needed, loads the dump, prints the **db_logic_density band** before any claim is
+made, runs the grants and call enumerators, merges them into an inventory, writes a claim that asserts nothing
+it has not earned, and runs the verifier. Requirements: PostgreSQL client tools and Python 3.11+; nothing else.
+
+If the band is 	hin, the verifier will refuse a strong verdict on that system and the run says so before you
+read a number that would mislead you.
+---
+
 ## Open-by-default policy
 
 Everything is published openly by default — including economics, margin caps and internal schedule
