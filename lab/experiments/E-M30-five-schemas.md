@@ -73,4 +73,4 @@ databases — but a schema from a project that has a real control point to bypas
 
 ## Log
 
-`lab/logs/e-m30-2026-10-28.log` — sha256 `f8041dc77b546aa7cda481efff4184c376b2a79f149ddf220b6c43b06bfc779e`.
+`lab/logs/e-m30-2026-10-28.log` — sha256 `2ad5b2c63a4c7c7a33642e3774313d373d0c4ac247e2cd8584f1b88bbb3bc10c`.

@@ -48,7 +48,7 @@ stage "instrument corpus" "$PY" lab/e-m10-run.py --per-class 4 --valid 4
 stage "attack suite (own attempts)" "$PY" lab/e-m36-run.py >/dev/null
 stage "attack suite (independent attacker)" "$PY" lab/e-m42-run.py
 stage "every refusal code is exercised" "$PY" lab/check-refusal-coverage.py
-stage "metric digests resolve" "$PY" lab/check-metric-digests.py
+stage "metric and card digests resolve" "$PY" lab/check-metric-digests.py --cards
 stage "status page is current" "$PY" tools/fg_status.py --check
 stage "dossier is current" "$PY" tools/fg_dossier.py --check
 stage "repository and method audit" "$PY" tools/fg_repo_audit.py >/dev/null

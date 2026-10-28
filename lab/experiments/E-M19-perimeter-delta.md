@@ -68,4 +68,4 @@ measured would report how much it grew. The merger sees both inventories and can
 ## Log
 
 re-run on 2026-10-28 with the output captured, because the original run was a command sequence
-whose transcript was the only record: `lab/logs/e-m19-2026-10-28.log` — sha256 `4462d7977460f1d74b1720a1f6754badba41572371ad03858b2d579d6c5fed02`.
+whose transcript was the only record: `lab/logs/e-m19-2026-10-28.log` — sha256 `c4595701d4fa9f431c7e0b3b4f1534187f1800751bbfff650311a8d22705cf07`.

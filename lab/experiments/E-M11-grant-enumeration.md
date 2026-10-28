@@ -64,7 +64,7 @@ row precision          11/12  — one false positive: a function whose string li
 ```
 
 Log: `lab/logs/e-m11-2026-10-27-run2.log`, sha256
-`21a30af4b4aed7cb052e7593b731935da61dd59860237f52aed8e7e840972375`.
+`7df2c03adb50229d04b9e5ae5a6fe67167d8c66f9a91952649a5a92d5b388fa7`.
 
 ## What this measures, and what it does not
 

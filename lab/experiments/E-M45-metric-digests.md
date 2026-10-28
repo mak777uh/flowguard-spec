@@ -54,3 +54,7 @@ points at it. That is now a check rather than a habit.
 - It does not prove the number in the row came from that log; it proves the log exists and is unchanged
   since the digest was taken. The extraction step is still a human act.
 - It does not cover the cards' own trailing digests, only `METRICS.md`. The cards could drift the same way.
+
+
+
+

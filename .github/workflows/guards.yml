@@ -24,7 +24,7 @@ jobs:
           python3 lab/e-m42-run.py
           python3 lab/check-refusal-coverage.py
       - name: metric digests resolve
-        run: python3 lab/check-metric-digests.py
+        run: python3 lab/check-metric-digests.py --cards
       - name: backticked paths resolve
         run: python3 lab/check-artifact-refs.py
       - name: every document is linked from the README
