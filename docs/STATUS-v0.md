@@ -1,6 +1,6 @@
 # STATUS — generated, not edited
 
-*Produced by `python tools/fg_status.py` at 2026-10-28 05:21 UTC from commit `83e091c`. Editing this file by
+*Produced by `python tools/fg_status.py` at 2026-10-28 05:30 UTC from commit `16ea006`. Editing this file by
 hand is what produced the contradictions a reviewer found (M1 absent and present in one page, 84 links
 against 122, three guards against six CI steps). Regenerate it instead; the build fails when it is stale.*
 
@@ -21,8 +21,8 @@ third party, or signed an acceptance. That is not modesty, it is the measured st
 
 | artifacts | count |
 |---|---|
-| metric rows, each with a command | 70 |
-| experiment cards | 41 (refutes 2, supports 39) |
+| metric rows, each with a command | 71 |
+| experiment cards | 42 (refutes 2, supports 40) |
 | decisions | 14 |
 | markdown links checked | 117, broken 0 |
 
@@ -32,7 +32,7 @@ Conformance measured by `lab/check-interop.py`: **7/7**
 
 | item | state | evidence |
 |---|---|---|
-| M1 experiment cards | present | 41 experiment cards, 0 hypothesis cards, 0 unclassified |
+| M1 experiment cards | present | 42 experiment cards, 0 hypothesis cards, 0 unclassified |
 | M2 metrics with commands | present | METRICS.md, 1 command blocks |
 | M3 claim registry | present | CLAIMS.md: 18 claims, evidence types used: false as stated, judgment, not established, sta |
 | M5 falsifiable status doc | present | STATUS-v0.md |
@@ -51,10 +51,6 @@ Conformance measured by `lab/check-interop.py`: **7/7**
 | E6 | bundle with Ed25519 verifies under both anchors | 8 / 8 |
 | E7 | mutation corpus measured with a declared class set | 6 / 6 |
 | P4 | a test corpus written by someone else | 0 / 7 |
-
-## Open findings, from the cards
-
-- E: **Bundle roles are not signed**: an acceptance `.role` file with no `.sig` and no `.pub` verifies green, its terms
 
 ## What this page is not
 

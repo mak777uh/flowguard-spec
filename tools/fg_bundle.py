@@ -71,6 +71,19 @@ def check_roles(bundle_dir: Path, address: str):
     holders = {}
     for rolefile in sorted(bundle_dir.glob("signatures/*.role")):
         signer = rolefile.stem
+        # A role file without that party's signature is a claim about a party written by whoever
+        # holds the directory: an acceptance can be appended and its terms edited without touching
+        # the address (E-M50 B2). Binding the role bytes into the address needs a format change and
+        # is recorded as open; requiring the signature is available today.
+        if not (bundle_dir / "signatures" / f"{signer}.sig").exists():
+            problems.append(("SIGNATURE_ROLE_UNKNOWN", signer,
+                             "a .sig by the party asserting this role",
+                             "unsigned role: nobody signed this assertion"))
+            continue
+        if not (bundle_dir / "signatures" / f"{signer}.pub").exists():
+            problems.append(("SIGNATURE_ROLE_UNKNOWN", signer, "a .pub identifying the party",
+                             "no key: the party cannot be identified"))
+            continue
         try:
             doc = json.loads(rolefile.read_text(encoding="utf-8"))
         except Exception as e:  # noqa: BLE001
