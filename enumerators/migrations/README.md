@@ -2,7 +2,7 @@
 
 Reads a migration **directory** as text. No database, no application code, no history.
 
-## What it reports
+## Covers
 
 | found in the SQL | path kind |
 |---|---|
