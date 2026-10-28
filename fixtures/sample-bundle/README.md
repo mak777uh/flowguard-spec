@@ -51,6 +51,15 @@ Which form applies is decided by whether a `.role` file exists for that signer:
 
 The address-only form is the weaker binding. A verifier must report it (§6) and must refuse it for `risk_acceptance`.
 
+An address-only signature **cannot assert a role at all**: role identity lives in the `.role` file (§8), and without it
+there is no `asserts` to say what the signer meant. Such a signature is provenance only, and is never sufficient for
+`consistency_verdict` or `risk_acceptance`.
+
+A bundle must carry at least one signature; a bundle with none is refused, not accepted as consistent. A claim that
+declares `PROVEN` or `SCOPED_ASSURANCE` must be signed by a `consistency_verdict` holder. A `risk_acceptance` is
+optional — but if the verdict is relied upon, the reader should ask why there is none, and this page does not pretend
+that the artifact answers it.
+
 ## 4. The role-bound message
 
 ```
@@ -80,7 +89,8 @@ Each file under `objects/` is named by the SHA-256 of its own bytes, lowercase h
 trailing newlines and encoding are part of the content.
 
 - `objects` maps digest → `{bytes, name}`. `bytes` **must equal the file's length**; `name` is informational.
-- Within `objects/`, nothing may be declared but absent, or present but undeclared. `bundle.json`,
+- Within `objects/`, nothing may be declared but absent, or present but undeclared. An absent declared object is
+  `MISSING_EVIDENCE`; a present object whose digest does not match its name is `REPORT_BUNDLE_INCONSISTENT`. `bundle.json`,
   `manifest.sha256` and `signatures/` are of course present and are not objects.
 - `subjects.<name>.sha256` and `inventory_digest` must both be keys in `objects`.
 - If the map, the directory and a subject disagree, the artifact is refused; nothing here says which one wins, because
@@ -89,6 +99,10 @@ trailing newlines and encoding are part of the content.
 Five objects here: four subjects (`code`, `build`, `config`, `identity`) and the inventory.
 
 ## 6. What a verifier produces
+
+A malformed document is a refusal, not a crash: an unparseable `bundle.json`, an unparseable `manifest.sha256` (not
+64 hex characters plus LF), a `.sig` that is not base64 of exactly 64 bytes, or a `.pub` that is not a PEM
+SubjectPublicKeyInfo are all `REPORT_BUNDLE_INCONSISTENT` with the document named as the subject.
 
 One of: `SIGNED_AND_CONSISTENT`, or a refusal naming a code and the subject it applies to. It must never print a
 success it cannot support, and a failed check must produce a refusal with a code — never an omission.
@@ -124,6 +138,9 @@ skips one of these checks is not verifying.
 | `SEPARATION_OF_DUTIES_VIOLATED` | `risk_acceptance` and `consistency_verdict` are held by the same public key |
 | `TARGET_MISMATCH` | the claim's `target_lock` does not equal the expected target supplied by the verifier |
 | `POLICY_UNTRUSTED` | a signing key is not in the trusted set supplied out of band |
+| `TARGET_MISMATCH` (also) | `claim.target_lock.commit` differs from the inventory's `target_lock` |
+| `SIGNATURE_ROLE_UNKNOWN` (also) | a role's `issuer` differs from its signer id (the file stem) |
+| `RISK_ACCEPTANCE_INCOMPLETE` (also) | a `risk_acceptance`'s `residual_risk` is not equal, as a set, to the claim's `not_claimed` |
 
 `accepted_scope` that is present but not equal to the **recorded** address is `RISK_ACCEPTANCE_INCOMPLETE`, not
 `TARGET_MISMATCH`: the scope is part of the acceptance, and the address is the thing it names.
@@ -158,7 +175,12 @@ This table is normative for the artifact. `policies/signature-roles.json` exists
 | `consistency_verdict` | `issuer`, `policy_digest` | `asserts`, `issuer`, `policy_digest` |
 | `risk_acceptance` | `issuer`, `accepted_scope` (= address), `residual_risk`, `valid_until`, `statement` | `asserts`, `issuer`, `residual_risk`, `valid_until`, `statement` |
 
-`liability_agreement` is not a role: a contract cannot be created by a JSON field.
+`liability_agreement` is not a role: a contract cannot be created by a JSON field. The `not_a_role` set contains
+exactly that name in this version; a verifier that meets another name it does not recognise treats it as
+`SIGNATURE_ROLE_UNKNOWN`, not as a liability role.
+
+A conforming verifier emits **at least one** refusal when several checks fail; it does not have to choose between them,
+and must not report the first and drop the rest.
 
 `policy_digest` names the risk policy the verdict used. That file is **not** in this bundle — it is an input of the
 verifier, not an artifact — so a rebuilder cannot check it. Treat it as a reference to an external document.
@@ -167,7 +189,10 @@ verifier, not an artifact — so a rebuilder cannot check it. Treat it as a refe
 
 Checked, and a mismatch is a refusal:
 
-- `bundle.claim.target_lock` equals the inventory's `target_lock`;
+- `bundle.claim.target_lock.commit` equals the inventory's `target_lock`. The claim carries an object and the
+  inventory carries a bare string; **they are never compared as whole values**. An earlier version of this page said
+  `claim.target_lock` equals the inventory's field, which is false on this very artifact and made a conforming
+  verifier reject a valid bundle;
 - `accepted_scope` in a `risk_acceptance` equals the recorded address;
 - `residual_risk` equals the claim's `not_claimed` set, as sets.
 
