@@ -69,7 +69,7 @@ write must carry this, exactly as we carry `NC-01`.
 
 ## What this changes in the plan
 
-`docs/22` proposed formalising the verdict algebra in Lean. This scan narrows it into something executable:
+[docs/22](22-FORMAL-TOOLING.md) proposed formalising the verdict algebra in Lean. This scan narrows it into something executable:
 
 ```lean
 -- the shape of the model, decided by the two constraints above
