@@ -58,7 +58,7 @@ to see the shape rather than a list — not before, because a graph nobody queri
 
 ## Next step if accepted
 
-`lab/paired-eval.py` (not written yet): one question set on the fixture, two arms, one model, ground truth written from the
+a paired-evaluation harness (not written yet) (not written yet): one question set on the fixture, two arms, one model, ground truth written from the
 catalogue. Threshold pre-registered: arm B must find **strictly more** true paths than arm A, with no additional
 false paths, or the artifact's product claim is not supported and readiness `P2` stays at zero for a reason we
 can name.
