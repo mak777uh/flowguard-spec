@@ -5,6 +5,7 @@
 
 mod bundle;
 mod canonical;
+mod claim;
 mod levels;
 
 use serde_json::json;
