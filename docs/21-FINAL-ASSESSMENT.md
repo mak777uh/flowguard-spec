@@ -97,3 +97,15 @@ written:
 
 That sentence is in `docs/CLAIMS.md`. It is the reason the product half is zero, and it is the reason the
 engine half is worth something.
+
+## Correction, 2026-10-29: what a consumer gets is checkability, not better answers
+
+Two paired experiments (E-M73, E-M75) measured whether an agent given the inventory answers better than an
+agent given the bare catalogue. Both refuted it: the bare-catalogue agent found the same bypasses, including the
+one hidden behind a view grant and a SECURITY DEFINER function. The supported claim is smaller and belongs here
+instead of the larger one:
+
+> the artifact does not make a reader smarter; it makes the answer **checkable**, and it does not require the
+> reader to be competent in Postgres semantics.
+
+Anything in this document that reads as "a consumer answers better" should be read with that correction applied.
