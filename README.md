@@ -53,6 +53,7 @@ commits a token, CI goes red instead of the reputation.
 | Crypto | [in scope from day one](docs/61-CRYPTO-IN-SCOPE.md) · [crypto and auto-payout](docs/60-CRYPTO-AND-AUTOPAY.md) |
 | Economics | [SKUs and services](docs/70-SERVICE-TIERS.md) · [pricing doctrine](docs/80-PRICING-DOCTRINE.md) |
 | Decisions | lab/decisions/ — 14 ADRs, each stating its own limits |
+| Provers | [Harmonic Aristotle: what it changes here](docs/24-ARISTOTLE.md) |
 | Methods | [what to borrow from NVIDIA auto-ontology](docs/23-BORROWED-METHODS.md) |
 | Formal | [formal-verification tooling worth adopting](docs/22-FORMAL-TOOLING.md) |
 | Advisory | [five models answered the owner list; advice, not decisions](docs/ADVISOR-INPUT-2026-10-28.md) |
