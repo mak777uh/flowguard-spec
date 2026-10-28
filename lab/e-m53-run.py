@@ -86,7 +86,7 @@ def main() -> int:
                               capture_output=True, text=True)
 
     good = json.loads(verify().stdout)
-    ok_good = good["verdict"] == "SIGNED_AND_CONSISTENT" and good.get("signature_binding", {}).get("owner") == "role"
+    ok_good = good["verdict"] == "SIGNED_AND_CONSISTENT" and good.get("signature_binding", {}).get("owner") in ("role", "v1-role", "v2")
 
     # tamper: the accepting party "withdraws" — the same words an attacker used in E-M50 B2
     doc2 = json.loads(role_path.read_text(encoding="utf-8"))

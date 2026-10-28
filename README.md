@@ -53,6 +53,7 @@ commits a token, CI goes red instead of the reputation.
 | Crypto | [in scope from day one](docs/61-CRYPTO-IN-SCOPE.md) · [crypto and auto-payout](docs/60-CRYPTO-AND-AUTOPAY.md) |
 | Economics | [SKUs and services](docs/70-SERVICE-TIERS.md) · [pricing doctrine](docs/80-PRICING-DOCTRINE.md) |
 | Decisions | lab/decisions/ — 14 ADRs, each stating its own limits |
+| Advisory | [five models answered the owner list; advice, not decisions](docs/ADVISOR-INPUT-2026-10-28.md) |
 | Interop | [coordination channel with VecDHT](docs/interop/README.md) |
 | Exchange | [review exchange protocol](interop/REVIEW-EXCHANGE.md) · [ledger](interop/reviews/LEDGER.md) |`n| Assessment | [what this repository reached, and what it did not](docs/21-FINAL-ASSESSMENT.md) |
 | Audit | [whole-repository and method audit, 2026-10-28](docs/18-AUDIT-2026-10-28.md) · [how attacks are part of development](docs/19-ATTACK-PRACTICE.md) |

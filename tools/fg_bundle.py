@@ -82,6 +82,33 @@ def role_document(asserts: str, issuer: str, **fields) -> dict:
     return doc
 
 
+
+V2 = "fg-bundle/2"
+
+
+def role_digest(role_doc: dict) -> str:
+    """sha256 of the canonical role document, accepted_scope included."""
+    return hashlib.sha256(
+        json.dumps(role_doc, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
+def signature_payload(addr: str, role_doc: dict) -> bytes:
+    """ADR-0016: the bytes an Ed25519 signature covers.
+
+    address | role digest (all terms, scope included) | scope, hashed once so the message is fixed-size.
+    Nothing is excluded, so nothing has to be checked "separately".
+    """
+    scope = str(role_doc.get("accepted_scope") or "")
+    body = "fg-bundle/2|%s|%s|%s" % (addr, role_digest(role_doc), scope)
+    return hashlib.sha256(body.encode()).hexdigest().encode("ascii")
+
+
+def nc_commitment(vocab_text: str, version: str) -> dict:
+    """The bundle must commit to the NC vocabulary it was written against, not merely reference it."""
+    return {"version": version,
+            "sha256": hashlib.sha256(vocab_text.encode()).hexdigest(),
+            "text_included": False}
+
 def check_roles(bundle_dir: Path, address: str):
     """Validate every signature's role against policies/signature-roles.json (E-M28).
 
@@ -169,8 +196,10 @@ def cmd_create(a) -> int:
     (out / "objects" / inv_hash).write_bytes(inv_bytes)
     objects[inv_hash] = {"bytes": len(inv_bytes), "name": "inventory.json"}
 
+    _nc_path = Path(__file__).resolve().parent.parent / "docs" / "NOT-CLAIMED.md"
+    _nc = nc_commitment(_nc_path.read_text(encoding="utf-8"), "nc-1") if _nc_path.exists() else None
     bundle = {
-        "bundle_version": VERSION,
+        "bundle_version": getattr(a, "envelope", "v1") == "v2" and V2 or VERSION,
         "subjects": subjects,
         "objects": objects,
         "claim": claim,
@@ -180,6 +209,8 @@ def cmd_create(a) -> int:
         "inventory_digest": inv_hash,
         "plaintext_notified": True,
     }
+    if _nc:
+        bundle["nc_vocabulary"] = _nc
     (out / "bundle.json").write_bytes(canon(bundle) if a.canonical else
                                       json.dumps(bundle, indent=1, ensure_ascii=False).encode())
     addr = hashlib.sha256(canon(bundle)).hexdigest()
@@ -201,7 +232,8 @@ def cmd_create(a) -> int:
             "statement": a.statement or "accepted by the named party for the stated period",
         })
     _role_doc = role_document(a.role, a.signer, **_fields)
-    sig = key.sign(role_message(addr, _role_doc))
+    sig = (key.sign(signature_payload(addr, _role_doc))
+           if getattr(a, "envelope", "v1") == "v2" else key.sign(role_message(addr, _role_doc)))
     (out / "signatures" / f"{a.signer}.sig").write_bytes(base64.b64encode(sig).decode("ascii").encode("ascii") + b"\n")
     (out / "signatures" / f"{a.signer}.pub").write_bytes(
         key.public_key().public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo))
@@ -297,19 +329,29 @@ def verify_bundle(a) -> tuple:
             # ADR-0015: a role signature covers the address AND the role's terms. The address-only
             # form is the older, weaker binding; it is accepted for roles that predate the rule but
             # reported as such, never taken silently (E-M52: silence let a tampered acceptance pass).
-            binding = "address"
             role_path = b / "signatures" / f"{name}.role"
+            binding = "v1-address"
+            role_doc_here = None
             if role_path.exists():
                 try:
-                    key.verify(sig_bytes, role_message(addr, json.loads(role_path.read_text(encoding="utf-8"))))
-                    binding = "role"
+                    role_doc_here = json.loads(role_path.read_text(encoding="utf-8"))
                 except Exception:  # noqa: BLE001
-                    binding = "address"
-            if binding == "address":
+                    role_doc_here = None
+            if role_doc_here is not None:
+                try:
+                    key.verify(sig_bytes, signature_payload(addr, role_doc_here))
+                    binding = "v2"
+                except Exception:  # noqa: BLE001
+                    binding = "v1-role"
+                    try:
+                        key.verify(sig_bytes, role_message(addr, role_doc_here))
+                    except Exception:  # noqa: BLE001
+                        binding = "v1-address"
+            if binding == "v1-address":
                 key.verify(sig_bytes, addr.encode("ascii"))
             # ADR-0015: an acceptance whose terms the signature does not cover is the defect B2 of
             # E-M50, so it is refused rather than accepted with a weaker binding.
-            if binding == "address" and role_path.exists():
+            if binding == "v1-address" and role_path.exists():
                 try:
                     _doc_r = json.loads(role_path.read_text(encoding="utf-8"))
                 except Exception:  # noqa: BLE001
@@ -446,6 +488,8 @@ def main() -> int:
     c.add_argument("--signer", required=True)
     c.add_argument("--role", default="consistency_verdict")
     c.add_argument("--canonical", action="store_true")
+    c.add_argument("--envelope", choices=["v1", "v2"], default="v1",
+                   help="v2 = ADR-0016 single signature binding address+role+scope; NOT yet adopted")
     c.add_argument("--residual-risk", nargs="*")
     c.add_argument("--valid-until")
     c.add_argument("--statement")
