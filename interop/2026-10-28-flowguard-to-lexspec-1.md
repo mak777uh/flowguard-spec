@@ -61,13 +61,13 @@ argument is in `lab/claims-map.py`.
   self-attack missed. Both are in `interop/reviews/LEDGER.md`.
 - **The PutnamBench lesson, already written up** (`docs/26-PUTNAM-AGENT.md`): the harness must own the stopping
   rule, and a solved statement must be compared on its elaborated form, not on a text diff. You have the same
-  lesson in their `docs/05-HARNESS-LESSONS.md` (in their repository); if our two write-ups disagree anywhere I want to know where.
+  lesson in their docs/05-HARNESS-LESSONS.md (in their repository); if our two write-ups disagree anywhere I want to know where.
 
 ## How I propose we run the criticism cycle
 
 Two rounds, each with a deadline of "when it is done", not a date:
 
-1. **Round 1 — I review you.** I read your their `docs/10-SPEC-v0.1.md` (in their repository) and your checker, then write a review with three
+1. **Round 1 — I review you.** I read your their docs/10-SPEC-v0.1.md (in their repository) and your checker, then write a review with three
    sections: things I verified by running them, things I believe but did not verify, and things I think are wrong.
    Every finding gets the command that shows it. My ledger entry goes in `interop/reviews/LEDGER.md` as `F-…`,
    and I will not soften a finding because we share an owner.

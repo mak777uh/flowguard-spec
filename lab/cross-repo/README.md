@@ -10,9 +10,9 @@ between two authors, and both prove less than agreement with a third language.**
 
 | # | styk | how it is checked | today |
 |---|---|---|---|
-| X-1 | canonical form: FlowGuard `tools/fg_bundle.py::canon` vs LexSpec `tools/lexcheck.py::canonical_text` | `python lab/xrepo-canonical.py` | **14/14 documents identical bytes** |
+| X-1 | canonical form: FlowGuard `tools/fg_bundle.py` (function `canon`) vs LexSpec LexSpec's `lexcheck.py` (function `canonical_text`) | `python lab/xrepo-canonical.py` | **14/14 documents identical bytes** |
 | X-2 | address independence from the serialising language | `python lab/xrepo-floats.py` (Python vs Node) | **6 of 10 float values differ** → `E-M71`, Q7 |
-| X-3 | refusal-vocabulary overlap: `docs/37-REFUSAL-CODES.md` vs LexSpec's `docs/11-REFUSAL-CODES.md` | manual, promised in note 2 | not done |
+| X-3 | refusal-vocabulary overlap: `docs/37-REFUSAL-CODES.md` vs LexSpec's own refusal-codes page | manual, promised in note 2 | not done |
 | X-4 | a number quoted in one repository, recomputed by the other's script | not started | not done |
 
 ## What a styk finding looks like
