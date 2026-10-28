@@ -97,7 +97,15 @@ def main() -> int:
 
     print(f"genuine acceptance verifies:      {ok_good}  (binding {good.get('signature_binding')})")
     print(f"tampered acceptance is refused:   {ok_bad}   ({bad['verdict']})")
-    ok = ok_good and ok_bad
+
+    # a role-bound signature without its role document cannot verify: the message cannot be rebuilt
+    role_path.rename(role_path.with_suffix(".role.hidden"))
+    missing = json.loads(verify().stdout)
+    ok_missing = missing["verdict"] != "SIGNED_AND_CONSISTENT"
+    role_path.with_suffix(".role.hidden").rename(role_path)
+    print(f"signature without its role is refused: {ok_missing}   ({missing['verdict']})")
+
+    ok = ok_good and ok_bad and ok_missing
     print("RESULT:", "PASS" if ok else "FAIL")
     return 0 if ok else 1
 
