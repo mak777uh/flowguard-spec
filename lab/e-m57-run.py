@@ -24,6 +24,15 @@ THEIRS = ROOT / "interop" / "verifiers" / "third-party-verifier.py"
 TRUSTED = [BUNDLE / "signatures" / "demo.pub", BUNDLE / "signatures" / "owner.pub"]
 TARGET = "flowguard-sample@2026-10-27"
 
+# Divergences where the third-party verifier is the one that is wrong, with the reason. They are
+# printed and counted, never silently ignored: a known divergence that stops being known is a bug.
+KNOWN_DIVERGENCES = {
+    "demo.pub truncated": (
+        "the third-party verifier accepts a signer whose public key cannot be parsed; "
+        "a signature that cannot be checked against its own key is not evidence"
+    ),
+}
+
 
 def run_ours(path: Path):
     r = subprocess.run([sys.executable, str(OURS), "verify", "--bundle", str(path),
@@ -50,6 +59,12 @@ def run_theirs(path: Path):
     if doc.get("verdict") == "SIGNED_AND_CONSISTENT":
         ok = True
     return ok, str(doc.get("verdict", r.returncode))
+
+
+def _systematic():
+    sys.path.insert(0, str(ROOT / "lab"))
+    import mutations_bundle
+    return mutations_bundle.build()
 
 
 def mutations():
@@ -145,7 +160,8 @@ def main() -> int:
         return 1
 
     rows, disagreements = [], []
-    for name, fn in mutations()[:a.limit]:
+    cases = mutations() + _systematic()
+    for name, fn in cases[:a.limit]:
         tmp = Path(tempfile.mkdtemp())
         d = tmp / "b"
         shutil.copytree(BUNDLE, d)
@@ -156,9 +172,13 @@ def main() -> int:
             continue
         ok_o, v_o = run_ours(d)
         ok_t, v_t = run_theirs(d)
-        agree = ok_o == ok_t
+        expect_ok = name.startswith("+")
+        name = name.lstrip("+")
+        agree = (ok_o == ok_t) and (ok_o == expect_ok)
         rows.append((name, ok_o, v_o, ok_t, v_t, agree))
-        if not agree:
+        if not agree and name in KNOWN_DIVERGENCES:
+            print(f"  known: {name} - {KNOWN_DIVERGENCES[name]}")
+        elif not agree:
             disagreements.append((name, ok_o, v_o, ok_t, v_t))
         shutil.rmtree(tmp, ignore_errors=True)
 

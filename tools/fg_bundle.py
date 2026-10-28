@@ -263,7 +263,13 @@ def verify_bundle(a) -> tuple:
         problems.append(("MISSING_EVIDENCE", "manifest.sha256", "the bundle address", "absent"))
         addr = None
     else:
-        addr = addr_file.read_text(encoding="ascii").strip()
+        # The page fixes the file exactly: 64 lowercase hex characters and one LF, 65 bytes.
+        _raw = addr_file.read_bytes()
+        if len(_raw) != 65 or _raw.count(b"\n") != 1 or not _raw.endswith(b"\n"):
+            problems.append(("REPORT_BUNDLE_INCONSISTENT", "manifest.sha256",
+                             "64 lowercase hex characters and one LF (65 bytes)",
+                             f"{len(_raw)} bytes"))
+        addr = _raw.decode("ascii", "replace").strip()
         recomputed = hashlib.sha256(canon(bundle)).hexdigest()
         if addr != recomputed:
             problems.append(("REPORT_BUNDLE_INCONSISTENT", "manifest.sha256",
