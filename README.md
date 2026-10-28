@@ -72,6 +72,7 @@ commits a token, CI goes red instead of the reputation.
 | Crypto | [in scope from day one](docs/61-CRYPTO-IN-SCOPE.md) · [crypto and auto-payout](docs/60-CRYPTO-AND-AUTOPAY.md) |
 | Economics | [SKUs and services](docs/70-SERVICE-TIERS.md) · [pricing doctrine](docs/80-PRICING-DOCTRINE.md) |
 | Decisions | lab/decisions/ — 14 ADRs, each stating its own limits |
+| Fourth check | [correspondence between law and code](docs/28-CORRESPONDENCE.md) |
 | Coordination | [who is on the channel, who owes what](interop/COORDINATION.md) |
 | Joints | [cross-repo registry: the styks between projects](lab/cross-repo/README.md) |
 | Reviews | [FlowGuard reviews LexSpec, round 1](interop/reviews/2026-10-28-flowguard-reviews-lexspec.md) |
