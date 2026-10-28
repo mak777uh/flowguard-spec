@@ -1,6 +1,6 @@
 # STATUS — generated, not edited
 
-*Produced by `python tools/fg_status.py` at 2026-10-28 07:49 UTC from commit `45f3eb8`. Editing this file by
+*Produced by `python tools/fg_status.py` at 2026-10-28 08:10 UTC from commit `bab5057`. Editing this file by
 hand is what produced the contradictions a reviewer found (M1 absent and present in one page, 84 links
 against 122, three guards against six CI steps). Regenerate it instead; the build fails when it is stale.*
 
