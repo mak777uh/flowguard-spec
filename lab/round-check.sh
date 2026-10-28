@@ -48,6 +48,8 @@ stage "instrument corpus" "$PY" lab/e-m10-run.py --per-class 4 --valid 4
 stage "attack suite (own attempts)" "$PY" lab/e-m36-run.py >/dev/null
 stage "attack suite (independent attacker)" "$PY" lab/e-m42-run.py
 stage "every refusal code is exercised" "$PY" lab/check-refusal-coverage.py
+stage "published schemas accept the artifacts" "$PY" tools/fg_schema_check.py --claim fixtures/attack/k-proven.json
+stage "no tracebacks on malformed input" "$PY" lab/e-m48-run.py
 stage "metric and card digests resolve" "$PY" lab/check-metric-digests.py --cards
 stage "status page is current" "$PY" tools/fg_status.py --check
 stage "dossier is current" "$PY" tools/fg_dossier.py --check

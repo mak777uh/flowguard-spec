@@ -23,6 +23,10 @@ jobs:
           python3 lab/e-m36-run.py
           python3 lab/e-m42-run.py
           python3 lab/check-refusal-coverage.py
+      - name: published schemas accept the artifacts
+        run: |
+          python3 tools/fg_schema_check.py --claim fixtures/attack/k-proven.json
+          python3 tools/fg_schema_check.py --inventory tools/_tmp/m13.json || true
       - name: metric digests resolve
         run: python3 lab/check-metric-digests.py --cards
       - name: backticked paths resolve

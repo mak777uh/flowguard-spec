@@ -4,23 +4,65 @@
   "title": "FlowGuard obligation manifest",
   "description": "The merged inventory a verdict is computed against. independent_of_agent is carried, but the verifier recomputes it from the source kinds: a manifest that asserts its own independence is not evidence of independence.",
   "type": "object",
-  "required": ["manifest_version", "target_lock", "sources", "paths", "independent_of_agent"],
+  "required": [
+    "manifest_version",
+    "target_lock",
+    "sources",
+    "paths",
+    "independent_of_agent"
+  ],
   "additionalProperties": false,
   "properties": {
-    "manifest_version": { "enum": ["inventory/0.1"] },
-    "target_lock": { "type": "string", "minLength": 1 },
-    "target_lock_conflict": { "type": "array", "items": { "type": "string" } },
+    "manifest_version": {
+      "enum": [
+        "inventory/0.1"
+      ]
+    },
+    "target_lock": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target_lock_conflict": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "sources": {
       "type": "array",
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["source_id", "kind"],
+        "required": [
+          "source_id",
+          "kind"
+        ],
         "properties": {
-          "source_id": { "type": "string" },
-          "kind": { "enum": ["grants", "static", "routes", "runtime", "agent", "manual"] },
-          "covers": { "type": "array", "items": { "type": "string" } },
-          "blind_spots": { "type": "array", "items": { "type": "string" } }
+          "source_id": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "grants",
+              "static",
+              "routes",
+              "runtime",
+              "agent",
+              "manual"
+            ]
+          },
+          "covers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "blind_spots": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         }
       }
     },
@@ -28,65 +70,198 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["path_id", "entry", "kind"],
+        "required": [
+          "path_id",
+          "entry",
+          "kind"
+        ],
         "properties": {
-          "path_id": { "type": "string", "minLength": 4 },
-          "entry": { "type": "string", "minLength": 3 },
-          "kind": { "type": "string" },
-          "control_point": { "type": "string" },
-          "confidence": { "type": "string" },
-          "detail": { "type": "string" },
-          "calls": { "type": "array", "items": { "type": "string" } },
-          "found_by": { "type": "array", "items": { "type": "string" } },
-          "kinds": { "type": "array", "items": { "type": "string" } },
-          "attribution": {
-            "type": "object",
-            "required": ["to", "method"],
-            "properties": {
-              "to": { "type": "string" },
-              "method": { "enum": ["direct", "transitive"] },
-              "confidence": { "type": "string" },
-              "sources": { "type": "array", "items": { "type": "string" } }
+          "path_id": {
+            "type": "string",
+            "minLength": 4
+          },
+          "entry": {
+            "type": "string",
+            "minLength": 3
+          },
+          "kind": {
+            "type": "string"
+          },
+          "control_point": {
+            "type": "string"
+          },
+          "confidence": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "calls": {
+            "type": "array",
+            "items": {
+              "type": "string"
             }
           },
-          "vanished": { "type": "boolean" }
+          "found_by": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "kinds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "attribution": {
+            "type": "object",
+            "required": [
+              "to",
+              "method"
+            ],
+            "properties": {
+              "to": {
+                "type": "string"
+              },
+              "method": {
+                "enum": [
+                  "direct",
+                  "transitive"
+                ]
+              },
+              "confidence": {
+                "type": "string"
+              },
+              "sources": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "vanished": {
+            "type": "boolean"
+          }
         }
       }
     },
-    "independent_of_agent": { "type": "boolean" },
-    "conflicts": { "type": "array", "items": { "type": "object" } },
-    "delta_since_previous": {
-      "type": "object",
-      "required": ["new_paths", "vanished_paths", "net_change", "published"],
-      "properties": {
-        "new_paths": { "type": "integer", "minimum": 0 },
-        "vanished_paths": { "type": "integer", "minimum": 0 },
-        "net_change": { "type": "integer" },
-        "published": { "type": "boolean" }
+    "independent_of_agent": {
+      "type": "boolean"
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "type": "object"
       }
     },
-'    "perimeter_growth": { "type": "boolean" },
+    "delta_since_previous": {
+      "type": "object",
+      "required": [
+        "new_paths",
+        "vanished_paths",
+        "net_change",
+        "published"
+      ],
+      "properties": {
+        "new_paths": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "vanished_paths": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "net_change": {
+          "type": "integer"
+        },
+        "published": {
+          "type": "boolean"
+        }
+      }
+    },
+    "perimeter_growth": {
+      "type": "boolean"
+    },
     "foreign_validation": {
       "type": "array",
       "description": "Owner confirmations, per docs/FOREIGN-VALIDATION.md. The verifier refuses an evidence tier this list does not support.",
       "items": {
         "type": "object",
-        "required": ["schema", "owner_confirmed"],
+        "required": [
+          "schema",
+          "owner_confirmed"
+        ],
         "properties": {
-          "schema": { "type": "string" },
-          "version": { "type": "string" },
-          "owner_confirmed": { "type": "boolean" },
-          "blind_evaluation": { "type": "boolean" },
-          "owner": { "type": "object" },
-          "finding": { "type": "object" },
-          "owner_statement": { "type": "string" },
-          "verdict": { "enum": ["confirmed", "refuted", "partially_correct"] },
-          "ground_truth": { "type": "object" },
-          "our_result": { "type": "object" }
+          "schema": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "owner_confirmed": {
+            "type": "boolean"
+          },
+          "blind_evaluation": {
+            "type": "boolean"
+          },
+          "owner": {
+            "type": "object"
+          },
+          "finding": {
+            "type": "object"
+          },
+          "owner_statement": {
+            "type": "string"
+          },
+          "verdict": {
+            "enum": [
+              "confirmed",
+              "refuted",
+              "partially_correct"
+            ]
+          },
+          "ground_truth": {
+            "type": "object"
+          },
+          "our_result": {
+            "type": "object"
+          }
         }
       }
-    },'
-    "paths_total": { "type": "integer", "minimum": 0 },
-    "in_core_attributed": { "type": "integer", "minimum": 0 }
+    },
+    "paths_total": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "in_core_attributed": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "corroborated_by_2plus": {
+      "type": [
+        "integer",
+        "array"
+      ]
+    },
+    "generated": {
+      "type": [
+        "string",
+        "object"
+      ]
+    },
+    "non_agent_sources": {
+      "type": [
+        "integer",
+        "array"
+      ]
+    },
+    "vanished_since_previous": {
+      "type": [
+        "integer",
+        "array"
+      ]
+    }
   }
 }

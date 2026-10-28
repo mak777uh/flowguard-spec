@@ -158,6 +158,9 @@ def validate_shapes(claim, inventory):
         for key in ("claim_id", "declared_control_point", "declared_level"):
             if not isinstance(claim.get(key), str):
                 problems.append((f"claim.{key}", "a string", type(claim.get(key)).__name__))
+        if not isinstance(claim.get("target_lock") or {}, dict):
+            problems.append(("claim.target_lock", "an object",
+                             type(claim.get("target_lock")).__name__))
         if not isinstance(claim.get("claimed_coverage", 0), (int, float)) or isinstance(
                 claim.get("claimed_coverage"), bool):
             problems.append(("claim.claimed_coverage", "a number", repr(claim.get("claimed_coverage"))[:40]))
@@ -172,6 +175,19 @@ def validate_shapes(claim, inventory):
         if "excluded" in claim and not isinstance(claim.get("excluded"), list):
             problems.append(("claim.excluded", "a list", type(claim.get("excluded")).__name__))
     if isinstance(inventory, dict):
+        srcs = inventory.get("sources")
+        if srcs is not None and not isinstance(srcs, list):
+            problems.append(("inventory.sources", "a list of objects", type(srcs).__name__))
+        elif isinstance(srcs, list):
+            for i, s in enumerate(srcs):
+                if not isinstance(s, dict):
+                    problems.append((f"inventory.sources[{i}]", "an object", type(s).__name__))
+                elif not isinstance(s.get("kind"), str):
+                    problems.append((f"inventory.sources[{i}].kind", "a string",
+                                     type(s.get("kind")).__name__))
+        if not isinstance(inventory.get("target_lock", ""), str):
+            problems.append(("inventory.target_lock", "a string",
+                             type(inventory.get("target_lock")).__name__))
         fv = inventory.get("foreign_validation")
         if fv is not None and not isinstance(fv, list):
             problems.append(("inventory.foreign_validation", "a list", type(fv).__name__))
@@ -179,7 +195,7 @@ def validate_shapes(claim, inventory):
         if not isinstance(paths, list):
             problems.append(("inventory.paths", "a list", type(paths).__name__))
         else:
-            for i, p_ in enumerate(paths[:2000]):
+            for i, p_ in enumerate(paths):
                 if not isinstance(p_, dict):
                     problems.append((f"inventory.paths[{i}]", "an object", type(p_).__name__))
                     continue
@@ -234,6 +250,32 @@ def main() -> int:
     # A caller-supplied policy may tighten, never loosen: floors are max(), covering thresholds and
     # density floors are min(), and an untrusted policy is refused (break B11).
     if a.policy:
+        if not isinstance(policy, dict):
+            print(json.dumps({"verdict": "INVALID", "errors": [{"code": "POLICY_UNTRUSTED",
+                "subject": "policy", "expected": "an object", "observed": type(policy).__name__,
+                "next_action": "send a policy document, not a list", "retryable": False}]},
+                indent=1, ensure_ascii=False))
+            return 2
+        bad_nums = []
+        for key in ("min_db_logic_density", "full_coverage_for_proven", "assurance_threshold",
+                    "max_excluded"):
+            if key in policy:
+                try:
+                    float(policy[key])
+                except (TypeError, ValueError):
+                    bad_nums.append(key)
+        for lvl, n in (policy.get("min_paths_for_level") or {}).items():
+            try:
+                int(n)
+            except (TypeError, ValueError):
+                bad_nums.append(f"min_paths_for_level.{lvl}")
+        if bad_nums:
+            print(json.dumps({"verdict": "INVALID", "errors": [{"code": "POLICY_UNTRUSTED",
+                "subject": "policy", "expected": "numeric thresholds",
+                "observed": ", ".join(bad_nums),
+                "next_action": "fix the policy; a floor that is not a number is not a floor",
+                "retryable": True}]}, indent=1, ensure_ascii=False))
+            return 2
         if policy.get("trusted") is not True:
             err_early = {"verdict": "INVALID",
                          "errors": [{"code": "POLICY_UNTRUSTED", "subject": "policy",
@@ -655,6 +697,27 @@ def main() -> int:
                 err("UNKNOWN_OR_UNBOUND_PATH", str(pid),
                     "every analysed path present in the inventory", "not in the obligation manifest",
                     "investigate the path; it may not be excluded without evidence", True)
+
+        # The report is an input to the question, not decoration. A report that measures coverage
+        # differently from the inventory, or says the core is empty while the inventory says it is
+        # full, is a contradiction and must not yield a strong verdict. Round-one break 7 stayed
+        # open through two adversarial rounds because the report was read for control_point only.
+        reported = report.get("coverage")
+        if isinstance(reported, (int, float)) and not isinstance(reported, bool):
+            computed = cov.get("counts", {})
+            total = sum(v for v in computed.values() if isinstance(v, int)) or 0
+            recomputed = (computed.get("covered", 0) / total) if total else 0.0
+            if abs(float(reported) - recomputed) > 0.05:
+                err("REPORT_BUNDLE_INCONSISTENT", "coverage",
+                    "within 0.05 of the inventory's own arithmetic", round(float(reported), 3),
+                    "the report and the inventory describe different worlds; reconcile them", True)
+        in_core_flags = [rp.get("in_core") for rp in report.get("analysed_paths", [])
+                         if isinstance(rp, dict) and "in_core" in rp]
+        if in_core_flags and not any(in_core_flags) and in_core:
+            err("REPORT_BUNDLE_INCONSISTENT", "analysed_paths.in_core",
+                "the report's view of the core agrees with the inventory",
+                "the report says no analysed path is in the core, the inventory says %d are" % len(in_core),
+                "one of the two documents is wrong; a verdict cannot rest on both", True)
 
     # ---- 7. the verdict ------------------------------------------------
     claimed_level = claim.get("declared_level", "CONSISTENT_DECLARED")
