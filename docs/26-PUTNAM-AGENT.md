@@ -68,7 +68,7 @@ covered set is empty must not be able to carry a level, because it is true for a
 
 ## What I will do from this
 
-1. `lab/cross-family-attack.py` — an attack harness with a **minimum probe count and pasted outputs** before a
+1. an attack harness (not written yet) — an attack harness with a **minimum probe count and pasted outputs** before a
    "no finding" answer is accepted, so "did not look" stops being recordable as "did not find".
 2. Require an attacker that claims a break to run both cores and paste both verdicts.
 3. Add the vacuity rule to both cores: a claim whose covered set is empty cannot carry a level.

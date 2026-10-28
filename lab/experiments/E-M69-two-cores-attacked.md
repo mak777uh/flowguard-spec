@@ -56,7 +56,7 @@ statement, which defeats statement rewriting. Both ideas transfer:
 
 ## What this does not do
 
-- The attackers still cannot be trusted to have looked; that is the harness change in `docs/26`, not a rule.
+- The attackers still cannot be trusted to have looked; that is the harness change in [docs/26](../docs/26-PUTNAM-AGENT.md), not a rule.
 - The vacuity rule closes one triviality, not the family of them: a control point that is unreachable, a target
   table that was narrowed, and an exclusion that removes the only money path are all still open, and each needs
   its own line in a document before it can become a line in a checker.
