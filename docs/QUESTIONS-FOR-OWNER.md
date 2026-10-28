@@ -89,3 +89,12 @@ A bundle today can be produced for nobody and presented later as an answer: the 
 
 Proposed, additive: claim.challenge (hex, supplied by the relying party) and claim.tool {name, version, digest}. Verifier refuses a challenge mismatch when one is expected; reports an absent tool digest. It changes the canonical bytes of new artifacts only, but it is a format decision, so it is queued rather than applied. Full reasoning: docs/27-NEAR-ATTESTATION.md.
 
+## Q6 - what should the verifier answer when an anchor is unavailable rather than absent?
+
+LexSpec asked a question our ADR does not answer: ADR-0010 describes the case where an anchor was NOT PASSED,
+not where it is UNREACHABLE (target commit cannot be resolved, trusted-key list cannot be fetched, policy digest
+does not match the signed one, one anchor present and the other absent). Today unreachable degrades to absent,
+which answers with the weakest state - honest, but it means a caller cannot tell "no policy" from "policy
+broken". Proposed: a distinct ANCHOR_UNAVAILABLE code that never upgrades a verdict and names which anchor
+failed. It is a refusal-code addition, so it does not change canonical bytes; it does change the contract, so it
+is queued rather than applied.

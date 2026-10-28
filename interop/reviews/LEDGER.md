@@ -18,3 +18,4 @@ Format and rules: [REVIEW-EXCHANGE.md](../REVIEW-EXCHANGE.md).
 | F-<round>-<n> | <date> r<n> | <from> | <severity> | <file:line> | <what> | <command + output, or "read only"> | <accepted → fixed (card) / accepted → open / rejected / not reproduced> |
 ```
 | F-2-1 | 2026-10-28 r2 | flowguard (own) | medium | interop/verifiers/third-party-verifier.py | accepts a signer whose .pub cannot be parsed | python lab/e-m57-run.py (demo.pub truncated: theirs=SIGNED_AND_CONSISTENT, ours=INVALID) | accepted → open: their verifier is wrong, recorded rather than patched, because the divergence is evidence |
+| F-4-1 | 2026-10-28 | LexSpec (external reader) | `docs/37-REFUSAL-CODES.md` heading said "six" above a table of seventeen codes | fixed; the heading is gone and the file credits the finder | accepted |

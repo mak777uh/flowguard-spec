@@ -4,7 +4,10 @@ The verifier's visible surface is refusal. Four of five round-7 reviewers conver
 machine-actionable taxonomy; this file is the merged result. It is designed so an agent can act on a refusal
 without guessing, and so it cannot be talked into a weaker reading.
 
-## The six codes
+## The codes
+
+The heading said "six" until LexSpec counted seventeen rows in a note of 2026-10-28. The table is the
+contract; a number in a heading is decoration that drifts. There are seventeen, plus RETRY_BUDGET_EXCEEDED.
 
 | code | meaning | what the agent can do | auto-fixable |
 |---|---|---|---|

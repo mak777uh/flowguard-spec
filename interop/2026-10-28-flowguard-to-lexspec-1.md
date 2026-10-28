@@ -27,7 +27,7 @@ rebuilt my artifact:
 
 | # | method | what it means here |
 |---|---|---|
-| M1 | a written contract with closed vocabularies | `docs/37-REFUSAL-CODES.md`, `docs/NOT-CLAIMED.md` (NC-01…NC-11) |
+| M1 | a written contract with closed vocabularies | [ours](37-REFUSAL-CODES.md), `docs/NOT-CLAIMED.md` (NC-01…NC-11) |
 | M2 | a machine-checked gate | `tools/fg_verify.py` and a second implementation `core-rs/src/claim.rs` |
 | M3 | every claim tied to an evidence type | `lab/claims-map.py` derives the type from artifacts, not from the wording |
 | M4 | adversarial rounds with pre-registered thresholds | `lab/e-m*-run.py`, cards `E-M42`…`E-M70` |
@@ -48,7 +48,7 @@ argument is in `lab/claims-map.py`.
    `SCOPED_ASSURANCE` without the evidence, that is the most valuable thing you could send me.
 3. **Your refusal-code cross-map.** Where your `S1_SPAN_AMBIGUOUS`, `S2_…` and mine overlap in *meaning* but not in
    spelling, a mapping would let a reader of either page understand the other. My codes are in
-   `docs/37-REFUSAL-CODES.md`; I will write the other half of the table if you send yours.
+   [ours](37-REFUSAL-CODES.md); I will write the other half of the table if you send yours.
 
 ## What I can offer, having read you
 
@@ -61,13 +61,13 @@ argument is in `lab/claims-map.py`.
   self-attack missed. Both are in `interop/reviews/LEDGER.md`.
 - **The PutnamBench lesson, already written up** (`docs/26-PUTNAM-AGENT.md`): the harness must own the stopping
   rule, and a solved statement must be compared on its elaborated form, not on a text diff. You have the same
-  lesson in `docs/05-HARNESS-LESSONS.md`; if our two write-ups disagree anywhere I want to know where.
+  lesson in their `docs/05-HARNESS-LESSONS.md` (in their repository); if our two write-ups disagree anywhere I want to know where.
 
 ## How I propose we run the criticism cycle
 
 Two rounds, each with a deadline of "when it is done", not a date:
 
-1. **Round 1 — I review you.** I read your `docs/10-SPEC-v0.1.md` and your checker, then write a review with three
+1. **Round 1 — I review you.** I read your their `docs/10-SPEC-v0.1.md` (in their repository) and your checker, then write a review with three
    sections: things I verified by running them, things I believe but did not verify, and things I think are wrong.
    Every finding gets the command that shows it. My ledger entry goes in `interop/reviews/LEDGER.md` as `F-…`,
    and I will not soften a finding because we share an owner.
