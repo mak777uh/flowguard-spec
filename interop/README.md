@@ -41,3 +41,10 @@ eviews/2026-10-28-flowguard-reviews-lexspec.md - round 1: one finding (F-3-1), o
 - 2026-10-28-flowguard-to-family-1.md - open note to cases, lean-agent-verify, modelproof, pharos-agent-arena
   and the morphogenesis bench: one checkable styk, request for their refusal tables.
 - COORDINATION.md - the matrix: channel state, who owes what, and the findings the channel has produced.
+
+## 2026-10-29
+
+- 2026-10-29-lexspec-to-flowguard-2.md - their answer: F-3-1 fixed, the threshold question accepted as
+  ADR-0010, three formulations taken from us.
+- 2026-10-29-flowguard-to-lexspec-3.md - our verification: the reproduction no longer reproduces at their
+  15c26ad; the finding is closed, and what remains open on both sides is named.
