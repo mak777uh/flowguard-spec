@@ -61,6 +61,13 @@ Closed vocabulary, in the family's shape — a code, what it means, what a reade
 | `MAP_BASIS_STALE` | the bundle at `basis.evidence.verdict_address` no longer covers the path | re-run the gate; a mapping may not outlive its evidence |
 | `MAP_SCOPE_MISMATCH` | the inventory's `target_lock` differs from the corpus revision's declared system | the two sides describe different things |
 
+Two further codes exist in the checker and are listed here so the page and the tool cannot drift:
+
+| code | means | remedy |
+|---|---|---|
+| `MAP_NOT_CLAIMED` | the mapping carries no `not_claimed` list | a claim quoted without its boundary is a different claim, as everywhere in this family |
+| `MAP_VERSION` | `mapping_version` is not the one the checker implements | write a mapping this checker understands |
+
 `MAP_ATOM_NOT_MECHANICAL` is the interesting one. It is a **result**, not a failure: it says which part of the law
 cannot be bound to code at all. A mapping set that reports 40% of atoms as non-mechanical is more informative than
 one that maps all of them, because the second is certainly guessing.
@@ -82,16 +89,19 @@ Three tests, each of which can fail:
 
 1. **Negative control:** take an atom whose action is clearly not any write in the inventory, map it as
    `ENFORCES`, and the gate must refuse `MAP_CLAIM_UNSUPPORTED` (no mechanism names the write).
-2. **Staleness:** map an atom to a path, then re-run the enumerator with a changed schema so the path disappears;
-   the mapping must refuse `MAP_BASIS_STALE` rather than keep its claim.
+2. **Staleness, in its two forms:** re-run the enumerator with a changed schema so the mapped path disappears —
+   the mapping must refuse `MAP_PATH_UNKNOWN`; and rebuild the inventory so its address changes while the path
+   remains — the mapping must refuse `MAP_BASIS_STALE`. The two forms are different failures and the checker
+   reports them separately, which the first version of this page conflated.
 3. **Non-mechanical:** map "добросовестность" and the gate must answer `MAP_ATOM_NOT_MECHANICAL`, not
    `UNDECIDED` — the distinction between "we have not decided" and "this cannot be decided by code" is the
    product.
 
 ## What this document does not do
 
-- It does not implement the checker. There is no `fg_map.py`, and the table above is a promise about refusals
-  that nobody has exercised yet.
+- It does not prove the mapping. The checker is `tools/fg_map.py`; the refusals above are exercised by
+  `lab/e-m72-run.py`, and the two experiments that measured what the artifact adds are `E-M73` and `E-M75` —
+  both refuted the stronger claim, which is why this document claims checkability and not better answers.
 - It does not make `ENFORCES` mean the duty is performed. It means: *the writes this duty names pass the point
   this code declares*. Parties, intent and remedies are outside.
 - It does not move either project's ceiling. `NC-01` (the inventory may be incomplete) and LexSpec's "no legal

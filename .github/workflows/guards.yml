@@ -28,12 +28,26 @@ jobs:
       - name: published schemas accept the artifacts
         run: |
           python3 tools/fg_schema_check.py --claim fixtures/attack/k-proven.json
-          python3 tools/fg_schema_check.py --inventory tools/_tmp/m13.json || true
+          # The refusal is the assertion: a malformed inventory must make the checker exit 1, and a step
+          # that cannot fail is not a check (external audit, 2026-10-29). tools/_tmp is gitignored, so the
+          # fixture comes from fixtures/ and the expected code is asserted rather than waved through.
+          python3 tools/fg_schema_check.py --inventory fixtures/attack/a6-inv.json
+          # and one that must be refused: a step whose success does not depend on the checker's verdict
+          # is not a check (external audit, 2026-10-29).
+          set +e
+          python3 tools/fg_schema_check.py --inventory fixtures/schema-check/invalid-inventory.json
+          rc=$?
+          set -e
+          if [ "$rc" -eq 0 ]; then echo "the schema check accepted an inventory with paths as a string"; exit 1; fi
       - name: metric digests resolve
         run: python3 lab/check-metric-digests.py --cards
       - name: backticked paths resolve
         run: python3 lab/check-artifact-refs.py
       - name: every document is linked from the README
         run: python3 lab/check-readme.py
+      - name: the published method kit matches the tree
+        # docs/STATUS-v0.md prints the kit conformance; a number without a step that recomputes it is a
+        # number without a carrier (external audit, 2026-10-29).
+        run: python3 lab/check-interop.py --repo .
       - name: negative controls for every guard
         run: bash lab/selftest-guards.sh

@@ -123,6 +123,48 @@ else
   fail 'the attack suite did not notice a planted wrong expectation'
 fi
 
+# ---- control 8: line endings ----------------------------------------------------------------
+if [[ "$ONLY" == "all" || "$ONLY" == "line-endings" ]]; then
+  stage
+  # a shell script with CRLF must be reported: it breaks under bash on every POSIX system
+  printf '#!/usr/bin/env bash\r\necho hi\r\n' > "$TMP/repo/lab/_negative_crlf.sh"
+  if python "$TMP/repo/lab/check-line-endings.py" >/dev/null 2>&1; then
+    fail "line-endings: a CRLF shell script was NOT caught"
+  else
+    pass "line-endings: CRLF caught"
+  fi
+fi
+
+# ---- control 9: metric digests ---------------------------------------------------------------
+if [[ "$ONLY" == "all" || "$ONLY" == "metric-digests" ]]; then
+  stage
+  # point a metric row at a digest that does not exist: the guard must refuse it
+  printf '\n| 999 | synthetic | **n/a** | `true` | `%s` | x | y |\n' \
+    "0000000000000000000000000000000000000000000000000000000000000000" \
+    >> "$TMP/repo/docs/METRICS.md"
+  if python "$TMP/repo/lab/check-metric-digests.py" --cards >/dev/null 2>&1; then
+    fail "metric-digests: a forged digest was NOT caught"
+  else
+    pass "metric-digests: forged digest caught"
+  fi
+fi
+
+# ---- control 10: refusal coverage ------------------------------------------------------------
+if [[ "$ONLY" == "all" || "$ONLY" == "refusal-coverage" ]]; then
+  stage
+  # A code that exists in the document but that no script ever raises must be reported. The name is built at
+  # run time on purpose: a literal here would be found by the guard in THIS file, which is itself a carrier,
+  # and the planted code would count as exercised (found the first time this control was written).
+  PLANTED="SYNTHETIC_$(date +%s)_UNRAISED"
+  printf '\n| `%s` | planted by the selftest | n/a | no |\n' "$PLANTED" \
+    >> "$TMP/repo/docs/37-REFUSAL-CODES.md"
+  if python "$TMP/repo/lab/check-refusal-coverage.py" >/dev/null 2>&1; then
+    fail "refusal-coverage: an unraised code was NOT caught"
+  else
+    pass "refusal-coverage: unraised code caught"
+  fi
+fi
+
 echo
 echo "controls passed: $PASS   failed: $FAIL"
 [[ "$FAIL" -eq 0 ]] || { echo "RESULT: fail"; exit 1; }
