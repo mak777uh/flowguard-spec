@@ -18,11 +18,11 @@ verdict: supports
 
 | # | audit finding | reproduced | fixed |
 |---|---|---|---|
-| 1 | `docs/28` says there is no `fg_map.py` while it exists | yes | yes |
+| 1 | [docs/28](../docs/28-CORRESPONDENCE.md) says there is no `fg_map.py` while it exists | yes | yes |
 | 2 | CI step ends in `\|\| true` against a gitignored path | yes | yes |
 | 3 | `7/7` published, no CI step computes it | yes | yes |
 | 4 | three guards have no planted failure | yes | yes (and it found a worse bug) |
-| 5 | `docs/28` names the wrong code for a vanished path | yes, by a different diff than the audit's | yes |
+| 5 | [docs/28](../docs/28-CORRESPONDENCE.md) names the wrong code for a vanished path | yes, by a different diff than the audit's | yes |
 | 6 | `ADR-0072` is a dangling reference | **no** | recorded as refuted |
 
 On the audit's commit id: `05a70d2` does not exist in this repository (`git cat-file -t` fails), so its exact
