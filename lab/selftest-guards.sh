@@ -126,8 +126,12 @@ fi
 # ---- control 8: line endings ----------------------------------------------------------------
 if [[ "$ONLY" == "all" || "$ONLY" == "line-endings" ]]; then
   stage
-  # a shell script with CRLF must be reported: it breaks under bash on every POSIX system
+  # a shell script with CRLF must be reported: it breaks under bash on every POSIX system.
+  # The guard reads `git ls-files`, so the plant has to be committed or it is invisible - and the first
+  # version of this control passed only because the real tree happened to be dirty, which is the worst
+  # kind of green: a control that goes green for a reason unrelated to its plant.
   printf '#!/usr/bin/env bash\r\necho hi\r\n' > "$TMP/repo/lab/_negative_crlf.sh"
+  ( cd "$TMP/repo" && git add -A && git -c user.email=t@t -c user.name=t commit -qm plant )
   if python "$TMP/repo/lab/check-line-endings.py" >/dev/null 2>&1; then
     fail "line-endings: a CRLF shell script was NOT caught"
   else
