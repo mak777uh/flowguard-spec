@@ -75,6 +75,7 @@ commits a token, CI goes red instead of the reputation.
 | Product evidence | [paired evaluation: what the artifact actually adds](lab/experiments/E-M73-paired-eval.md) |
 | Fourth check | [correspondence between law and code](docs/28-CORRESPONDENCE.md) |
 | Coordination | [who is on the channel, who owes what](interop/COORDINATION.md) |
+| Exchange | [cross-audit: reviews we received and what happened to them](cross-audit/2026-10-29-flowguard-disposition.md) |
 | Joints | [cross-repo registry: the styks between projects](lab/cross-repo/README.md) |
 | Reviews | [FlowGuard reviews LexSpec, round 1](interop/reviews/2026-10-28-flowguard-reviews-lexspec.md) |
 | Anchors | [what NEAR AI attestation says about our missing anchor](docs/27-NEAR-ATTESTATION.md) |

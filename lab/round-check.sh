@@ -40,6 +40,7 @@ stage "relative links" "$PY" lab/check-links.py
 stage "claim registry" "$PY" lab/check-claims.py
 stage "claims map to evidence types (M3)" "$PY" lab/claims-map.py
 stage "backticked paths resolve" "$PY" lab/check-artifact-refs.py
+stage "the mirror never contradicts the canon" "\C:I\env\python\.venv\Scripts\python.exe" lab/check-readme-parity.py
 stage "README covers every document" "$PY" lab/check-readme.py
 stage "negative controls for every guard" bash lab/selftest-guards.sh
 stage "acceptance scenarios" "$PY" lab/e-m12-run.py

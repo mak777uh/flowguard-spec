@@ -43,6 +43,8 @@ jobs:
         run: python3 lab/check-metric-digests.py --cards
       - name: backticked paths resolve
         run: python3 lab/check-artifact-refs.py
+      - name: the Russian mirror never contradicts the canon on numbers
+        run: python3 lab/check-readme-parity.py
       - name: every document is linked from the README
         run: python3 lab/check-readme.py
       - name: the published method kit matches the tree
