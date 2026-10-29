@@ -170,6 +170,21 @@ if [[ "$ONLY" == "all" || "$ONLY" == "refusal-coverage" ]]; then
 fi
 
 echo
+
+# ---- control 11: claims value ----------------------------------------------------------------
+if [[ "$ONLY" == "all" || "$ONLY" == "claims-value" ]]; then
+  stage
+  # a sentence that asserts a number none of its artifacts contains must fail, even though the wording ceiling
+  # is legal (herness, 2026-10-29: the ceiling was checked, the value was not)
+  printf '\n| C-99 | The tool refuses 4242 stale rows | test | measured | `lab/experiments/E-M73-paired-eval.md` | y |\n' \
+    >> "$TMP/repo/docs/CLAIMS.md"
+  if python "$TMP/repo/lab/check-claims.py" --strict >/dev/null 2>&1; then
+    fail "claims-value: a number absent from the cited artifact was NOT caught"
+  else
+    pass "claims-value: stale number caught"
+  fi
+fi
+
 echo "controls passed: $PASS   failed: $FAIL"
 [[ "$FAIL" -eq 0 ]] || { echo "RESULT: fail"; exit 1; }
 echo "RESULT: ok"
