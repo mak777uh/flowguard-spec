@@ -70,6 +70,7 @@ def find_eliminations(root):
 
 
 def find_experiments(root):
+    # INDEX.md is generated; it is not a hypothesis card (E-M79)
     """Count experiment cards and hypothesis cards separately.
 
     Counting every markdown file under a directory named *experiment*/*hypothes* double-counts:

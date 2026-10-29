@@ -29,7 +29,10 @@ def check(cid, name, fn):
 
 
 def cards():
-    return sorted((ROOT / "lab" / "experiments").glob("*.md"))
+    # INDEX.md and README.md are generated indexes, not cards: they carry no id, threshold or verdict,
+    # and their presence made the audit fail the moment lab/build-indexes.py started writing them (E-M79).
+    return sorted(p for p in (ROOT / "lab" / "experiments").glob("*.md")
+                  if p.name not in ("INDEX.md", "README.md"))
 
 
 def front_matter(text):

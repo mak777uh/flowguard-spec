@@ -49,6 +49,9 @@ def main() -> int:
     card_bad = []
     if a.cards:
         for card in sorted((ROOT / "lab" / "experiments").glob("*.md")):
+            # INDEX.md is generated and carries the word "digest" in prose; it is not a card (E-M79)
+            if card.name in ("INDEX.md", "README.md"):
+                continue
             text = card.read_text(encoding="utf-8", errors="ignore")
             for dig in DIGEST.findall(text):
                 if dig not in known:

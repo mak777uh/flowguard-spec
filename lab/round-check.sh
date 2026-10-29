@@ -52,7 +52,11 @@ stage "instrument corpus" "$PY" lab/e-m10-run.py --per-class 4 --valid 4
 stage "attack suite (own attempts)" "$PY" lab/e-m36-run.py >/dev/null
 stage "attack suite (independent attacker)" "$PY" lab/e-m42-run.py
 stage "every refusal code is exercised" "$PY" lab/check-refusal-coverage.py
-stage "cross-family attack cadence" "$PY" lab/cross-family-due.py || true
+# The cadence report is information, not a gate: it says whether a model attack is due. It is printed
+# unconditionally and cannot fail, because "due" is not an error (the audit of 2026-10-29 called `|| true` a
+# step that cannot fail; the difference is that this step does not claim to be a check, and says so).
+echo "  cadence (not a gate):"
+"$PY" lab/cross-family-due.py 2>&1 | sed 's/^/    /' || true
 stage "cross-family findings stay closed" "$PY" lab/e-m60-run.py
 stage "fourth check: mapping refusals and ceiling" "$PY" lab/e-m72-run.py
 stage "both cores on the cross-family divergences" "$PY" lab/e-m69-run.py
@@ -63,7 +67,14 @@ stage "attack suite: escalation" "$PY" lab/e-m33-run.py
 stage "migrations enumerator, end to end" "$PY" lab/e-m70-run.py
 stage "Rust claim CLI vs Python" "$PY" lab/e-m68-run.py
 stage "Rust arithmetic vs Python on the attack cases" "$PY" lab/e-m67-run.py
-stage "differential: Rust core vs Python core" "$PY" lab/e-m66-run.py || true
+# The Rust differential needs a toolchain and a compiled binary. Absent either, it is SKIPPED - printed as
+# skipped, never as passed - because a green line for a test that did not run is the defect this repository
+# keeps finding in other people's CI (E-M76) and in its own ritual (audit 2026-10-29, T10).
+if command -v cargo >/dev/null 2>&1 && [ -x core-rs/target/debug/fg-core.exe -o -x core-rs/target/debug/fg-core ]; then
+  stage "differential: Rust core vs Python core" "$PY" lab/e-m66-run.py
+else
+  echo "  SKIPPED differential: Rust core vs Python core (no cargo, or no built core-rs binary)"
+fi
 stage "differential against a third-party verifier" "$PY" lab/e-m57-run.py
 stage "role terms are covered by the signature" "$PY" lab/e-m53-run.py
 stage "no CRLF, every shell script parses" "$PY" lab/check-line-endings.py

@@ -42,6 +42,10 @@ CEILING = {"proof-like": STRONG + MEDIUM, "measured": MEDIUM, "refuted": REFUTE_
 def cards():
     out = {}
     for f in sorted(CARDS.glob("*.md")):
+        # INDEX.md and README.md are indexes, not cards: the generated index has no hyphen and crashed the
+        # id parser the moment it appeared (found by the ritual, not by reading).
+        if f.name in ("INDEX.md", "README.md") or "-" not in f.name:
+            continue
         text = f.read_text(encoding="utf-8", errors="ignore")
         m = re.search(r"^verdict:\s*(\S+)", text, re.M)
         has_log = bool(re.search(r"sha256\s+`[0-9a-f]{64}`|lab/logs/", text))

@@ -1,6 +1,6 @@
 # METRICS — every number carries its command and its log
 
-**Status:** contract in force, 59 rows. The first measurement in this repository: `E-M11`, the grant
+**Status:** contract in force, 105 rows. The first measurement in this repository: `E-M11`, the grant
 enumerator against eight planted bypasses. Both rows were produced by a command and carry the log digest; neither
 was typed from memory.
 
