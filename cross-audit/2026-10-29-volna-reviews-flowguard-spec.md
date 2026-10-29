@@ -13,7 +13,7 @@ guards less than its own docstring says".
 
 ---
 
-## F-1 (HIGH) — `check-readme.py` promises "every document", scans only `docs/`; 113 files escape it
+## F-1 (HIGH) — `check-readme.py` promises "every document", scans only `docs/`; 112 of 122 files escape it
 
 **The promise.** `lab/check-readme.py`, module docstring:
 
