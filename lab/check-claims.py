@@ -10,6 +10,7 @@ and a warning here is the to-do list, not a lie.
     python lab/check-claims.py            # warnings allowed, structural errors fail
     python lab/check-claims.py --strict   # missing artifacts also fail (pre-release)
 """
+import pathlib
 import re
 import sys
 from pathlib import Path
@@ -21,6 +22,28 @@ RESERVED = ("PROVEN", "ENFORCED_TESTED", "guarantee")
 ROW = re.compile(r"^\|\s*(C-\d{2})\s*\|")
 CLAIM_REF = re.compile(r"(?<!corpus )\bC-\d{2}\b")
 ARTIFACT = re.compile(r"`([^`]+(?:/|\.md|\.json|\.ps1|\.sh|\.py)[^`]*)`")
+
+
+NUMBER = re.compile(r"(?<![\w./-])(\d{2,6})(?![\w./-])")
+
+
+def numbers_in(text: str) -> set[str]:
+    """Counts a sentence can assert: two digits or more, not part of an identifier or a path."""
+    return set(NUMBER.findall(text))
+
+
+def artifact_text(paths: list[str]) -> set[str]:
+    blob = []
+    for rel in paths:
+        candidate = pathlib.Path(rel)
+        if not candidate.is_absolute():
+            candidate = pathlib.Path(__file__).resolve().parent.parent / rel
+        if candidate.is_file():
+            try:
+                blob.append(candidate.read_text(encoding="utf-8", errors="ignore"))
+            except Exception:  # noqa: BLE001
+                continue
+    return numbers_in("\n".join(blob))
 
 strict = "--strict" in sys.argv
 errors, warnings = [], []
@@ -118,6 +141,23 @@ for md in surface:
             continue
         if not CLAIM_REF.search(text):
             warnings.append(f"{md.relative_to(ROOT)}: uses reserved word '{word}' without citing a claim")
+
+# 4b. the value, not only the ceiling (herness, 2026-10-29): every count of two or more digits in a claim's
+# sentence must appear in the text of the artifacts it cites, or the document and its evidence disagree.
+for _cid, row in rows.items():
+    cells = [c.strip() for c in row["line"].strip().strip("|").split("|")]
+    if len(cells) < 2:
+        continue
+    sentence, cited_files = cells[1], ARTIFACT.findall(row["line"])
+    if not cited_files:
+        continue
+    claimed_numbers = numbers_in(sentence)
+    if not claimed_numbers:
+        continue
+    missing = sorted(claimed_numbers - artifact_text(cited_files), key=int)
+    if missing:
+        errors.append(f"{cells[0]}: the sentence asserts {', '.join(missing)}, which appear in none of "
+                      f"its artifacts ({', '.join(cited_files[:2])})")
 
 print(f"claims: {len(ids)}  wording ceilings checked: {wording_checked}  artifacts cited: {cited}  reserved-word files: {reserved_hits}")
 for w in warnings:
