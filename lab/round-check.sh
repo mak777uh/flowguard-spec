@@ -40,6 +40,8 @@ stage "relative links" "$PY" lab/check-links.py
 stage "claim registry" "$PY" lab/check-claims.py
 stage "claims map to evidence types (M3)" "$PY" lab/claims-map.py
 stage "backticked paths resolve" "$PY" lab/check-artifact-refs.py
+stage "every card and note is indexed" "\C:I\env\python\.venv\Scripts\python.exe" lab/check-evidence-reachability.py
+stage "every runner is in CI or declared" "\C:I\env\python\.venv\Scripts\python.exe" lab/check-runner-coverage.py
 stage "the mirror never contradicts the canon" "\C:I\env\python\.venv\Scripts\python.exe" lab/check-readme-parity.py
 stage "README covers every document" "$PY" lab/check-readme.py
 stage "negative controls for every guard" bash lab/selftest-guards.sh
@@ -54,6 +56,10 @@ stage "cross-family attack cadence" "$PY" lab/cross-family-due.py || true
 stage "cross-family findings stay closed" "$PY" lab/e-m60-run.py
 stage "fourth check: mapping refusals and ceiling" "$PY" lab/e-m72-run.py
 stage "both cores on the cross-family divergences" "$PY" lab/e-m69-run.py
+stage "bundle signature and role binding" "$PY" lab/e-m9-run.py
+stage "bundle acceptance scenarios" "$PY" lab/e-m28-run.py
+stage "attack suite: refusal codes" "$PY" lab/e-m31-run.py
+stage "attack suite: escalation" "$PY" lab/e-m33-run.py
 stage "migrations enumerator, end to end" "$PY" lab/e-m70-run.py
 stage "Rust claim CLI vs Python" "$PY" lab/e-m68-run.py
 stage "Rust arithmetic vs Python on the attack cases" "$PY" lab/e-m67-run.py

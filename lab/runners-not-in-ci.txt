@@ -1,0 +1,31 @@
+# Runners that .github/workflows/guards.yml does not run, each with the reason.
+#
+# Two categories, and lab/check-runner-coverage.py verifies both claims:
+#   needs-db      - requires a live PostgreSQL; the workflow has no service container
+#   local-ritual  - deterministic, but run by lab/round-check.sh on every commit instead of CI,
+#                   and this file's claim is checked against that script
+
+e-m10-run.py  local-ritual  # deterministic; run by lab/round-check.sh
+e-m11-run.py  needs-db  # talks to PostgreSQL: psql/psycopg, or a fixture database
+e-m12-run.py  local-ritual  # deterministic; run by lab/round-check.sh
+e-m13-run.py  needs-db  # talks to PostgreSQL: psql/psycopg, or a fixture database
+e-m25-run.py  needs-db  # talks to PostgreSQL: psql/psycopg, or a fixture database
+e-m26-run.py  needs-db  # talks to PostgreSQL: psql/psycopg, or a fixture database
+e-m28-run.py  local-ritual  # deterministic; run by lab/round-check.sh
+e-m30-run.py  needs-db  # talks to PostgreSQL: psql/psycopg, or a fixture database
+e-m31-run.py  local-ritual  # deterministic; run by lab/round-check.sh
+e-m33-run.py  local-ritual  # deterministic; run by lab/round-check.sh
+e-m34-run.py  needs-db  # talks to PostgreSQL: psql/psycopg, or a fixture database
+e-m35-run.py  needs-db  # talks to PostgreSQL: psql/psycopg, or a fixture database
+e-m41-run.py  needs-db  # talks to PostgreSQL: psql/psycopg, or a fixture database
+e-m48-run.py  local-ritual  # deterministic; run by lab/round-check.sh
+e-m53-run.py  local-ritual  # deterministic; run by lab/round-check.sh
+e-m57-run.py  local-ritual  # deterministic; run by lab/round-check.sh
+e-m60-run.py  local-ritual  # deterministic; run by lab/round-check.sh
+e-m66-run.py  local-ritual  # deterministic; run by lab/round-check.sh
+e-m67-run.py  local-ritual  # deterministic; run by lab/round-check.sh
+e-m68-run.py  local-ritual  # deterministic; run by lab/round-check.sh
+e-m69-run.py  local-ritual  # deterministic; run by lab/round-check.sh
+e-m70-run.py  local-ritual  # deterministic; run by lab/round-check.sh
+e-m72-run.py  local-ritual  # deterministic; run by lab/round-check.sh
+e-m9-run.py  local-ritual  # deterministic; run by lab/round-check.sh

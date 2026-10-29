@@ -8,8 +8,12 @@ on:
 jobs:
   guards:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
         with:
           fetch-depth: 0
       - name: secrets and local paths
@@ -51,5 +55,10 @@ jobs:
         # docs/STATUS-v0.md prints the kit conformance; a number without a step that recomputes it is a
         # number without a carrier (external audit, 2026-10-29).
         run: python3 lab/check-interop.py --repo .
+      - name: every card and note is indexed
+        run: |
+          python3 lab/build-indexes.py --check
+          python3 lab/check-evidence-reachability.py
+          python3 lab/check-runner-coverage.py
       - name: negative controls for every guard
         run: bash lab/selftest-guards.sh
