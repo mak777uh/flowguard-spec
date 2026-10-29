@@ -29,3 +29,5 @@ lab/INVENTORY.md  # path inside the VecDHT repository, cited in an interop note;
 lab/lean-rubric.md  # path inside the VecDHT repository, cited in an interop note; not a local file
 lab/library/index.jsonl  # path inside the VecDHT repository, cited in an interop note; not a local file
 docs/STATUS-v1.md  # path inside the VecDHT repository, cited in an interop note; not a local file
+docs/30  # LexSpec's own document, quoted inside their note interop/2026-10-29-lexspec-to-flowguard-2.md
+docs/10  # LexSpec's own specification, quoted inside the same note
