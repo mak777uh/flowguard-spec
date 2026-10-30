@@ -1,7 +1,7 @@
 # What the PutnamBench harness gives a verifier of documents — the code-level list
 
 Source: [`nearai/putnambench-deepseek`](https://github.com/nearai/putnambench-deepseek), read at file level:
-`harness/pb.py` (the verifier and the work queue), `README.md`. `docs/26` recorded the four *ideas*; this records
+`harness/pb.py` (the verifier and the work queue), `README.md`. `[docs/26](26-PUTNAM-AGENT.md) recorded the four *ideas*; this records
 what is in the code, what I took, and what I deliberately did not.
 
 ## Taken, and now in this repository
