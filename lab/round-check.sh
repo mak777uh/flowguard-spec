@@ -37,8 +37,8 @@ echo "round-check"
 
 stage "secrets (files + history + index)" bash lab/check-secrets.sh
 stage "relative links" "$PY" lab/check-links.py
-stage "new experiment cards are pre-registered" "\C:I\env\python\.venv\Scripts\python.exe" lab/check-preregistration.py
-stage "the elimination registry matches the cards" "\C:I\env\python\.venv\Scripts\python.exe" lab/check-eliminations.py
+stage "new experiment cards are pre-registered" "$PY" lab/check-preregistration.py
+stage "the elimination registry matches the cards" "$PY" lab/check-eliminations.py
 stage "claim registry" "$PY" lab/check-claims.py
 stage "claims map to evidence types (M3)" "$PY" lab/claims-map.py
 stage "backticked paths resolve" "$PY" lab/check-artifact-refs.py
