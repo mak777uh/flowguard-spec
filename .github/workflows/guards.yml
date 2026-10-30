@@ -27,6 +27,8 @@ jobs:
           python3 lab/e-m36-run.py
           python3 lab/e-m42-run.py
           python3 lab/check-refusal-coverage.py
+      - name: new experiment cards are pre-registered
+        run: python3 lab/check-preregistration.py
       - name: the elimination registry matches the cards
         run: python3 lab/check-eliminations.py
       - name: no CRLF, every shell script parses

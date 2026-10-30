@@ -72,6 +72,7 @@ commits a token, CI goes red instead of the reputation.
 | Crypto | [in scope from day one](docs/61-CRYPTO-IN-SCOPE.md) · [crypto and auto-payout](docs/60-CRYPTO-AND-AUTOPAY.md) |
 | Economics | [SKUs and services](docs/70-SERVICE-TIERS.md) · [pricing doctrine](docs/80-PRICING-DOCTRINE.md) |
 | Decisions | lab/decisions/ — 17 ADRs, each stating its own limits |
+| Method | [the scientific bench: pre-registration, sensitivity, stop rules](docs/35-SCIENTIFIC-BENCH.md) |
 | Market read | [seven usefulness reports surveyed, and a corrected estimate](docs/34-POU-SURVEY.md) |
 | Market read | [what the usefulness corpus rewards, from two reports](docs/33-POU-INSIGHTS.md) |
 | Product evidence | [paired evaluation: what the artifact actually adds](lab/experiments/E-M73-paired-eval.md) |
