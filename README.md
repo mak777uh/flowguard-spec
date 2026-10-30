@@ -73,6 +73,7 @@ commits a token, CI goes red instead of the reputation.
 | Economics | [SKUs and services](docs/70-SERVICE-TIERS.md) · [pricing doctrine](docs/80-PRICING-DOCTRINE.md) |
 | Decisions | lab/decisions/ — 17 ADRs, each stating its own limits |
 | Method | [the scientific bench: pre-registration, sensitivity, stop rules](docs/35-SCIENTIFIC-BENCH.md) |
+| Market read | [the research chat as a market instrument: 1 494 papers, zero provenance](docs/36-CHAT-CORPUS.md) |
 | Market read | [seven usefulness reports surveyed, and a corrected estimate](docs/34-POU-SURVEY.md) |
 | Market read | [what the usefulness corpus rewards, from two reports](docs/33-POU-INSIGHTS.md) |
 | Product evidence | [paired evaluation: what the artifact actually adds](lab/experiments/E-M73-paired-eval.md) |
