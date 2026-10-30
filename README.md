@@ -72,10 +72,11 @@ commits a token, CI goes red instead of the reputation.
 | Crypto | [in scope from day one](docs/61-CRYPTO-IN-SCOPE.md) · [crypto and auto-payout](docs/60-CRYPTO-AND-AUTOPAY.md) |
 | Economics | [SKUs and services](docs/70-SERVICE-TIERS.md) · [pricing doctrine](docs/80-PRICING-DOCTRINE.md) |
 | Decisions | lab/decisions/ — 17 ADRs, each stating its own limits |
-| Method | [the scientific bench: pre-registration, sensitivity, stop rules](docs/35-SCIENTIFIC-BENCH.md) |
-| Market read | [the research chat as a market instrument: 1 494 papers, zero provenance](docs/36-CHAT-CORPUS.md) |
-| Market read | [seven usefulness reports surveyed, and a corrected estimate](docs/34-POU-SURVEY.md) |
-| Market read | [what the usefulness corpus rewards, from two reports](docs/33-POU-INSIGHTS.md) |
+| Stack | [why the artifact viewer is a static page, not a React app](docs/46-STACK.md) |
+| Method | [the scientific bench: pre-registration, sensitivity, stop rules](docs/44-SCIENTIFIC-BENCH.md) |
+| Market read | [the research chat as a market instrument: 1 494 papers, zero provenance](docs/45-CHAT-CORPUS.md) |
+| Market read | [seven usefulness reports surveyed, and a corrected estimate](docs/43-POU-SURVEY.md) |
+| Market read | [what the usefulness corpus rewards, from two reports](docs/42-POU-INSIGHTS.md) |
 | Product evidence | [paired evaluation: what the artifact actually adds](lab/experiments/E-M73-paired-eval.md) |
 | Entry point | [from a text of intentions to checkable units](tools/fg_decompose.py) |
 | Fourth check | [correspondence between law and code](docs/28-CORRESPONDENCE.md) |
@@ -84,7 +85,7 @@ commits a token, CI goes red instead of the reputation.
 | Joints | [cross-repo registry: the styks between projects](lab/cross-repo/README.md) |
 | Reviews | [FlowGuard reviews LexSpec, round 1](interop/reviews/2026-10-28-flowguard-reviews-lexspec.md) |
 | Anchors | [what NEAR AI attestation says about our missing anchor](docs/27-NEAR-ATTESTATION.md) |
-| Methods | [what a Comparator that audits a budget teaches us](docs/30-LONGTAILS.md) |
+| Methods | [what a Comparator that audits a budget teaches us](docs/39-LONGTAILS.md) |
 | Methods | [what the PutnamBench harness gives us, code by code](docs/29-PUTNAM-HARNESS.md) |
 | Methods | [what a PutnamBench-solving agent teaches us](docs/26-PUTNAM-AGENT.md) |
 | Ecosystem | [Lean ecosystem scan](docs/25-LEAN-SCAN.md) |
@@ -114,7 +115,7 @@ Evidence types and permitted wording live in [docs/CLAIMS.md](docs/CLAIMS.md): t
 ## License
 
 Documents — [CC BY 4.0](LICENSE). Code, when it appears, — Apache-2.0.
-| Product evidence | [what a proof of usefulness must contain](docs/32-USEFULNESS.md) |
-| Portfolio | [the pinned repositories, read one after another](docs/31-SIBLINGS.md) |
+| Product evidence | [what a proof of usefulness must contain](docs/41-USEFULNESS.md) |
+| Portfolio | [the pinned repositories, read one after another](docs/47-SIBLINGS.md) |
 | Ruled out | [what this repository has refuted, and what would revive it](docs/ELIMINATIONS.md) |
 | Assessment | [final assessment — with the 2026-10-29 correction](docs/21-FINAL-ASSESSMENT.md) |

@@ -1,17 +1,16 @@
 # STATUS — generated, not edited
 
-*Produced by `python tools/fg_status.py` at 2026-10-30 22:36 UTC from commit `dfacedb`. Editing this file by
+*Produced by `python tools/fg_status.py` at 2026-10-30 23:26 UTC from commit `0905da8`. Editing this file by
 hand is what produced the contradictions a reviewer found (M1 absent and present in one page, 84 links
 against 122, three guards against six CI steps). Regenerate it instead; the build fails when it is stale.*
 
 ## Where it stands
 
 ```
-engine (the tool)     100%
-product (reliance)    0%
-overall               60%
-tier                  T2 — usable by an outsider on their own database
-next tier             T3 (trustworthy for someone else's decision), blocked by P1, P2
+engine (the tool)     ?%
+product (reliance)    ?%
+overall               ?%
+tier                  ? — ?
 ```
 
 The product half is zero because nobody outside has confirmed a finding, rebuilt the bundle as a
@@ -24,7 +23,7 @@ third party, or signed an acceptance. That is not modesty, it is the measured st
 | metric rows, each with a command | 108 |
 | experiment cards | 71 (refutes 8, supports 62) |
 | decisions | 17 |
-| markdown links checked | 155, broken 0 |
+| markdown links checked | 158, broken 0 |
 
 ## Method kit
 
@@ -43,14 +42,6 @@ Conformance measured by `lab/check-interop.py`: **7/7**
 
 | check | what it verifies | earned / weight |
 |---|---|---|
-| E1 | all guards and negative controls green | 10 / 10 |
-| E2 | the verifier executes and refuses | 8 / 8 |
-| E3 | acceptance scenarios pass | 12 / 12 |
-| E4 | grant enumerator measured on a planted fixture | 8 / 8 |
-| E5 | attribution measured, decoy not fooled | 8 / 8 |
-| E6 | bundle with Ed25519 verifies under both anchors | 8 / 8 |
-| E7 | mutation corpus measured with a declared class set | 6 / 6 |
-| P4 | a test corpus written by someone else | 0 / 7 |
 
 ## What this page is not
 

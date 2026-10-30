@@ -47,6 +47,7 @@ echo "round-check"
 
 stage "secrets (files + history + index)" bash lab/check-secrets.sh
 stage "relative links" "$PY" lab/check-links.py
+stage "no two documents share a number" "\C:I\env\python\.venv\Scripts\python.exe" lab/check-doc-numbers.py
 stage "new experiment cards are pre-registered" "$PY" lab/check-preregistration.py
 stage "the elimination registry matches the cards" "$PY" lab/check-eliminations.py
 stage "claim registry" "$PY" lab/check-claims.py
