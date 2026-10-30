@@ -73,6 +73,7 @@ commits a token, CI goes red instead of the reputation.
 | Economics | [SKUs and services](docs/70-SERVICE-TIERS.md) · [pricing doctrine](docs/80-PRICING-DOCTRINE.md) |
 | Decisions | lab/decisions/ — 17 ADRs, each stating its own limits |
 | Product evidence | [paired evaluation: what the artifact actually adds](lab/experiments/E-M73-paired-eval.md) |
+| Entry point | [from a text of intentions to checkable units](tools/fg_decompose.py) |
 | Fourth check | [correspondence between law and code](docs/28-CORRESPONDENCE.md) |
 | Coordination | [who is on the channel, who owes what](interop/COORDINATION.md) |
 | Exchange | [cross-audit: reviews we received and what happened to them](cross-audit/2026-10-29-flowguard-disposition.md) |

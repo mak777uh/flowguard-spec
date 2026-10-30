@@ -71,5 +71,6 @@ list is a card nobody will find, which is why the guard refuses it.
 | [E-M75-paired-eval-hidden](E-M75-paired-eval-hidden.md) | `E-M75-paired-eval-hidden` | refutes |
 | [E-M76-external-audit](E-M76-external-audit.md) | `E-M76-external-audit` | supports |
 | [E-M77-false-pass-control](E-M77-false-pass-control.md) | `E-M77-false-pass-control` | refutes |
+| [E-M81-self-count](E-M81-self-count.md) | `E-M81-self-count` | supports |
 | [E-M9-substitution](E-M9-substitution.md) | `E-M9-substitution` | refutes |
 | [E-M9b-substitution-anchored](E-M9b-substitution-anchored.md) | `E-M9b-substitution-anchored` | supports |

@@ -1,6 +1,6 @@
 # STATUS — generated, not edited
 
-*Produced by `python tools/fg_status.py` at 2026-10-30 18:53 UTC from commit `11f688e`. Editing this file by
+*Produced by `python tools/fg_status.py` at 2026-10-30 19:02 UTC from commit `baacccb`. Editing this file by
 hand is what produced the contradictions a reviewer found (M1 absent and present in one page, 84 links
 against 122, three guards against six CI steps). Regenerate it instead; the build fails when it is stale.*
 
@@ -21,10 +21,10 @@ third party, or signed an acceptance. That is not modesty, it is the measured st
 
 | artifacts | count |
 |---|---|
-| metric rows, each with a command | 107 |
-| experiment cards | 70 (refutes 8, supports 61) |
+| metric rows, each with a command | 108 |
+| experiment cards | 71 (refutes 8, supports 62) |
 | decisions | 17 |
-| markdown links checked | 139, broken 0 |
+| markdown links checked | 140, broken 0 |
 
 ## Method kit
 
@@ -32,7 +32,7 @@ Conformance measured by `lab/check-interop.py`: **7/7**
 
 | item | state | evidence |
 |---|---|---|
-| M1 experiment cards | present | 69 experiment cards, 0 hypothesis cards, 1 unclassified |
+| M1 experiment cards | present | 70 experiment cards, 0 hypothesis cards, 1 unclassified |
 | M2 metrics with commands | present | METRICS.md, 1 command blocks |
 | M3 claim registry | present | CLAIMS.md: 18 claims, evidence types used: false as stated, judgment, not established, sta |
 | M5 falsifiable status doc | present | STATUS-v0.md |

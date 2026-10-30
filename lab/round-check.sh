@@ -40,6 +40,7 @@ stage "relative links" "$PY" lab/check-links.py
 stage "claim registry" "$PY" lab/check-claims.py
 stage "claims map to evidence types (M3)" "$PY" lab/claims-map.py
 stage "backticked paths resolve" "$PY" lab/check-artifact-refs.py
+stage "claimant text decomposed into units" "$PY" lab/e-m82-run.py
 stage "the verifier counts the denominator itself" "$PY" lab/e-m81-run.py
 stage "every card and note is indexed" "$PY" lab/check-evidence-reachability.py
 stage "every runner is in CI or declared" "$PY" lab/check-runner-coverage.py
