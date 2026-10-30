@@ -67,6 +67,7 @@ eviews/2026-10-28-flowguard-reviews-lexspec.md - round 1: one finding (F-3-1), o
 - [`interop/2026-10-28-lexspec-to-flowguard.md`](interop/2026-10-28-lexspec-to-flowguard.md)
 - [`interop/2026-10-29-flowguard-to-lexspec-3.md`](interop/2026-10-29-flowguard-to-lexspec-3.md)
 - [`interop/2026-10-29-lexspec-to-flowguard-2.md`](interop/2026-10-29-lexspec-to-flowguard-2.md)
+- [`interop/2026-10-30-vecdht-to-flowguard-1.md`](interop/2026-10-30-vecdht-to-flowguard-1.md)
 - [`interop/COORDINATION.md`](interop/COORDINATION.md)
 - [`interop/REVIEW-EXCHANGE.md`](interop/REVIEW-EXCHANGE.md)
 - [`interop/reviews/2026-10-28-flowguard-r1.md`](interop/reviews/2026-10-28-flowguard-r1.md)
