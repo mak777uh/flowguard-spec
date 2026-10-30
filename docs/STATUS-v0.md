@@ -1,17 +1,17 @@
 # STATUS — generated, not edited
 
-*Produced by `python tools/fg_status.py` at 2026-10-30 19:53 UTC from commit `a68b4b4`. Editing this file by
+*Produced by `python tools/fg_status.py` at 2026-10-30 20:00 UTC from commit `3a4c467`. Editing this file by
 hand is what produced the contradictions a reviewer found (M1 absent and present in one page, 84 links
 against 122, three guards against six CI steps). Regenerate it instead; the build fails when it is stale.*
 
 ## Where it stands
 
 ```
-engine (the tool)     83%
+engine (the tool)     100%
 product (reliance)    0%
-overall               50%
-tier                  T0 — nothing runs
-next tier             T1 (works for its author), blocked by E1
+overall               60%
+tier                  T2 — usable by an outsider on their own database
+next tier             T3 (trustworthy for someone else's decision), blocked by P1, P2
 ```
 
 The product half is zero because nobody outside has confirmed a finding, rebuilt the bundle as a
@@ -24,7 +24,7 @@ third party, or signed an acceptance. That is not modesty, it is the measured st
 | metric rows, each with a command | 108 |
 | experiment cards | 71 (refutes 8, supports 62) |
 | decisions | 17 |
-| markdown links checked | 151, broken 8 |
+| markdown links checked | 152, broken 0 |
 
 ## Method kit
 
@@ -43,7 +43,7 @@ Conformance measured by `lab/check-interop.py`: **7/7**
 
 | check | what it verifies | earned / weight |
 |---|---|---|
-| E1 | all guards and negative controls green | 0 / 10 |
+| E1 | all guards and negative controls green | 10 / 10 |
 | E2 | the verifier executes and refuses | 8 / 8 |
 | E3 | acceptance scenarios pass | 12 / 12 |
 | E4 | grant enumerator measured on a planted fixture | 8 / 8 |
