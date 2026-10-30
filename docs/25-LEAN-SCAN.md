@@ -96,7 +96,7 @@ The ceiling. Lean proves things about a model; the model is about a document the
 
 The Zulip is the highest-value reference for Lean 4 proofs, and its value is concentrated: a handful of streams
 carry almost everything, and the archive is searchable without an account. This section is the reading plan for
-the day the verdict algebra is actually formalised (`docs/22`, `docs/24`).
+the day the verdict algebra is actually formalised ([docs/22](22-FORMAL-TOOLING.md), [docs/24](24-ARISTOTLE.md)).
 
 ### Where the answers live
 
