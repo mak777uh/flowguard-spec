@@ -21,6 +21,16 @@ declare -a LINES=()
 stage() {
   local name="$1"; shift
   local out code
+  # A stage command that cannot exist is a BROKEN stage, not a failed check: this session produced four
+  # mangled interpreter paths (PowerShell ate the quotes and backslashes), and each one reported FAIL for a
+  # reason unrelated to what the stage checks. Refuse it before it runs, and name the token.
+  if [[ "$1" == */* || "$1" == *\\* ]]; then
+    if [[ ! -x "$1" ]]; then
+      LINES+=("  BROKEN  $name (command does not exist: $1)")
+      RC=1
+      return
+    fi
+  fi
   out="$("$@" 2>&1)"; code=$?
   if [[ $code -eq 0 ]]; then
     LINES+=("  ok    $name")

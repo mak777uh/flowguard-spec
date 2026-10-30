@@ -185,6 +185,7 @@ if [[ "$ONLY" == "all" || "$ONLY" == "claims-value" ]]; then
   fi
 fi
 
+
 echo "controls passed: $PASS   failed: $FAIL"
 [[ "$FAIL" -eq 0 ]] || { echo "RESULT: fail"; exit 1; }
 echo "RESULT: ok"
