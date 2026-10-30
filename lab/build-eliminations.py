@@ -73,7 +73,7 @@ def build() -> str:
         r = rev.get(c["card"], "")
         if not r:
             r = "**missing — add it to lab/elimination-revival.tsv**"
-        rows.append(f"| [{c['card']}](lab/experiments/{c['file']}) | `{c['hypothesis'] or '—'}` | {c['verdict']} | {r} |")
+        rows.append(f"| [{c['card']}](../lab/experiments/{c['file']}) | `{c['hypothesis'] or '—'}` | {c['verdict']} | {r} |")
     return HEADER + "\n".join(rows) + "\n"
 
 

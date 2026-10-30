@@ -72,7 +72,7 @@ the engine half is done, the evidence half does not exist.
 
 ## What this study changed in my own documents
 
-`docs/32` previously contained a template I derived from the announcement. That template was close, but it was a
+this document previously contained a template I derived from the announcement. That template was close, but it was a
 guess; the real instrument is a weighted score plus a fixed interview, and the interview's eighth question is
 sharper than anything I wrote: *one data point, not vanity metrics, that proves people need what you built*.
 
