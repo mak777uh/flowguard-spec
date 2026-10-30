@@ -1,60 +1,80 @@
-# What a "proof of usefulness" is, and what our version would have to contain
+# Proof of usefulness: the real rubric, the real report, and our honest score
 
-Source: HackerNoon's Proof of Usefulness hackathon, final round announcement (2026): ~300 stories published, five
-sponsor categories, $118,000 in the final round — **$12,000 cash and $106,000 in software credits**. Read as an
-artifact format, not as a prize list.
+Studied at source, not inferred: HackerNoon's proof-of-usefulness tag feed, the rubric article
+["Proof of Usefulness Weight Distribution"](https://hackernoon.com/proof-of-usefulness-weight-distribution), and
+one winning report at score 76 ([Nullmail](https://hackernoon.com/nullmail-earns-a-76-proof-of-usefulness-score-by-building-an-open-source-disposable-email-service)).
+Scores seen across the corpus: 38.59, 43, 49, 50, 76, 77.6.
 
-## Four things the format says, read cold
+## The rubric, verbatim weights
 
-1. **The judged artifact is the report, not the software.** Winners are announced with a link to "their report of
-   proof of usefulness". Nobody's repository was read by a judge; ~300 reports were. The lesson for us is
-   uncomfortable and exact: a bundle that nobody writes a report about has not demonstrated usefulness, however
-   correct its verdict.
-2. **Usefulness is about a change in someone's work, not about correctness.** The announcement's own framing:
-   software that "helped answer a pressing question, do a task more efficiently, decide faster, or solve a problem
-   existing tools complicated without need". Correctness is not in that list. Our ceiling says the same thing in
-   another vocabulary: consistency is not truth, and truth is not usefulness.
-3. **One artifact, several framings.** Siiqo took two categories, Cofoundr three, FoxPlug two, Visual MCP Gateway
-   two. The same work, described for different buyers. We have exactly one framing — the security engineer's — and
-   two other plausible ones (an auditor's, an underwriter's) that we have never written down.
-4. **The prize economy is infrastructure.** $106k of $118k is credits from the sponsors whose products the
-   category rewards. Money is the smaller half. For us this matches what we already found with the Nosana credits:
-   the currency of this market is compute, not cash.
-
-## The template our reports must follow
-
-A usefulness report that cannot be falsified is a demo. Ours has to state, in this order, and refuse to omit any
-line:
-
-| field | what it must contain | why |
+| criterion | weight | the question it asks |
 |---|---|---|
-| the question | one sentence, written by the **consumer**, not by us | we cannot invent the question we answer |
-| who asked | a named person or role, with the date they asked | `P1` refuses to credit a model rebuild; a report about a model is a demo |
-| what they would have done instead | the previous workflow, named | without it, no change can be attributed |
-| what the artifact said | the verdict, the coverage, and the `not_claimed` list **verbatim** | a verdict quoted without its boundary is a different claim |
-| what changed | a decision, a code change, a sign-off — something that exists after | this is the only part that counts as usefulness |
-| what did **not** change | at least one thing the consumer kept doing the old way, and why | a report with no such line is marketing |
-| what remains unknown | `NC-01`-type limits, and whether the inventory was independent | the ceiling travels with the report |
+| Real-world utility | **25%** | does this solve a genuine problem, practically and immediately |
+| Evidence of traction | **25%** | can you prove people are using this; which signals are independently verifiable |
+| Audience reach & impact | **20%** | how many genuinely benefit; impact, not registered accounts |
+| Technical innovation & stability | **15%** | novel *and* reliable enough to depend on |
+| Market timing & relevance | 10% | is this a current need, in this competitive landscape |
+| Functional completeness | 5% | does it work right now |
 
-Two rules on top of the table:
+The article is explicit that the weights come from startup-failure research (CB Insights, BLS survival data), and
+that **50% is utility + traction combined**: "nothing else compensates for weakness here". Functional completeness
+is the lowest weight on purpose — "working software should be the baseline expectation, not a competitive
+advantage".
 
-- **No named human, no report.** Not "a customer", not "a team", not a model. A role and a date.
-- **A report may end in "we could not show it helped".** That is a result, and the family publishes those: `cases`
-  has a case that ended "not confirmed", and this repository has two refuted hypotheses of its own.
+## What the winning report actually is
 
-## Why this is the honest shape of `P2` and `P4`
+An **interview with a fixed question set**, published as a story, scored by a machine, with the score page at
+`proofofusefulness.com/report/<project>`. The questions, in order:
 
-Our readiness tiers require an acceptance outside `fixtures/` and a consumer who says the artifact changed a
-decision. That is exactly this template, applied once, by one person. The hackathon's economics suggest the same
-thing from the other side: judges reward reports of a change in someone's work, and a report cannot be written
-before the change happens.
+1. what do you do, and why is now the time for it to exist
+2. traction to date, how many people does it reach
+3. who does it serve
+4. tech stack, and why those choices
+5. traction around the web — who has noticed
+6. you scored N — needs reassessment or just right
+7. what excites you about its potential usefulness
+8. **"your most concrete evidence of usefulness — not vanity metrics or projections — the one data point that
+   proves people genuinely need what you've built"**
+9. adoption versus "tourists": the retention story
+10. if re-scored in 12 months, which criterion improves most, and what are you doing now
+11. operations: monitoring, abuse, scaling
 
-So the next step is not more code. It is to hand one bundle to one person with the table above and ask them to fill
-in five lines. If they cannot, the product claim is unsupported, and we will have learned that cheaply.
+For Nullmail the answer to (8) was not analytics but **voluntary donations on a free, ad-free, tracking-free
+service** — "when someone voluntarily pays for something they could keep using for free". Its reach numbers were
+modest (≈10k inboxes a month, 500 organic clicks) and it still scored 76, because utility and traction were
+demonstrable.
 
-## What this document is not
+## Our honest score today
 
-- It is not a plan to enter a hackathon. The dates have passed and the categories are sponsor-shaped.
-- It is not evidence that anyone has used this. It is a template for the first time somebody does.
-- It does not make the verdict stronger. It makes the claim about the verdict checkable by the person who lived
-  through the change.
+| criterion | us | why |
+|---|---|---|
+| real-world utility (25) | partial | the mechanism works and four enumerators run, but no named person has had a decision changed |
+| evidence of traction (25) | **0** | zero users; the only "consumers" are sibling agents who audited the repository |
+| reach & impact (20) | **0** | no distribution, no publication, no audience |
+| innovation & stability (15) | strong | two implementations, 12 negative controls, third-party verifier, honest ceilings |
+| timing (10) | arguable | agent-driven attacks are rising; that is a reason, not evidence |
+| completeness (5) | yes | `fg_init` takes a dump to a verdict in one command |
+
+So on this market's own arithmetic we are a **15–20 point project** — roughly a quarter of the 76 that Nullmail
+earned — and the missing 50 points are exactly `P2` and `P4`. That is the same finding from the other direction:
+the engine half is done, the evidence half does not exist.
+
+## What to do with this, concretely
+
+1. **Run the eleven questions on one consumer**, not a report about a consumer. The rubric's weight on traction
+   means a single real user with a verifiable signal beats any amount of additional engine work.
+2. **Prepare the honest answer to (8)** before asking. Candidate: "an auditor re-ran the bundle and found a path
+   the team had missed" — which requires that it actually happen first.
+3. **Do not optimise for the 15% and 5%** where we are already strong; that is the comfortable work and the
+   rubric says it does not compensate.
+4. **Publish the score we would get.** A page that says "15–20 by this rubric, here is why" is more credible than
+   silence, and it matches this family's habit of publishing the uncomfortable number.
+
+## What this study changed in my own documents
+
+`docs/32` previously contained a template I derived from the announcement. That template was close, but it was a
+guess; the real instrument is a weighted score plus a fixed interview, and the interview's eighth question is
+sharper than anything I wrote: *one data point, not vanity metrics, that proves people need what you built*.
+
+`Q9` keeps its meaning — the owner still has to name one person — but the ask is now the eleven questions, not a
+five-line form.
