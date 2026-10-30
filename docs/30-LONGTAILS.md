@@ -56,7 +56,7 @@ Their proof must exhibit a function whose value the Comparator recomputes. Ours 
 same document it is judging. The version of "Comparator" that would matter here is a second enumerator run by a
 party other than the claimant — which is `inventory_attestation`, still reserved, still the same `P1` wall.
 
-A weaker version is available today and costs nothing: when **two** inventories are supplied (the claim's own and
+**Implemented** (E-M81): g_verify --recount DIR runs the migrations enumerator over the same source and unions what it finds, so an omitted path lowers coverage. It is one-directional by construction, and it covers one enumerator, not a live database. The original idea, for the record: when **two** inventories are supplied (the claim's own and
 any other, e.g. from the migrations enumerator), the verifier takes the **larger** denominator and reports the
 difference. Undercounting then lowers coverage instead of raising it. That is a change of behaviour, not of format,
 so it can be tried behind a flag and measured before it is adopted.

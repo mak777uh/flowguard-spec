@@ -16,7 +16,9 @@ import argparse
 import importlib.util
 import json
 import re
+import pathlib
 import sys
+import tempfile
 from pathlib import Path
 
 LEVELS = ["CONSISTENT_DECLARED", "SCOPED_ASSURANCE", "PROVEN"]
@@ -247,6 +249,9 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--claim", required=True)
     ap.add_argument("--inventory", required=True)
+    ap.add_argument("--recount", metavar="DIR",
+                    help="enumerator source (e.g. a migrations directory): the verifier counts the "
+                         "denominator itself and unions it with the claim's inventory")
     ap.add_argument("--report")
     ap.add_argument("--policy")
     ap.add_argument("--attempts", type=int, default=1)
@@ -374,6 +379,48 @@ def main() -> int:
             "inventory carries no target_lock", "record the target in the SourceRecord", True)
 
     # ---- 3. coverage, recomputed, never trusted -------------------------
+
+    # --- recount: the tool counts, instead of trusting the claimant's denominator ------------------
+    if getattr(a, "recount", None):
+        import subprocess as _sp
+        src = pathlib.Path(a.recount)
+        if not src.is_dir():
+            err("RECOUNT_UNAVAILABLE", "recount", "a directory the enumerator can read", str(src),
+                "point --recount at the source, or drop the flag and accept the claimant's denominator", True)
+        else:
+            out = pathlib.Path(tempfile.mkdtemp(prefix="fg-recount-")) / "inv.json"
+            r = _sp.run([sys.executable, str(pathlib.Path(__file__).resolve().parent.parent / "enumerators" / "migrations" / "fg_enum_migrations.py"),
+                         "--dir", str(src), "--schema", str(inventory.get("schema") or "public"),
+                         "--control", str(claim.get("declared_control_point") or ""),
+                         "--out", str(out),
+                         "--target-lock", str(inventory.get("target_lock") or "unstated")],
+                        capture_output=True, text=True)
+            if r.returncode != 0 or not out.exists():
+                err("RECOUNT_UNAVAILABLE", "recount", "an inventory from the enumerator",
+                    (r.stderr or r.stdout or "no output").strip()[:160],
+                    "fix the enumerator input, or drop --recount and accept the claimant's denominator", True)
+            else:
+                recount_doc = json.loads(out.read_text(encoding="utf-8"))
+                def identity(p_):
+                    return (str(p_.get("kind")), str(p_.get("entry")), str(p_.get("target")))
+                have = {identity(p_) for p_ in inventory["paths"]}
+                added = [p_ for p_ in recount_doc.get("paths", []) if identity(p_) not in have]
+                if added:
+                    for p_ in added:
+                        p_["recounted"] = True
+                        p_["attribution"] = {"to": None, "method": "recount",
+                                             "sources": ["recount"]}
+                    inventory.setdefault("sources", []).append(
+                        {"source_id": "recount", "kind": "static",
+                         "what": f"the verifier re-enumerated {src}", "completeness_claim": "partial"})
+                    inventory["paths"] = inventory["paths"] + added
+                    err("UNDERCOUNTED_DENOMINATOR",
+                        "inventory.paths",
+                        "every path the tool can enumerate for this target",
+                        f"{len(added)} path(s) missing from the claim, e.g. "
+                        f"{added[0].get('entry')} -> {added[0].get('target')}",
+                        "include the recounted paths, or say in the claim why they are not in scope", True)
+
     paths = inventory["paths"]
     control = claim.get("declared_control_point")
     # A path is inside the core when an attribution source says it passes through the declared
