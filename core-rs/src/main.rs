@@ -7,6 +7,7 @@ mod bundle;
 mod canonical;
 mod claim;
 mod levels;
+mod report;
 
 use serde_json::json;
 use std::fs;
@@ -28,6 +29,31 @@ fn read_json(path: &Path) -> Result<serde_json::Value, String> {
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
     match args.first().map(String::as_str) {
+        Some("report") => {
+            let mut dir: Option<PathBuf> = None;
+            let mut out: Option<PathBuf> = None;
+            let mut i = 1;
+            while i < args.len() {
+                match args[i].as_str() {
+                    "--bundle" => { dir = args.get(i + 1).map(PathBuf::from); i += 2; }
+                    "--out" => { out = args.get(i + 1).map(PathBuf::from); i += 2; }
+                    other => { eprintln!("unknown argument: {other}"); return ExitCode::from(2); }
+                }
+            }
+            return match (dir, out) {
+                (Some(d), Some(o)) => match report::read_bundle(&d) {
+                    Ok(inp) => {
+                        let page = report::render(&inp);
+                        match std::fs::write(&o, page.as_bytes()) {
+                            Ok(_) => { println!("wrote {} ({} bytes)", o.display(), page.len()); ExitCode::SUCCESS }
+                            Err(e) => { eprintln!("cannot write {}: {e}", o.display()); ExitCode::from(2) }
+                        }
+                    }
+                    Err(e) => { eprintln!("{e}"); ExitCode::from(2) }
+                },
+                _ => { eprintln!("usage: fg-core report --bundle <dir> --out <file.html>"); ExitCode::from(2) }
+            };
+        }
         Some("verify") => {}
         Some("verify-claim") => {
             let mut claim: Option<PathBuf> = None;
