@@ -91,3 +91,45 @@ with one honest assumption node — `floatRendering : Assumption` — because th
 
 The ceiling. Lean proves things about a model; the model is about a document the claimant wrote (`NC-01`,
 `ADR-0010`). A verified verifier is a verifier you can trust more; it is not a witness you can trust at all.
+
+## How to use this archive when we start proving
+
+The Zulip is the highest-value reference for Lean 4 proofs, and its value is concentrated: a handful of streams
+carry almost everything, and the archive is searchable without an account. This section is the reading plan for
+the day the verdict algebra is actually formalised (`docs/22`, `docs/24`).
+
+### Where the answers live
+
+| stream | why it matters to us |
+|---|---|
+| **Program verification** | `mvcgen`, `Std.Do`, `do`-notation semantics, termination, havex/Aeneas threads — the toolchain for "prove things about code" |
+| **CSLib** and **CSLib: Code Reasoning** | a library for reasoning about code; the alternative if `mvcgen` is too young for our shape |
+| **Is there code for X?** | where "has anyone formalised JSON / rationals / decimals" is asked and answered |
+| **metaprogramming / tactics** | when `omega`/`linarith` do not close an arithmetic goal and a custom tactic is cheaper than a proof |
+| **batteries**, **lean4**, **mathlib4** | what is in the standard library versus what must be built |
+| **Machine Learning for Theorem Proving** | if an AI prover is used, this is where the state of the art is honest about its limits |
+
+### The three constraints already extracted (do not re-derive them)
+
+1. **`while` loops are `partial`** in core Lean, so nothing can be proved about them; `while … decreasing` with
+   extrinsic termination was "Q2 next year" as of 2025-11-19. The model must be **structural recursion over
+   lists** — which is how `fg_verify.py` is already written.
+2. **`Float` is opaque**: `a < b → b < c → a < c` is not provable. Coverage, density and floors must be `Nat`/`Rat`
+   in the model, with floats existing only at the JSON boundary and declared as an assumption.
+3. **The trusted computing base is partly unverified** — "to what extent is Lean 4 itself verified" has a careful
+   answer, and any "formally verified" sentence we write must carry it, exactly as it carries `NC-01`.
+
+### The queries to start with
+
+```
+mvcgen                        # the current program logic
+Spec monad do                 # how a function is specified
+termination partial           # why a loop cannot be proved yet
+Rat decimal JSON canonical    # if a canonical numeric form is ever proved
+hax / Aeneas                  # Rust to Lean, if the core is ever written in Rust
+```
+
+### What this archive cannot give
+
+An answer about **our** model. Every thread is about Lean's semantics, not about what "coverage" means for a
+database control point. The proof is ours to state; the archive tells us whether the statement is expressible.
