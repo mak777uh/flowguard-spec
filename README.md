@@ -79,6 +79,7 @@ commits a token, CI goes red instead of the reputation.
 | Joints | [cross-repo registry: the styks between projects](lab/cross-repo/README.md) |
 | Reviews | [FlowGuard reviews LexSpec, round 1](interop/reviews/2026-10-28-flowguard-reviews-lexspec.md) |
 | Anchors | [what NEAR AI attestation says about our missing anchor](docs/27-NEAR-ATTESTATION.md) |
+| Methods | [what a Comparator that audits a budget teaches us](docs/30-LONGTAILS.md) |
 | Methods | [what the PutnamBench harness gives us, code by code](docs/29-PUTNAM-HARNESS.md) |
 | Methods | [what a PutnamBench-solving agent teaches us](docs/26-PUTNAM-AGENT.md) |
 | Ecosystem | [Lean ecosystem scan](docs/25-LEAN-SCAN.md) |
