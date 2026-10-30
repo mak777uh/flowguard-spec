@@ -110,6 +110,7 @@ Evidence types and permitted wording live in [docs/CLAIMS.md](docs/CLAIMS.md): t
 ## License
 
 Documents — [CC BY 4.0](LICENSE). Code, when it appears, — Apache-2.0.
+| Product evidence | [what a proof of usefulness must contain](docs/32-USEFULNESS.md) |
 | Portfolio | [the pinned repositories, read one after another](docs/31-SIBLINGS.md) |
 | Ruled out | [what this repository has refuted, and what would revive it](docs/ELIMINATIONS.md) |
 | Assessment | [final assessment — with the 2026-10-29 correction](docs/21-FINAL-ASSESSMENT.md) |
