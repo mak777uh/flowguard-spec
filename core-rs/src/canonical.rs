@@ -32,6 +32,44 @@ fn escape(s: &str) -> String {
     out
 }
 
+/// ECMAScript `Number::toString` — the rule RFC 8785 §3.2.2.3 points at (ADR-0018).
+///
+/// Python and Rust both print a shortest round-trip mantissa, but lay it out differently: Rust never uses an
+/// exponent in `Display` and writes `0.0` where the rule wants `0`. `{:e}` gives the shortest mantissa and a
+/// decimal exponent, and the layout is then decided once, here.
+fn es_number(f: f64) -> Option<String> {
+    if !f.is_finite() {
+        return None;
+    }
+    if f == 0.0 {
+        return Some("0".to_string());
+    }
+    let negative = f < 0.0;
+    let text = format!("{:e}", f.abs());
+    let (mantissa, exp) = text.split_once('e')?;
+    let exp10: i32 = exp.parse().ok()?;
+    let digits: String = mantissa.chars().filter(|c| *c != '.').collect();
+    let digits = digits.trim_end_matches('0').to_string();
+    let digits = if digits.is_empty() { "0".to_string() } else { digits };
+
+    let n = digits.len() as i32;
+    let k = exp10 + 1; // position of the decimal point relative to the digits
+
+    let body = if k >= n && k <= 21 {
+        format!("{}{}", digits, "0".repeat((k - n) as usize))
+    } else if k > 0 && k <= 21 {
+        format!("{}.{}", &digits[..k as usize], &digits[k as usize..])
+    } else if k > -6 && k <= 0 {
+        format!("0.{}{}", "0".repeat((-k) as usize), digits)
+    } else {
+        let (head, tail) = digits.split_at(1);
+        let fraction = if tail.is_empty() { String::new() } else { format!(".{}", tail) };
+        let e = k - 1;
+        format!("{}{}e{}{}", head, fraction, if e >= 0 { "+" } else { "-" }, e.abs())
+    };
+    Some(if negative { format!("-{}", body) } else { body })
+}
+
 /// Canonicalise a JSON value. Keys are sorted by Unicode code point at every level.
 pub fn canonical(v: &Value) -> Result<String, String> {
     let mut out = String::new();
@@ -46,11 +84,13 @@ fn write_value(v: &Value, out: &mut String) -> Result<(), String> {
         Value::Number(n) => {
             if n.is_f64() {
                 let f = n.as_f64().unwrap();
-                if !f.is_finite() {
-                    return Err("non-finite number in a document that must be canonical".into());
+                match es_number(f) {
+                    Some(s) => out.push_str(&s),
+                    None => return Err("non-finite number in a document that must be canonical".into()),
                 }
+            } else {
+                out.push_str(&n.to_string());
             }
-            out.push_str(&n.to_string());
         }
         Value::String(s) => out.push_str(&escape(s)),
         Value::Array(a) => {
@@ -83,4 +123,28 @@ fn write_value(v: &Value, out: &mut String) -> Result<(), String> {
 
 pub fn address_of(bundle: &Value) -> Result<String, String> {
     Ok(sha256_hex(canonical(bundle)?.as_bytes()))
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::canonical;
+    use serde_json::json;
+
+    /// The published number cases, the same file the Python side asserts (ADR-0018). Two implementations
+    /// that pass the same table cannot disagree about a float without one of them failing here.
+    #[test]
+    fn rfc8785_number_vectors() {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../lab/vectors/rfc8785-numbers.json");
+        let text = std::fs::read_to_string(&path).expect("the published vectors must be readable");
+        let doc: serde_json::Value = serde_json::from_str(&text).unwrap();
+        for case in doc["vectors"].as_array().unwrap() {
+            let input = case["input"].as_str().unwrap();
+            let expected = case["expected"].as_str().unwrap();
+            let value: serde_json::Value = serde_json::from_str(input).unwrap();
+            let got = canonical(&json!({ "n": value })).unwrap();
+            assert_eq!(got, format!("{{\"n\":{}}}", expected), "case {input}");
+        }
+    }
 }
