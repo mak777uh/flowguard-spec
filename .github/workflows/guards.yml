@@ -66,5 +66,10 @@ jobs:
           python3 lab/build-indexes.py --check
           python3 lab/check-evidence-reachability.py
           python3 lab/check-runner-coverage.py
+      - name: STATUS is regenerated, not edited
+        # docs/STATUS-v0.md states that "the build fails when it is stale". Until this step existed, the
+        # build did not fail: a hand-edited or stale STATUS passed CI (QA preflight, 2026-10-31).
+        run: python3 tools/fg_status.py --check
+
       - name: negative controls for every guard
         run: bash lab/selftest-guards.sh

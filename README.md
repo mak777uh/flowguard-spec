@@ -22,10 +22,15 @@ python tools/fg_init.py --psql /path/to/psql --port 5432 --db fg_try \
 
 It creates the database if needed, loads the dump, prints the **db_logic_density band** before any claim is
 made, runs the grants and call enumerators, merges them into an inventory, writes a claim that asserts nothing
-it has not earned, and runs the verifier. Requirements: PostgreSQL client tools and Python 3.11+; nothing else.
+it has not earned, and runs the verifier. Requirements: a reachable PostgreSQL server where the given role may
+create databases, the PostgreSQL client tools, and Python 3.11+.
 
 If the band is `thin`, the verifier will refuse a strong verdict on that system and the run says so before you
 read a number that would mislead you.
+
+The database it creates is left in place on purpose. A second run against the same name stops at the dump step,
+because the objects already exist; drop it first with `DROP DATABASE fg_try;`.
+
 ---
 
 ## Open-by-default policy
@@ -42,8 +47,8 @@ python lab/check-links.py    # every relative link between documents resolves
 python lab/check-claims.py   # every claim typed; every cited artifact traceable
 ```
 
-Both run automatically on every push and pull request (`.github/workflows/guards.yml`). If someone ever
-commits a token, CI goes red instead of the reputation.
+All three run automatically on every push and pull request, together with the rest of the guard suite
+(`.github/workflows/guards.yml`). If someone ever commits a token, CI goes red instead of the reputation.
 
 ## Read first
 
@@ -58,7 +63,7 @@ commits a token, CI goes red instead of the reputation.
 | [docs/M8-CONSUMER.md](docs/M8-CONSUMER.md) | the five-line form the product rests on: fillable in one conversation, worth zero until filled |
 | [docs/READINESS.md](docs/READINESS.md) | **what works, who can use it, and the gate for showing it to others — computed, not asserted** |
 | [docs/STATUS-v0.md](docs/STATUS-v0.md) | what exists, what does not, and what this repository does not claim |
-| [docs/METRICS.md](docs/METRICS.md) | every number with its command and log digest — 105 rows, every one with the command that produced it |
+| [docs/METRICS.md](docs/METRICS.md) | every number with its command and log digest — 109 rows, every one with the command that produced it |
 | [docs/NOT-CLAIMED.md](docs/NOT-CLAIMED.md) | the vocabulary of what an attestation refuses to assert, with required codes per level |
 | [docs/33-EBT-AND-LDD.md](docs/33-EBT-AND-LDD.md) | what we take from evidence-based testing and log-driven development, and what we refuse |
 | [docs/95-CLOSED-LOOP.md](docs/95-CLOSED-LOOP.md) | the loop: product is the showcase, the approach is the factory |
@@ -105,6 +110,10 @@ commits a token, CI goes red instead of the reputation.
 | Development | [method and next round](docs/90-DEV-AND-NEXT-ROUND.md) (superseded) · [closed loop](docs/95-CLOSED-LOOP.md) · [hackathon plan](docs/97-HACKATHON-PLAN.md) (superseded) · [grants](docs/98-GRANTS.md) · [sources](docs/99-SOURCES.md) · [interop](docs/96-INTEROP.md) · [evals and roadmap](docs/03-EVAL-ROADMAP.md) |
 | Review rounds | [synthesis 2](docs/00-SYNTHESIS.md) · [decisions](docs/20-ROUND2-DECISIONS.md) · [synthesis 3](docs/30-ROUND3-SYNTHESIS.md) · [synthesis 4](docs/31-ROUND4-SYNTHESIS.md) · [**synthesis 6 — plan change**](docs/32-ROUND6-SYNTHESIS.md) · [open questions](docs/34-OPEN-QUESTIONS.md) · [spec audit](docs/35-SPEC-AUDIT.md) · [round 7 pack](docs/15-ROUND7-QUESTIONS.md) · [**synthesis 7 — the name was wrong**](docs/36-ROUND7-SYNTHESIS.md) · [refusal codes](docs/37-REFUSAL-CODES.md) · [inventory design](docs/38-INVENTORY-DESIGN.md) |
 | Question sets | [round 2](docs/10-ROUND2-QUESTIONS.md) · [3](docs/11-ROUND3-QUESTIONS.md) · [4](docs/12-ROUND4-QUESTIONS.md) · [5](docs/13-ROUND5-QUESTIONS.md) · [**6 — the method itself**](docs/14-ROUND6-QUESTIONS.md) |
+| Product evidence | [what a proof of usefulness must contain](docs/41-USEFULNESS.md) |
+| Portfolio | [the pinned repositories, read one after another](docs/47-SIBLINGS.md) |
+| Ruled out | [what this repository has refuted, and what would revive it](docs/eliminations.md) |
+| Assessment | [final assessment — with the 2026-10-29 correction](docs/21-FINAL-ASSESSMENT.md) |
 
 ## The one rule that is not up for debate
 
@@ -114,8 +123,4 @@ Evidence types and permitted wording live in [docs/CLAIMS.md](docs/CLAIMS.md): t
 
 ## License
 
-Documents — [CC BY 4.0](LICENSE). Code, when it appears, — Apache-2.0.
-| Product evidence | [what a proof of usefulness must contain](docs/41-USEFULNESS.md) |
-| Portfolio | [the pinned repositories, read one after another](docs/47-SIBLINGS.md) |
-| Ruled out | [what this repository has refuted, and what would revive it](docs/eliminations.md) |
-| Assessment | [final assessment — with the 2026-10-29 correction](docs/21-FINAL-ASSESSMENT.md) |
+Documents — [CC BY 4.0](LICENSE). Code — Apache-2.0.

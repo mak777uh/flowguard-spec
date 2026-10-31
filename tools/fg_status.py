@@ -110,6 +110,18 @@ def open_items():
     return items
 
 
+def clip(text, limit):
+    """Cut a table cell at a word boundary and mark the cut.
+
+    A published cell that ends mid-word ("...not established, sta") reads as a defect in the tool, not as a
+    summary; STATUS is a generated artifact and its text is quoted, so the cut has to be visible.
+    """
+    text = " ".join(str(text).split())
+    if len(text) <= limit:
+        return text
+    return text[:limit].rsplit(" ", 1)[0].rstrip(" ,;:.") + " …"
+
+
 def build() -> str:
     rows, kit_total = kit()
     r = readiness()
@@ -155,14 +167,14 @@ def build() -> str:
     A("| item | state | evidence |")
     A("|---|---|---|")
     for mid, name, state, detail in rows:
-        A(f"| {mid} {name} | {state} | {detail[:90]} |")
+        A(f"| {mid} {name} | {state} | {clip(detail, 90)} |")
     A("")
     A("## Readiness checks")
     A("")
     A("| check | what it verifies | earned / weight |")
     A("|---|---|---|")
     for cid, name, got, wt in r["checks"]:
-        A(f"| {cid} | {name[:80]} | {got} / {wt} |")
+        A(f"| {cid} | {clip(name, 80)} | {got} / {wt} |")
     A("")
     if openers:
         A("## Open findings, from the cards")
@@ -198,7 +210,7 @@ def main() -> int:
             return 1
         print("STATUS-v0.md is current")
         return 0
-    OUT.write_text(text, encoding="utf-8")
+    OUT.write_text(text, encoding="utf-8", newline="\n")
     print(f"wrote {OUT.relative_to(ROOT)} ({len(text.splitlines())} lines)")
     return 0
 
