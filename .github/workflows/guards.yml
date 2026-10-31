@@ -20,6 +20,11 @@ jobs:
         # Without this step tools/fg_schema_check.py exits 2 ("jsonschema is required") and the schema
         # step is red on every push, whatever the content. cryptography is what Ed25519 checks need.
         run: python3 -m pip install --quiet jsonschema cryptography
+      - name: unit tests pin the defect classes
+        # ADR-0017 names five breaks that cost a card each. Four of them are shape refusals and are pinned
+        # here as the smallest document that used to be accepted; the fifth lives inside main() and is covered
+        # by lab/e-m60-run.py. A behavioural change that reopens one of them now fails this step.
+        run: python3 -m unittest discover -s tests -v
       - name: secrets and local paths
         run: bash lab/check-secrets.sh
       - name: relative links resolve
