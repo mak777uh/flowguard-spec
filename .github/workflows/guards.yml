@@ -39,6 +39,10 @@ jobs:
         run: python3 lab/check-eliminations.py
       - name: no CRLF, every shell script parses
         run: python3 lab/check-line-endings.py
+      - name: base commits resolve or are disclosed
+        # An anchor nobody can inspect is a story with a timestamp. Cards written before the repository was
+        # published name trees that are not git objects here; lab/commit-map.tsv carries them with a reason.
+        run: python3 lab/check-base-commit.py
       - name: published schemas accept the artifacts
         run: |
           python3 tools/fg_schema_check.py --claim fixtures/attack/k-proven.json
@@ -81,11 +85,6 @@ jobs:
           python3 lab/build-indexes.py --check
           python3 lab/check-evidence-reachability.py
           python3 lab/check-runner-coverage.py
-      - name: base commits resolve or are disclosed
-        # An anchor nobody can inspect is a story with a timestamp. Cards written before the repository was
-        # published name trees that are not git objects here; lab/commit-map.tsv carries them with a reason.
-        run: python3 lab/check-base-commit.py
-
       - name: STATUS is regenerated, not edited
         # docs/STATUS-v0.md states that "the build fails when it is stale". Until this step existed, the
         # build did not fail: a hand-edited or stale STATUS passed CI (QA preflight, 2026-10-31).
