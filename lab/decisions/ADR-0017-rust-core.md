@@ -1,8 +1,12 @@
 # ADR-0017 — the verifying core is Rust; the enumerators stay Python
 
-**Status:** proposed — **blocked by the toolchain on this machine**, 2026-10-28. The decision below is settled on
-merit; it cannot be executed here until Rust can link (see core-rs/README.md: collect2.exe: error: ld returned
-1 exit status for every build script). No Rust has been written that has not been compiled.
+**Status:** accepted, 2026-10-31. Settled on merit on 2026-10-28 and kept `proposed` because the core could not
+be linked on the author's machine — every build script failed with `collect2.exe: error: ld returned 1 exit
+status` under the MinGW toolchain (see `core-rs/README.md`). The blocker was environmental, not architectural:
+on Linux the crate links, and `.github/workflows/guards.yml` now builds it, runs its own tests, and diffs it
+against the Python core on the cross-family cases (`E-M67`), the claim CLI cases (`E-M68`) and the report facts
+(`E-M83`) on every push. The Python core stays as the differential partner — a second implementation is an
+asset here, not a fallback nobody runs.
 
 ## The decision
 

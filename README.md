@@ -96,7 +96,7 @@ reputation.
 | Methods | [what the PutnamBench harness gives us, code by code](docs/29-PUTNAM-HARNESS.md) |
 | Methods | [what a PutnamBench-solving agent teaches us](docs/26-PUTNAM-AGENT.md) |
 | Ecosystem | [Lean ecosystem scan](docs/25-LEAN-SCAN.md) |
-| Ecosystem | [Rust core status](core-rs/README.md) |
+| Ecosystem | [Rust core status](core-rs/README.md) — the verifying core, built and diffed against Python in CI |
 | Provers | [Harmonic Aristotle: what it changes here](docs/24-ARISTOTLE.md) |
 | Methods | [what to borrow from NVIDIA auto-ontology](docs/23-BORROWED-METHODS.md) |
 | Formal | [formal-verification tooling worth adopting](docs/22-FORMAL-TOOLING.md) |

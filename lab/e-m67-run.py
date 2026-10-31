@@ -14,7 +14,10 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-RUST = ROOT / "core-rs" / "target" / "debug" / "fg-core.exe"
+RUST_DIR = ROOT / "core-rs" / "target" / "debug"
+# The binary name differs by platform: fg-core.exe on Windows, fg-core on Linux. Hardcoding the .exe made the
+# harness unrunnable on the platform that can actually link (CI), which is why it never ran there.
+RUST = RUST_DIR / ("fg-core.exe" if (RUST_DIR / "fg-core.exe").exists() else "fg-core")
 PYCORE = ROOT / "tools" / "fg_verify.py"
 tmp = Path(tempfile.mkdtemp())
 

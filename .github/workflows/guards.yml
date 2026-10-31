@@ -68,6 +68,23 @@ jobs:
           set -e
           if [ "$rc" -eq 0 ]; then echo "the schema accepted a confirmation with no owner behind it"; exit 1; fi
 
+      - name: rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: the rust core builds and its own tests pass
+        # ADR-0017 made the verifying core Rust and was left "proposed - blocked by the toolchain on this
+        # machine": the Windows MinGW linker cannot link any build script. Linux links, so the core is built
+        # and tested here from now on. A core nobody builds is a folder of source, not a core.
+        run: |
+          cd core-rs
+          cargo build --locked
+          cargo test --locked
+      - name: rust core arithmetic agrees with python on the cross-family cases
+        run: python3 lab/e-m67-run.py
+      - name: the claim CLI agrees with the python verifier
+        run: python3 lab/e-m68-run.py
+      - name: both report generators state the same facts
+        run: python3 lab/e-m83-run.py
+
       - name: metric digests resolve
         run: python3 lab/check-metric-digests.py --cards
       - name: backticked paths resolve
