@@ -90,6 +90,10 @@ jobs:
       - name: both report generators state the same facts
         run: python3 lab/e-m83-run.py
 
+      - name: the open-question counters are computed, not typed
+        # docs/34 opens with "counters, so nobody argues with prose" and had drifted four ways at once.
+        # The block is generated now; this step fails when the tree moves and the page does not.
+        run: python3 tools/fg_open_questions.py --check
       - name: metric digests resolve
         run: python3 lab/check-metric-digests.py --cards
       - name: backticked paths resolve
@@ -107,10 +111,6 @@ jobs:
           python3 lab/build-indexes.py --check
           python3 lab/check-evidence-reachability.py
           python3 lab/check-runner-coverage.py
-      - name: the open-question counters are computed, not typed
-        # docs/34 opens with "counters, so nobody argues with prose" and had drifted four ways at once.
-        # The block is generated now; this step fails when the tree moves and the page does not.
-        run: python3 tools/fg_open_questions.py --check
       - name: STATUS is regenerated, not edited
         # docs/STATUS-v0.md states that "the build fails when it is stale". Until this step existed, the
         # build did not fail: a hand-edited or stale STATUS passed CI (QA preflight, 2026-10-31).
