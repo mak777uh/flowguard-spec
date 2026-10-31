@@ -8,6 +8,8 @@ but a port that fails them is proven wrong, and that is worth knowing before it 
     cd core-rs && cargo build --offline && cd .. && python lab/e-m67-run.py
 """
 import json
+import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -75,24 +77,34 @@ def main() -> int:
     if not RUST.exists():
         print("build the Rust core first: cd core-rs && cargo build --offline")
         return 1
-    cargo = Path.home() / ".cargo" / "bin" / "cargo.exe"
+    cargo = shutil.which("cargo")
+    if cargo is None:
+        for cand in (Path.home() / ".cargo" / "bin" / "cargo.exe", Path.home() / ".cargo" / "bin" / "cargo"):
+            if cand.exists():
+                cargo = str(cand)
+                break
+    if cargo is None:
+        print("cargo not found: install rust or put it on PATH")
+        return 1
     # The windows-gnu host needs a working MinGW on PATH; without it every build script fails to link
     # (core-rs/README.md records why). Discover the WinLibs package rather than hardcoding one path.
-    env = dict(**__import__("os").environ)
+    # On Linux the linker is the system one: no discovery, and no path separator of the wrong flavour.
+    env = dict(os.environ)
     mingw = None
-    winget = Path.home() / "AppData" / "Local" / "Microsoft" / "WinGet" / "Packages"
-    if winget.exists():
-        for cand in winget.glob("*WinLibs*/mingw64/bin"):
-            mingw = cand
-            break
+    if os.name == "nt":
+        winget = Path.home() / "AppData" / "Local" / "Microsoft" / "WinGet" / "Packages"
+        if winget.exists():
+            for cand in winget.glob("*WinLibs*/mingw64/bin"):
+                mingw = cand
+                break
     if mingw:
-        env["PATH"] = str(mingw) + ";" + env.get("PATH", "")
+        env["PATH"] = str(mingw) + os.pathsep + env.get("PATH", "")
     print("Rust arithmetic is asserted by cargo test; running it here as the machine-checked half:")
     if mingw:
         print(f"  toolchain: {mingw}")
-    else:
+    elif os.name == "nt":
         print("  toolchain: not found - set PATH to a mingw64/bin or the build will fail to link")
-    r = subprocess.run([str(cargo), "test", "--offline", "--quiet"], cwd=ROOT / "core-rs",
+    r = subprocess.run([cargo, "test", "--offline", "--locked", "--quiet"], cwd=ROOT / "core-rs",
                        capture_output=True, text=True, env=env)
     ok = r.returncode == 0
     for line in (r.stdout or "").splitlines():
