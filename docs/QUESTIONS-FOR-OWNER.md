@@ -53,20 +53,36 @@ minutes. The form is [M8-CONSUMER.md](M8-CONSUMER.md); five lines fill it.
 Ready since before the pivot, marked as drafted-not-published. You declined once; the offer stands until the
 hackathon closes.
 
-## Q5 — the $70 Nosana credits
+## Q5 — does a bundle need a freshness binding (challenge) and tool provenance?
 
-Requires your account data to claim. Low value; ignored unless you want it.
+A bundle today can be produced for nobody and presented later as an answer: the claim has no nonce, no challenge, and no record of which tool version produced it. NEAR AI's attestation stack binds all three, and their separation is instructive (quote+nonce+signer, image provenance, verifier-owned policy).
 
----
+Proposed, additive: claim.challenge (hex, supplied by the relying party) and claim.tool {name, version, digest}. Verifier refuses a challenge mismatch when one is expected; reports an absent tool digest. It changes the canonical bytes of new artifacts only, but it is a format decision, so it is queued rather than applied. Full reasoning: docs/27-NEAR-ATTESTATION.md.
 
-## Standing decisions I am making while these wait
+## Q6 — what should the verifier answer when an anchor is unavailable rather than absent?
 
-- **No product claims** in any public surface until Q2 or Q3 resolves. `NC-01`…`NC-10` enforce this mechanically.
-- **No pricing, no buyer outreach** — your call, unchanged since round 6.
-- **Public schema next** (Q1, alone): Pagila or equivalent, then the same four sources, same thresholds.
-- **M7 stays `absent`** until a stranger rebuilds a bundle. Asked of VecDHT (PR #3); no answer yet.
+LexSpec asked a question our ADR does not answer: ADR-0010 describes the case where an anchor was NOT PASSED,
+not where it is UNREACHABLE (target commit cannot be resolved, trusted-key list cannot be fetched, policy digest
+does not match the signed one, one anchor present and the other absent). Today unreachable degrades to absent,
+which answers with the weakest state - honest, but it means a caller cannot tell "no policy" from "policy
+broken". Proposed: a distinct ANCHOR_UNAVAILABLE code that never upgrades a verdict and names which anchor
+failed. It is a refusal-code addition, so it does not change canonical bytes; it does change the contract, so it
+is queued rather than applied.
 
-## Вопросы, накопившиеся за последние круги
+## Q7 — how does the canonical form carry an integral float?
+
+`E-M71` measured that `0.0` and `0` produce different addresses in Python and in JavaScript, so a canonical
+form that keeps floats is not cross-language stable. Three options, none of them free:
+
+1. **integers only** — `0.0` is refused or becomes `0`; invalidates every existing address containing a float.
+2. **normalise integral floats to integers in the canonicaliser** — documents stay readable, addresses still
+   change, and `0.9` stays an unrepresentable case to refuse.
+3. **document the limit and keep the bytes** — cheapest, and leaves the trap for whoever writes the next
+   verifier.
+
+This is a format decision: it invalidates issued artifacts, so it is queued rather than applied.
+
+## Q8–Q10 — questions accumulated over the last rounds
 
 1. **Принятие риска связано с адресом, но не покрыто им полностью.** С ADR-0015 подпись роли покрывает все её
    поля, кроме ccepted_scope (он обязан равняться адресу, и адрес не может содержать собственный дайджест).
@@ -83,18 +99,15 @@ Requires your account data to claim. Low value; ignored unless you want it.
    противоречит сам себе», а не «лжец не пройдёт». Вопрос: нужна ли внешняя привязка (подпись третьей
    стороны над инвентарём), или этот потолок приемлем для первого продукта?
 
-## Q5 — does a bundle need a freshness binding (challenge) and tool provenance?
+## Standing decisions I am making while these wait
 
-A bundle today can be produced for nobody and presented later as an answer: the claim has no nonce, no challenge, and no record of which tool version produced it. NEAR AI's attestation stack binds all three, and their separation is instructive (quote+nonce+signer, image provenance, verifier-owned policy).
+- **No product claims** in any public surface until Q2 or Q3 resolves. `NC-01`…`NC-10` enforce this mechanically.
+- **No pricing, no buyer outreach** — your call, unchanged since round 6.
+- **Public schema next** (Q1, alone): Pagila or equivalent, then the same four sources, same thresholds.
+- **M7 stays `absent`** until a stranger rebuilds a bundle. Asked of VecDHT (PR #3); no answer yet.
 
-Proposed, additive: claim.challenge (hex, supplied by the relying party) and claim.tool {name, version, digest}. Verifier refuses a challenge mismatch when one is expected; reports an absent tool digest. It changes the canonical bytes of new artifacts only, but it is a format decision, so it is queued rather than applied. Full reasoning: docs/27-NEAR-ATTESTATION.md.
+## Housekeeping — not a decision
 
-## Q6 - what should the verifier answer when an anchor is unavailable rather than absent?
+Requires your account data to claim. Low value; ignored unless you want it.
 
-LexSpec asked a question our ADR does not answer: ADR-0010 describes the case where an anchor was NOT PASSED,
-not where it is UNREACHABLE (target commit cannot be resolved, trusted-key list cannot be fetched, policy digest
-does not match the signed one, one anchor present and the other absent). Today unreachable degrades to absent,
-which answers with the weakest state - honest, but it means a caller cannot tell "no policy" from "policy
-broken". Proposed: a distinct ANCHOR_UNAVAILABLE code that never upgrades a verdict and names which anchor
-failed. It is a refusal-code addition, so it does not change canonical bytes; it does change the contract, so it
-is queued rather than applied.
+---
