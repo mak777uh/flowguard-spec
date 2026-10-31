@@ -10,8 +10,6 @@ lab/e2e/unknown-path  # planned artifact named by a claim; the gap is published 
 lab/e2e/verify-offline  # planned artifact named by a claim; the gap is published by lab/check-claims.py and by docs/STATUS-v0.md
 lab/experiments/E-C2  # planned artifact named by a claim; the gap is published by lab/check-claims.py and by docs/STATUS-v0.md
 lab/experiments/E-C2b  # planned artifact named by a claim; the gap is published by lab/check-claims.py and by docs/STATUS-v0.md
-tools/_tmp  # gitignored scratch directory quoted in two review cards (E-M43, E-M76); no such artifact is published, and it must never appear in the tree
-tools/_tmp/  # same directory, written with a trailing slash in one card
 lab/experiments/E-G8  # planned artifact named by a claim; the gap is published by lab/check-claims.py and by docs/STATUS-v0.md
 lab/experiments/E-G9  # planned artifact named by a claim; the gap is published by lab/check-claims.py and by docs/STATUS-v0.md
 lab/experiments/E-M1  # planned artifact named by a claim; the gap is published by lab/check-claims.py and by docs/STATUS-v0.md

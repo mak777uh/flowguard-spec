@@ -55,3 +55,10 @@ demo key deliberately — the same property the current fixture already has.
 
 Structure, key order, string escaping and the address algorithm are unchanged. Only the text of a number
 changes, and only where it disagreed with the rule.
+
+## What this ADR does NOT do
+
+- It does not make the decision machine-checked. The guards exercise the consequences; the reasoning is prose.
+- It does not bind another repository. A sibling adopting the same rule writes its own record.
+- It does not settle the question for all time: a later record can reverse it, and the reversal is a new ADR rather
+  than an edit to this one.
