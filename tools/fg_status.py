@@ -207,6 +207,13 @@ def main() -> int:
         current = OUT.read_text(encoding="utf-8") if OUT.exists() else ""
         if _body(current) != _body(text):
             print("STATUS-v0.md is stale — run python tools/fg_status.py")
+            # Show what differs: "stale" without a line is a message that cannot be acted on, and this
+            # guard failed in CI on a commit where the same check passed on Windows.
+            import difflib
+            diff = list(difflib.unified_diff(_body(current).splitlines(), _body(text).splitlines(),
+                                             "on disk", "regenerated", lineterm="", n=1))
+            for line in diff[:24]:
+                print("  " + line)
             return 1
         print("STATUS-v0.md is current")
         return 0
