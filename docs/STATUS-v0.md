@@ -1,6 +1,6 @@
 # STATUS — generated, not edited
 
-*Produced by `python tools/fg_status.py` at 2026-10-31 02:57 UTC from commit `1d6026f`. Editing this file by
+*Produced by `python tools/fg_status.py` at 2026-10-31 22:46 UTC from commit `314002e`. Editing this file by
 hand is what produced the contradictions a reviewer found (M1 absent and present in one page, 84 links
 against 122, three guards against six CI steps). Regenerate it instead; the build fails when it is stale.*
 
@@ -23,8 +23,8 @@ third party, or signed an acceptance. That is not modesty, it is the measured st
 |---|---|
 | metric rows, each with a command | 109 |
 | experiment cards | 72 (refutes 8, supports 63) |
-| decisions | 17 |
-| markdown links checked | 158, broken 0 |
+| decisions | 19 |
+| markdown links checked | 162, broken 0 |
 
 ## Method kit
 
@@ -33,8 +33,8 @@ Conformance measured by `lab/check-interop.py`: **7/7**
 | item | state | evidence |
 |---|---|---|
 | M1 experiment cards | present | 71 experiment cards, 0 hypothesis cards, 1 unclassified |
-| M2 metrics with commands | present | METRICS.md, 1 command blocks |
-| M3 claim registry | present | CLAIMS.md: 18 claims, evidence types used: false as stated, judgment, not established, sta |
+| M2 metrics with commands | present | METRICS.md, 109 command blocks |
+| M3 claim registry | present | CLAIMS.md: 18 claims, evidence types used: false as stated, judgment, not established … |
 | M5 falsifiable status doc | present | STATUS-v0.md |
 | M6 guards | present | secrets, links, claims |
 | M7 independent-rebuild test | present | E-M39-independent-rebuild.md |

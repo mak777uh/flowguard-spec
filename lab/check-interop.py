@@ -102,7 +102,17 @@ def find_metrics(root):
     for p in md_files(root):
         if "metric" in p.name.lower():
             text = p.read_text(encoding="utf-8", errors="ignore")
-            cmds = len(re.findall(r"```", text)) // 2
+            # What the kit means by "metrics with commands": numbered rows whose command cell is
+            # backticked. Counting ``` fences measured the fences, not the rows - it printed
+            # "1 command blocks" for a file carrying 109 such rows.
+            rows = [l for l in text.splitlines() if re.match(r"^\|\s*\d+\s*\|", l)]
+            cmds = 0
+            for line in rows:
+                cells = line.split("|")
+                if len(cells) > 4 and "`" in cells[4]:
+                    cmds += 1
+            if not rows:
+                cmds = len(re.findall(r"```", text)) // 2
             return p, cmds
     return None
 
@@ -155,9 +165,10 @@ def main():
                    f"{exp_cards} experiment cards, {hyp_cards} hypothesis cards, {other} unclassified"))
 
     metrics = find_metrics(root)
+    blocks = "command block" if metrics and metrics[1] == 1 else "command blocks"
     out.append(row("M2 metrics with commands",
                    "present" if metrics and metrics[1] else ("partial" if metrics else "absent"),
-                   f"{metrics[0].name}, {metrics[1]} command blocks" if metrics else "no metrics file"))
+                   f"{metrics[0].name}, {metrics[1]} {blocks}" if metrics else "no metrics file"))
 
     claims = find_claims(root)
     if claims:

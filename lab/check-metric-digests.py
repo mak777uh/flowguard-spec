@@ -36,15 +36,29 @@ def main() -> int:
     a = ap.parse_args()
 
     known = log_digests()
-    rows, unresolved = 0, []
+    rows, unresolved, no_log = 0, [], 0
+    by_digest: dict[str, set[str]] = {}
     for lineno, line in enumerate(METRICS.read_text(encoding="utf-8").splitlines(), 1):
         if not re.match(r"^\|\s*\d+\s*\|", line):
             continue
         rows += 1
-        for digest in DIGEST.findall(line):
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        experiment = (re.match(r"(E-M\d+)", cells[1]) or [None, "?"])
+        experiment = experiment.group(1) if hasattr(experiment, "group") else "?"
+        found = DIGEST.findall(line)
+        if "`no-log`" in line:
+            no_log += 1
+        for digest in found:
+            by_digest.setdefault(digest, set()).add(experiment)
             if digest not in known:
-                cell = [c.strip() for c in line.strip().strip("|").split("|")]
-                unresolved.append((lineno, cell[0], digest[:12]))
+                unresolved.append((lineno, cells[0], digest[:12]))
+
+    # One sha256 is one log. The same digest under two different experiments means a cell was copied;
+    # 49 rows carried a single digest until 2026-10-31, which is how the placeholder was visible at all.
+    shared = sorted((d, sorted(ids)) for d, ids in by_digest.items() if len(ids) > 1)
+    for digest, ids in shared:
+        print(f"  digest {digest[:12]}… is claimed by {len(ids)} experiments: {', '.join(ids)} — one log, one row")
+    unresolved.extend((0, "shared", d[:12]) for d, _ in shared)
 
     card_bad = []
     if a.cards:
@@ -58,13 +72,14 @@ def main() -> int:
                     card_bad.append((card.name.split("-")[0], dig[:12]))
         unresolved.extend((0, f"card {cid}", pref) for cid, pref in card_bad)
 
-    print(f"metric rows: {rows}, log files: {len(known)}, unresolved digests: {len(unresolved)}")
+    print(f"metric rows: {rows}, rows with a captured log: {rows - no_log}, rows marked no-log: {no_log}, "
+          f"log files: {len(known)}, unresolved digests: {len(unresolved)}")
     for lineno, num, prefix in unresolved:
         where = f" (line {lineno})" if lineno else ""
         print(f"  {num}{where}: {prefix}… matches no file in lab/logs/")
     if unresolved and a.fix_hint:
         print("\nfix: re-run the row's command into lab/logs/<id>-<date>.log and put the new sha256 in the cell,")
-        print("     or replace the cell with `-` and say in the row that the run was not captured.")
+        print("     or mark the row `no-log` and let the count of uncaptured runs stand in the open.")
     print("RESULT:", "ok" if not unresolved else "fail")
     return 0 if not unresolved else 1
 

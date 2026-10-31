@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flowguard.dev/schemas/foreign-validation-0.1.json",
+  "title": "FlowGuard foreign validation record",
+  "description": "What a schema owner says about a finding, and what the readiness gate is allowed to count. tools/fg_readiness.py reads this document to decide P1 (a third-party rebuild) and P4 (an owner-produced corpus). The shape is published here so the record can be produced without reading that source: before 2026-10-31 the requirements lived only in code, which is why P1 stayed at zero while the form looked fillable.",
+  "type": "object",
+  "required": ["foreign_validation"],
+  "additionalProperties": false,
+  "properties": {
+    "foreign_validation": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/record" }
+    }
+  },
+  "$defs": {
+    "owner": {
+      "type": "object",
+      "description": "A confirmation without a named person is a rumour with a timestamp.",
+      "required": ["name", "role", "how_contacted", "date"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "role": { "type": "string", "minLength": 1 },
+        "how_contacted": { "type": "string", "minLength": 1 },
+        "date": { "type": "string", "minLength": 1 }
+      }
+    },
+    "record": {
+      "type": "object",
+      "required": ["schema", "owner_confirmed"],
+      "additionalProperties": false,
+      "properties": {
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The schema or database this record is about."
+        },
+        "version": { "type": "string" },
+        "executed_by": {
+          "type": "string",
+          "description": "Who ran the tool. An execution alone supports nothing above tier 1."
+        },
+        "owner_confirmed": { "type": "boolean" },
+        "owner": { "$ref": "#/$defs/owner" },
+        "owner_statement": {
+          "type": "string",
+          "minLength": 12,
+          "description": "The owner's sentence, quoted. Not our summary of it: a tidied quote is our statement."
+        },
+        "verdict": {
+          "enum": ["confirmed", "refuted", "partially_correct"],
+          "description": "Only confirmed and partially_correct count toward P1 in tools/fg_readiness.py; a refuted verdict is still the strongest evidence the loop works."
+        },
+        "finding": {
+          "type": "object",
+          "description": "The finding the owner speaks to: path_id, claim, our_evidence."
+        },
+        "what_changed_for_them": { "type": "string" },
+        "blind_evaluation": {
+          "type": "boolean",
+          "description": "True when the owner built their own list before seeing ours. Without it the exercise measures agreement, not coverage."
+        },
+        "ground_truth": {
+          "type": "object",
+          "description": "An owner-produced expected list: produced_by, method, paths_expected, artifact."
+        },
+        "our_result": {
+          "type": "object",
+          "description": "Our numbers against that list: paths_found, missed, false_positives."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "owner_confirmed": { "const": true } },
+            "required": ["owner_confirmed"]
+          },
+          "then": {
+            "required": ["owner", "owner_statement", "verdict"]
+          }
+        }
+      ]
+    }
+  }
+}

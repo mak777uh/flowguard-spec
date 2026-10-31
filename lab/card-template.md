@@ -5,6 +5,9 @@ id: E-MNN
 hypothesis: H-MNN
 status: planned | running | completed
 base_commit: "<short sha of the tree the run started from>"
+# base_commit has to resolve: `git cat-file -e <sha>^{commit}`. lab/check-base-commit.py fails on a card whose
+# anchor is not a commit here, and refuses to check at all inside a shallow clone — a shallow clone resolves
+# nothing and would report every card as broken.
 started: "<ISO datetime>"
 finished: "<ISO datetime or '—'>"
 environment: "<OS, interpreter, database, toolchain - whatever a re-run must reproduce>"

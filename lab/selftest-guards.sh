@@ -186,6 +186,23 @@ if [[ "$ONLY" == "all" || "$ONLY" == "claims-value" ]]; then
 fi
 
 
+# ---- control 12: base_commit resolves --------------------------------------------------------
+if [[ "$ONLY" == "all" || "$ONLY" == "base-commit" ]]; then
+  stage
+  # The staged tree is a fresh repository with one commit, so every real anchor is unresolvable there for
+  # the same reason a shallow clone makes them unresolvable. Strip them first, then plant exactly one bad
+  # anchor: otherwise the control would "pass" because the whole tree was broken, not because the guard works.
+  find "$TMP/repo/lab/experiments" -name '*.md' -exec sed -i '/^base_commit:/d' {} +
+  printf -- '---\nid: E-N99\nbase_commit: "deadbeef"\nverdict: supports\n---\n' \
+    > "$TMP/repo/lab/experiments/E-N99-negative-control.md"
+  if python "$TMP/repo/lab/check-base-commit.py" >/dev/null 2>&1; then
+    fail "base-commit: an anchor that is not a commit was NOT caught"
+  else
+    pass "base-commit: unresolvable anchor caught"
+  fi
+fi
+
+
 echo "controls passed: $PASS   failed: $FAIL"
 [[ "$FAIL" -eq 0 ]] || { echo "RESULT: fail"; exit 1; }
 echo "RESULT: ok"

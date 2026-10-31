@@ -1,63 +1,52 @@
-# Status of the Rust core — blocked by the toolchain on this machine
+# Status of the Rust core
 
-`ADR-0017` decided that the verifying core should be Rust. The reasoning stands; the build does not work here.
+`ADR-0017` decided that the verifying core is Rust; on 2026-10-31 the decision moved from `proposed` to
+`accepted`, because the crate now builds somewhere that counts.
 
-## What is installed
+## What runs now
+
+`.github/workflows/guards.yml`, on every push and pull request:
 
 ```
-cargo 1.99.1 (5f94df478 2026-08-27)
-rustc 1.99.1 (58cf8f9c6 2026-10-13)
+cd core-rs && cargo build --locked && cargo test --locked
+python3 lab/e-m67-run.py    # the claim arithmetic, Rust against Python on the cross-family cases
+python3 lab/e-m68-run.py    # the claim CLI against the Python verifier
+python3 lab/e-m83-run.py    # two report generators, the same facts
 ```
 
-Target: `x86_64-pc-windows-gnu`. 390 crates are already cached locally, including `sha2`, `serde_json`,
-`ed25519-dalek`, `curve25519-dalek` and `base64` — so the dependency set is not the problem.
+A core that is never built is a folder of source, not a core. These four steps are what makes the path in
+`lab/decisions/ADR-0017-rust-core.md` a description of the repository rather than an intention.
 
-## What fails
+## The Windows machine this was written on
+
+The toolchain is installed (`cargo 1.99.1`, `rustc 1.99.1`, target `x86_64-pc-windows-gnu`) and 390 crates are
+cached, but linking fails for every build script:
 
 ```
 error: linking with `x86_64-w64-mingw32-gcc` failed: exit code: 1
 collect2.exe: error: ld returned 1 exit status
 ```
 
-Every build script fails to link, including `generic-array` and `serde_json`. The GNU linker of the MinGW
-toolchain is not usable in this environment, and the network path for a fresh download is also broken for
-cargo specifically (`SSL connect error (schannel ...)` from `static.crates.io`, while the same URL is
-reachable from PowerShell). So the toolchain is present but cannot produce a binary.
+A fresh download is also blocked for cargo specifically (`SSL connect error (schannel ...)` from
+`static.crates.io`, while the same URL answers from PowerShell). Both are environment defects, not code
+defects, and neither is a reason to keep the port unbuilt — CI links, and CI is where the parity runs.
 
-## Why this stops the port rather than slowing it
+What would make the local build work, if it is worth the download:
 
-Writing Rust that has never been compiled would violate the rule this repository is built on: no artifact
-counts as evidence until a run produces it, and a port that cannot be built cannot be tested, differentialled,
-or claimed. Shipping unbuilt source as "the new core" would be exactly the kind of statement the readiness
-tiers exist to refuse.
+1. **MSVC target** — Visual Studio Build Tools, `rustup target add x86_64-pc-windows-msvc`, then build with
+   `--target x86_64-pc-windows-msvc`.
+2. **Complete MinGW** — for example
+   `winget install --id BrechtSanders.WinLibs.POSIX.UCRT`, then put its `mingw64\bin` on `PATH`.
 
-## What would unblock it
+`lab/e-m67-run.py` already globs the WinGet package directory, so the harness works without a manual export once
+a linker exists.
 
-Either of these, both of which are an environment change rather than a code change:
+## What has not changed
 
-1. **MSVC target** — install the Visual Studio Build Tools and
-   `rustup target add x86_64-pc-windows-msvc`, then build with `--target x86_64-pc-windows-msvc`.
-2. **Working MinGW** — install a complete `mingw-w64` toolchain and point `RUSTFLAGS`/PATH at it, so
-   `x86_64-w64-mingw32-gcc` links.
-
-Both need a download measured in hundreds of megabytes and, for the MSVC route, possibly administrator rights.
-
-## How to build it here
-
-```powershell
-winget install --id BrechtSanders.WinLibs.POSIX.UCRT --accept-package-agreements --accept-source-agreements
-# then add the WinGet package's mingw64\bin to PATH, or let the harness do it:
-cd core-rs; cargo test --offline; cargo build --offline
-```
-
-`lab/e-m67-run.py` finds that toolchain by globbing the WinGet package directory, so the harness works without
-a manual export; a bare `cargo build` in a shell that lacks MinGW will fail to link, which is the state recorded
-below.
-
-## Meanwhile
-
-- The Python core remains the reference implementation and the only one that produces verdicts.
-- The TypeScript scaffold that was started and then abandoned is deleted, not left half-built: a third
-  implementation with no tests is worse than two.
-- The decision is recorded as `proposed`, not `accepted`, and `docs/STATUS-v0.md` continues to describe what
-  actually runs.
+- The Python core (`tools/fg_verify.py`) still produces the verdicts the product ships today; the Rust core is
+  held to it on every push, and a disagreement is a defect in one of them.
+- The harnesses resolve the binary per platform (`fg-core.exe` on Windows, `fg-core` on Linux). Hardcoding the
+  `.exe` was why these runners had never executed under CI: they looked for a file that only exists on the one
+  platform that could not link.
+- Coverage arithmetic and exclusion rules are still being ported; what is ported is canonicalisation, the
+  address, the two signature message forms, the level ladder, the object/role checks and the report generator.

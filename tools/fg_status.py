@@ -110,6 +110,18 @@ def open_items():
     return items
 
 
+def clip(text, limit):
+    """Cut a table cell at a word boundary and mark the cut.
+
+    A published cell that ends mid-word ("...not established, sta") reads as a defect in the tool, not as a
+    summary; STATUS is a generated artifact and its text is quoted, so the cut has to be visible.
+    """
+    text = " ".join(str(text).split())
+    if len(text) <= limit:
+        return text
+    return text[:limit].rsplit(" ", 1)[0].rstrip(" ,;:.") + " …"
+
+
 def build() -> str:
     rows, kit_total = kit()
     r = readiness()
@@ -155,14 +167,14 @@ def build() -> str:
     A("| item | state | evidence |")
     A("|---|---|---|")
     for mid, name, state, detail in rows:
-        A(f"| {mid} {name} | {state} | {detail[:90]} |")
+        A(f"| {mid} {name} | {state} | {clip(detail, 90)} |")
     A("")
     A("## Readiness checks")
     A("")
     A("| check | what it verifies | earned / weight |")
     A("|---|---|---|")
     for cid, name, got, wt in r["checks"]:
-        A(f"| {cid} | {name[:80]} | {got} / {wt} |")
+        A(f"| {cid} | {clip(name, 80)} | {got} / {wt} |")
     A("")
     if openers:
         A("## Open findings, from the cards")
@@ -195,10 +207,17 @@ def main() -> int:
         current = OUT.read_text(encoding="utf-8") if OUT.exists() else ""
         if _body(current) != _body(text):
             print("STATUS-v0.md is stale — run python tools/fg_status.py")
+            # Show what differs: "stale" without a line is a message that cannot be acted on, and this
+            # guard failed in CI on a commit where the same check passed on Windows.
+            import difflib
+            diff = list(difflib.unified_diff(_body(current).splitlines(), _body(text).splitlines(),
+                                             "on disk", "regenerated", lineterm="", n=1))
+            for line in diff[:24]:
+                print("  " + line)
             return 1
         print("STATUS-v0.md is current")
         return 0
-    OUT.write_text(text, encoding="utf-8")
+    OUT.write_text(text, encoding="utf-8", newline="\n")
     print(f"wrote {OUT.relative_to(ROOT)} ({len(text.splitlines())} lines)")
     return 0
 

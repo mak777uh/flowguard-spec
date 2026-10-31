@@ -54,7 +54,7 @@ signal in the family: it means the shape is not one author's habit.
 
 ## What I am taking, in order
 
-1. **`docs/ELIMINATIONS.md`** — every refuted claim and every ruled-out mechanism, with the artifact that killed it
+1. **`docs/eliminations.md`** — every refuted claim and every ruled-out mechanism, with the artifact that killed it
    and **what would revive it**. Generated skeleton from the cards whose verdict is `refutes`, hand-written revival
    conditions, and a guard that every `refutes` card appears in it. (This commit.)
 2. **A sensitivity line in every experiment card** — before the threshold, an explicit "what difference can this

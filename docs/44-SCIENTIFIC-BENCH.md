@@ -18,8 +18,8 @@ as such only afterwards. That is precisely the failure the sensitivity line exis
 | sensitivity arithmetic before launch (`sensitivity:`) | same template, required field | **adopted** |
 | stop rule, including "stop without a result" (`stop_rule:`) | same template, required field | **adopted** |
 | analysis plan: which figure from which artifact (`analysis_plan:`) | same template, required field | **adopted** |
-| eliminations with revival conditions | `docs/ELIMINATIONS.md` + `lab/build-eliminations.py` | **adopted** (2026-10-30) |
-| retractions published with the same weight as results | `refutes` cards, `docs/ELIMINATIONS.md` | partial: no single "retractions" page, the registry covers it |
+| eliminations with revival conditions | `docs/eliminations.md` + `lab/build-eliminations.py` | **adopted** (2026-10-30) |
+| retractions published with the same weight as results | `refutes` cards, `docs/eliminations.md` | partial: no single "retractions" page, the registry covers it |
 | seed anchors: bit-for-bit re-run of a reference | the sample bundle's address, re-derived in the ritual | partial: re-derived, not compared as a tripwire on every change |
 | artifact chain with `sha256` from raw to number | `docs/METRICS.md` log column | **broken**: false for most rows (the laboratory audit's R5), and fixing it is the next priority |
 | "skipped is never reported as proven" | `lab/round-check.sh` prints `SKIPPED` for the Rust differential | adopted |

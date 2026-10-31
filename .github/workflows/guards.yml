@@ -9,6 +9,22 @@ jobs:
   guards:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    services:
+      # E4 and E5 run the grant and call enumerators against a live server. Without one they score zero,
+      # so readiness drops to T1 and the generated STATUS can never match the committed one — the step was
+      # unfalsifiable in CI, not wrong. Port matches the harness default (54329). The service uses trust
+      # auth, so no secret is ever written into this file or into the job log.
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 54329:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
         with:
@@ -16,6 +32,17 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
+      - name: guard dependencies
+        # Without this step tools/fg_schema_check.py exits 2 ("jsonschema is required") and the schema
+        # step is red on every push, whatever the content. cryptography is what Ed25519 checks need.
+        run: |
+          python3 -m pip install --quiet jsonschema cryptography
+          command -v psql || (sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client)
+      - name: unit tests pin the defect classes
+        # ADR-0017 names five breaks that cost a card each. Four of them are shape refusals and are pinned
+        # here as the smallest document that used to be accepted; the fifth lives inside main() and is covered
+        # by lab/e-m60-run.py. A behavioural change that reopens one of them now fails this step.
+        run: python3 -m unittest discover -s tests -v
       - name: secrets and local paths
         run: bash lab/check-secrets.sh
       - name: relative links resolve
@@ -35,6 +62,10 @@ jobs:
         run: python3 lab/check-eliminations.py
       - name: no CRLF, every shell script parses
         run: python3 lab/check-line-endings.py
+      - name: base commits resolve
+        # An anchor nobody can inspect is a story with a timestamp. Every card's base_commit must be a commit
+        # in this repository; the guard refuses to run inside a shallow clone instead of inventing a defect.
+        run: python3 lab/check-base-commit.py
       - name: published schemas accept the artifacts
         run: |
           python3 tools/fg_schema_check.py --claim fixtures/attack/k-proven.json
@@ -49,6 +80,43 @@ jobs:
           rc=$?
           set -e
           if [ "$rc" -eq 0 ]; then echo "the schema check accepted an inventory with paths as a string"; exit 1; fi
+      - name: foreign validation record shape
+        # The record that decides P1 had no published schema until 2026-10-31; the form lived only in
+        # tools/fg_readiness.py. Valid on the fixture, and refused when the owner is missing.
+        run: |
+          python3 tools/fg_schema_check.py --foreign-validation fixtures/foreign-validation/valid.json
+          set +e
+          python3 tools/fg_schema_check.py --foreign-validation fixtures/foreign-validation/invalid.json
+          rc=$?
+          set -e
+          if [ "$rc" -eq 0 ]; then echo "the schema accepted a confirmation with no owner behind it"; exit 1; fi
+
+      - name: rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: the rust core builds and its own tests pass
+        # ADR-0017 made the verifying core Rust and was left "proposed - blocked by the toolchain on this
+        # machine": the Windows MinGW linker cannot link any build script. Linux links, so the core is built
+        # and tested here from now on. A core nobody builds is a folder of source, not a core.
+        run: |
+          cd core-rs
+          cargo build --locked
+          cargo test --locked
+      - name: rust core arithmetic agrees with python on the cross-family cases
+        run: python3 lab/e-m67-run.py
+      - name: the claim CLI agrees with the python verifier
+        run: python3 lab/e-m68-run.py
+      - name: both report generators state the same facts
+        run: python3 lab/e-m83-run.py
+
+      - name: the open-question counters are computed, not typed
+        # docs/34 opens with "counters, so nobody argues with prose" and had drifted four ways at once.
+        # The block is generated now; this step fails when the tree moves and the page does not.
+        run: python3 tools/fg_open_questions.py --check
+      - name: cases follow the format
+        # A case is what a person outside this repository can produce without reading its source: one
+        # sentence, five sections, a verdict from three words. The format is checked or it becomes three
+        # variants by the second author.
+        run: python3 lab/check-cases.py
       - name: metric digests resolve
         run: python3 lab/check-metric-digests.py --cards
       - name: backticked paths resolve
@@ -66,5 +134,10 @@ jobs:
           python3 lab/build-indexes.py --check
           python3 lab/check-evidence-reachability.py
           python3 lab/check-runner-coverage.py
+      - name: STATUS is regenerated, not edited
+        # docs/STATUS-v0.md states that "the build fails when it is stale". Until this step existed, the
+        # build did not fail: a hand-edited or stale STATUS passed CI (QA preflight, 2026-10-31).
+        run: python3 tools/fg_status.py --check
+
       - name: negative controls for every guard
         run: bash lab/selftest-guards.sh

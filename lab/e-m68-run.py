@@ -6,7 +6,9 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-RUST = ROOT / "core-rs" / "target" / "debug" / "fg-core.exe"
+RUST_DIR = ROOT / "core-rs" / "target" / "debug"
+# Platform-dependent name: fg-core.exe on Windows, fg-core on Linux CI.
+RUST = RUST_DIR / ("fg-core.exe" if (RUST_DIR / "fg-core.exe").exists() else "fg-core")
 PYCORE = ROOT / "tools" / "fg_verify.py"
 tmp = Path(tempfile.mkdtemp())
 

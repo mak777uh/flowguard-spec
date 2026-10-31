@@ -1,0 +1,18 @@
+{
+  "about": "RFC 8785 (JCS) number serialisation, the cases our canonical form must reproduce. Values are strings because several of them are not representable except as text in a JSON file that a human edits.",
+  "rule": "ECMAScript Number::toString: shortest round-trip digits; plain decimal when -7 < decimal exponent+1 <= 21, exponential otherwise with an explicit sign and no leading zeros in the exponent; negative zero serialises as 0.",
+  "vectors": [
+    { "input": "0.0", "expected": "0", "why": "an integral float is written as an integer" },
+    { "input": "-0.0", "expected": "0", "why": "negative zero is 0" },
+    { "input": "1.0", "expected": "1", "why": "the .0 suffix is not part of the number" },
+    { "input": "1.5", "expected": "1.5", "why": "plain decimal inside the range" },
+    { "input": "0.1", "expected": "0.1", "why": "shortest digits, no trailing noise" },
+    { "input": "0.000001", "expected": "0.000001", "why": "the low boundary of the plain range" },
+    { "input": "1e-7", "expected": "1e-7", "why": "below the range: exponential, no zero padding" },
+    { "input": "1e20", "expected": "100000000000000000000", "why": "the high boundary of the plain range" },
+    { "input": "1e21", "expected": "1e+21", "why": "above the range: exponential with an explicit plus" },
+    { "input": "9007199254740992", "expected": "9007199254740992", "why": "the largest exactly representable integer stays digits" },
+    { "input": "1.25e-10", "expected": "1.25e-10", "why": "exponential keeps the shortest mantissa" },
+    { "input": "123.456", "expected": "123.456", "why": "plain decimal with a fractional part" }
+  ]
+}

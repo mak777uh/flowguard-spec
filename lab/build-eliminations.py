@@ -8,7 +8,7 @@ refuted idea could quietly return — which is exactly what a registry prevents.
 The rule that makes it more than a list: **an entry without a revival condition is not an elimination, it is an
 opinion.** A hypothesis you cannot say how to revive was not killed by evidence.
 
-    python lab/build-eliminations.py            # rewrite docs/ELIMINATIONS.md
+    python lab/build-eliminations.py            # rewrite docs/eliminations.md
     python lab/build-eliminations.py --check    # exit 1 if it is stale
 """
 import argparse
@@ -18,7 +18,7 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 CARDS = ROOT / "lab" / "experiments"
-OUT = ROOT / "docs" / "ELIMINATIONS.md"
+OUT = ROOT / "docs" / "eliminations.md"
 
 HEADER = """# Ruled out — hypotheses this repository has refuted, and what would revive them
 

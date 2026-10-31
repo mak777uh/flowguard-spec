@@ -1,0 +1,23 @@
+{
+  "foreign_validation": [
+    {
+      "schema": "acme-billing",
+      "version": "2026-11-04",
+      "owner_confirmed": true,
+      "owner": {
+        "name": "Tomas Berg",
+        "role": "owner of the billing schema",
+        "how_contacted": "email, after the 2026-10-31 post in the pgsql channel",
+        "date": "2026-11-04"
+      },
+      "owner_statement": "Yes, the second writer in that function does skip the audit call - that is the bug we fixed in June and reintroduced in the refactor.",
+      "verdict": "confirmed",
+      "finding": {
+        "path_id": "wp_785a9c22ac0a000b",
+        "claim": "this function writes payments without reaching the declared control point",
+        "our_evidence": "calls.json attribution is empty for this path; grants enumerator sees no trigger on the table"
+      },
+      "what_changed_for_them": "the refactor was reverted"
+    }
+  ]
+}
