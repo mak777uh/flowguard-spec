@@ -3,7 +3,7 @@
 
 Two failures worth guarding, both from `mak777uh/-`:
 
-1. a `refutes` card that is not in `docs/ELIMINATIONS.md` — the hypothesis can quietly return;
+1. a `refutes` card that is not in `docs/eliminations.md` — the hypothesis can quietly return;
 2. an entry whose revival condition is missing — "an entry without a revival condition is not an elimination,
    it is an opinion".
 
@@ -24,8 +24,8 @@ def main() -> int:
     if r.returncode != 0:
         problems.append((r.stdout or "stale").strip())
 
-    text = (ROOT / "docs" / "ELIMINATIONS.md").read_text(encoding="utf-8") if \
-        (ROOT / "docs" / "ELIMINATIONS.md").exists() else ""
+    text = (ROOT / "docs" / "eliminations.md").read_text(encoding="utf-8") if \
+        (ROOT / "docs" / "eliminations.md").exists() else ""
     if "missing — add it" in text:
         problems.append("an elimination has no revival condition")
 
