@@ -53,6 +53,7 @@ stage "the elimination registry matches the cards" "$PY" lab/check-eliminations.
 stage "claim registry" "$PY" lab/check-claims.py
 stage "claims map to evidence types (M3)" "$PY" lab/claims-map.py
 stage "backticked paths resolve" "$PY" lab/check-artifact-refs.py
+stage "report generators agree on the facts" "$PY" lab/e-m83-run.py
 stage "claimant text decomposed into units" "$PY" lab/e-m82-run.py
 stage "the verifier counts the denominator itself" "$PY" lab/e-m81-run.py
 stage "every card and note is indexed" "$PY" lab/check-evidence-reachability.py
