@@ -406,6 +406,14 @@ def verify_bundle(a) -> tuple:
 
     out = {
         "verdict": "INVALID" if problems else "SIGNED_AND_CONSISTENT",
+        # Whether the caller supplied the two anchors. ADR-0010 promises that the output separates
+        # "internally consistent" from "consistent with an externally supplied key and target"; without
+        # this field the JSON was byte-identical either way (external audit, 2026-10-31, H1).
+        "anchors": {
+            "trusted_keys": bool(getattr(a, "trusted_keys", None)),
+            "expect_target": bool(getattr(a, "expect_target", None)),
+            "anchored": bool(getattr(a, "trusted_keys", None)) and bool(getattr(a, "expect_target", None)),
+        },
         "address": (addr or "")[:16] + "…" if addr else None,
         "signed_by": verified,
         "signature_binding": bindings,

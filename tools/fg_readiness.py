@@ -45,7 +45,10 @@ def ok_guards():
 def ok_verify():
     r = run([PY, "tools/fg_verify.py", "--claim", "fixtures/verify-probe/claim.json",
              "--inventory", "fixtures/verify-probe/inv.json"])
-    return r.returncode in (0, 1, 2), "verifier executes and returns a verdict"
+    # The gate is "it refuses", not "it ran": accepting rc 0/1/2 scored a verifier that ACCEPTED a bad probe
+    # exactly as high as one that refused it (external audit, 2026-10-31, M1).
+    refused = "REPORT_BUNDLE_INCONSISTENT" in (r.stdout or "") and r.returncode != 0
+    return refused, "verifier refuses the bad probe with REPORT_BUNDLE_INCONSISTENT"
 
 
 def ok_acceptance():
