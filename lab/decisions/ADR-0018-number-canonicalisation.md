@@ -45,6 +45,12 @@ So the order is: the owner re-signs the sample bundle with the new canonical for
 key pair committed under `fixtures/` with its own `demo` role), then `fg_bundle.canon` is switched to
 `fg_canonical.canonical_bytes` in the same commit, and the probe runs `--strict` in CI.
 
+**Update, 2026-10-31:** the owner authorised the second option — a new demonstration key pair under
+`fixtures/sample-bundle/signatures/` with the `demo` role, the sample bundle re-signed with it, and the
+`owner` anchor left as it is. The private half is not committed: it is generated, used to sign, and discarded,
+which keeps the repository free of secrets and means the fixture can only be rebuilt by whoever regenerates a
+demo key deliberately — the same property the current fixture already has.
+
 ## What this does not change
 
 Structure, key order, string escaping and the address algorithm are unchanged. Only the text of a number
