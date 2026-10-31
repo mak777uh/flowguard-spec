@@ -69,6 +69,49 @@ owner must produce the expected list **first**, or the exercise measures agreeme
 - We will not treat a refusal as a failure of the validator. A `refuted` verdict that we record and act on is the
   strongest evidence this repository can get — it means the loop works.
 
+## The record that earns P1 — a `rebuild_result` line plus a confirmation
+
+P1 is a third-party rebuild: a human or an organisation, not an AI agent, produced the same result and said so.
+Two files carry it. Until 2026-10-31 only `tools/fg_readiness.py` knew this, which is why the gate stayed at zero
+while the form looked fillable.
+
+**1. The marker**, in any card under `lab/experiments/` — the gate reads that directory and nothing else:
+
+```
+rebuild_result: agreed by a third party
+```
+
+`agreed` or `differed`; then `third party`, `human` or `organisation`.
+
+**2. The record**, a JSON file under `docs/`, `interop/`, `lab/experiments/` or `reports/`. Never under
+`fixtures/` and never under `tools/_tmp/`: a synthetic record in a scratch directory once made P1 pass, which is
+why those paths are refused in code.
+
+```json
+{
+  "foreign_validation": [
+    {
+      "schema": "acme-billing",
+      "owner_confirmed": true,
+      "owner": { "name": "<a person>", "role": "<their role>", "how_contacted": "<the channel>", "date": "2026-11-04" },
+      "owner_statement": "<their sentence, quoted, at least 12 characters>",
+      "verdict": "confirmed"
+    }
+  ]
+}
+```
+
+The shape is published: [`../schemas/foreign-validation-0.1.json`](../schemas/foreign-validation-0.1.json).
+Check a record before committing it:
+
+```
+python tools/fg_schema_check.py --foreign-validation lab/experiments/foreign-validation-acme.json
+python tools/fg_readiness.py        # P1 should read 15 / 15
+```
+
+Only `confirmed` and `partially_correct` move P1. A `refuted` record is recorded and acted on — it is the
+strongest evidence the loop works — but it is not a confirmation, and the gate does not pretend otherwise.
+
 ## How to record it
 
 ```

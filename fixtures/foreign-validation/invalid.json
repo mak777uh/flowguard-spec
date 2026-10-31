@@ -1,0 +1,9 @@
+{
+  "foreign_validation": [
+    {
+      "schema": "acme-billing",
+      "owner_confirmed": true,
+      "verdict": "confirmed"
+    }
+  ]
+}

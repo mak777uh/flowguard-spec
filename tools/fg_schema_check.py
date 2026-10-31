@@ -7,6 +7,7 @@ machine-readable contract, only examples. This validates:
   * a claim against schemas/claim-0.1.json
   * a SourceRecord against schemas/source-record-0.1.json
   * a merged manifest against schemas/inventory-0.1.json
+  * a foreign_validation document against schemas/foreign-validation-0.1.json — the record that decides P1
   * the sample bundle's claim against the claim schema
 
 and then applies the same schemas to every artifact this repository generates, because a contract
@@ -57,6 +58,8 @@ def main() -> int:
     ap.add_argument("--claim")
     ap.add_argument("--inventory")
     ap.add_argument("--source")
+    ap.add_argument("--foreign-validation", dest="foreign_validation",
+                    help="a document with a foreign_validation list (the record that earns P1)")
     a = ap.parse_args()
 
     problems, checked = [], 0
@@ -77,6 +80,8 @@ def main() -> int:
         run(a.inventory, "inventory-0.1.json", "inventory")
     if a.source:
         run(a.source, "source-record-0.1.json", "source")
+    if a.foreign_validation:
+        run(a.foreign_validation, "foreign-validation-0.1.json", "foreign validation")
 
     if a.self:
         for f in (ROOT / "fixtures").rglob("*.json"):

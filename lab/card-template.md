@@ -5,6 +5,9 @@ id: E-MNN
 hypothesis: H-MNN
 status: planned | running | completed
 base_commit: "<short sha of the tree the run started from>"
+# base_commit has to resolve: `git cat-file -e <sha>^{commit}`. A card whose tree predates publication gets a
+# row in lab/commit-map.tsv with a reason — lab/check-base-commit.py fails on an undisclosed anchor, and on a
+# row whose card is gone or whose sha resolves again.
 started: "<ISO datetime>"
 finished: "<ISO datetime or '—'>"
 environment: "<OS, interpreter, database, toolchain - whatever a re-run must reproduce>"

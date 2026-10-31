@@ -1,0 +1,47 @@
+# base_commit values that cannot be resolved in this repository, with a reason.
+#
+# The repository was published as a single squashed commit, so every card written before publication
+# names a tree that no longer exists as a git object. This file is the disclosure, not a waiver:
+# lab/check-base-commit.py fails on a card whose sha does not resolve and has no row here, and fails
+# on a row whose card is gone or whose sha now resolves (the list must not rot in either direction).
+#
+# columns: card <tab> base_commit <tab> status <tab> note
+
+E-M42	215520a	pre_publication	the tree predates publication; the git object was not carried over
+E-M43	fbc9107	pre_publication	the tree predates publication; the git object was not carried over
+E-M45	c815afd	pre_publication	the tree predates publication; the git object was not carried over
+E-M46	0804c3e	pre_publication	the tree predates publication; the git object was not carried over
+E-M47	8a996dc	pre_publication	the tree predates publication; the git object was not carried over
+E-M48	bf1aed8	pre_publication	the tree predates publication; the git object was not carried over
+E-M49	c4d5938	pre_publication	the tree predates publication; the git object was not carried over
+E-M50	e25a3b5	pre_publication	the tree predates publication; the git object was not carried over
+E-M51	16ea006	pre_publication	the tree predates publication; the git object was not carried over
+E-M52	aa7b3e9	pre_publication	the tree predates publication; the git object was not carried over
+E-M53	20dde31	pre_publication	the tree predates publication; the git object was not carried over
+E-M54	99f916d	pre_publication	the tree predates publication; the git object was not carried over
+E-M55	5f55be1	pre_publication	the tree predates publication; the git object was not carried over
+E-M56	4370b04	pre_publication	the tree predates publication; the git object was not carried over
+E-M57	a6437c2	pre_publication	the tree predates publication; the git object was not carried over
+E-M58	50c9f6e	pre_publication	the tree predates publication; the git object was not carried over
+E-M59	45f3eb8	pre_publication	the tree predates publication; the git object was not carried over
+E-M60	2899eab	pre_publication	the tree predates publication; the git object was not carried over
+E-M61	3b126a3	pre_publication	the tree predates publication; the git object was not carried over
+E-M62	dca072d	pre_publication	the tree predates publication; the git object was not carried over
+E-M63	d3fd521	pre_publication	the tree predates publication; the git object was not carried over
+E-M64	c97932e	pre_publication	the tree predates publication; the git object was not carried over
+E-M65	1ad26bc	pre_publication	the tree predates publication; the git object was not carried over
+E-M66	d2108e6	pre_publication	the tree predates publication; the git object was not carried over
+E-M67	3ebb6f4	pre_publication	the tree predates publication; the git object was not carried over
+E-M68	bbf307d	pre_publication	the tree predates publication; the git object was not carried over
+E-M69	26c155c	pre_publication	the tree predates publication; the git object was not carried over
+E-M70	7ce506e	pre_publication	the tree predates publication; the git object was not carried over
+E-M71	fbeefd5	pre_publication	the tree predates publication; the git object was not carried over
+E-M72	fa1efad	pre_publication	the tree predates publication; the git object was not carried over
+E-M73	96a52a5	pre_publication	the tree predates publication; the git object was not carried over
+E-M74	cbc601b	pre_publication	the tree predates publication; the git object was not carried over
+E-M75	e9dee93	pre_publication	the tree predates publication; the git object was not carried over
+E-M76	885e12f	pre_publication	the tree predates publication; the git object was not carried over
+E-M77	c06d28b	pre_publication	the tree predates publication; the git object was not carried over
+E-M81	11f688e	pre_publication	the tree predates publication; the git object was not carried over
+E-M82	baacccb	pre_publication	the tree predates publication; the git object was not carried over
+E-M83	8fb089d	pre_publication	the tree predates publication; the git object was not carried over

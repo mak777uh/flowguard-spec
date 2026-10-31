@@ -53,6 +53,17 @@ jobs:
           rc=$?
           set -e
           if [ "$rc" -eq 0 ]; then echo "the schema check accepted an inventory with paths as a string"; exit 1; fi
+      - name: foreign validation record shape
+        # The record that decides P1 had no published schema until 2026-10-31; the form lived only in
+        # tools/fg_readiness.py. Valid on the fixture, and refused when the owner is missing.
+        run: |
+          python3 tools/fg_schema_check.py --foreign-validation fixtures/foreign-validation/valid.json
+          set +e
+          python3 tools/fg_schema_check.py --foreign-validation fixtures/foreign-validation/invalid.json
+          rc=$?
+          set -e
+          if [ "$rc" -eq 0 ]; then echo "the schema accepted a confirmation with no owner behind it"; exit 1; fi
+
       - name: metric digests resolve
         run: python3 lab/check-metric-digests.py --cards
       - name: backticked paths resolve
@@ -70,6 +81,11 @@ jobs:
           python3 lab/build-indexes.py --check
           python3 lab/check-evidence-reachability.py
           python3 lab/check-runner-coverage.py
+      - name: base commits resolve or are disclosed
+        # An anchor nobody can inspect is a story with a timestamp. Cards written before the repository was
+        # published name trees that are not git objects here; lab/commit-map.tsv carries them with a reason.
+        run: python3 lab/check-base-commit.py
+
       - name: STATUS is regenerated, not edited
         # docs/STATUS-v0.md states that "the build fails when it is stale". Until this step existed, the
         # build did not fail: a hand-edited or stale STATUS passed CI (QA preflight, 2026-10-31).
