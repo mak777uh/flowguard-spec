@@ -24,7 +24,7 @@ Rust), 0 measurements (109 metric rows carry a command) and 2/0 cards (72 writte
 | ADRs | 19 |
 | kit conformance | **7 / 7** |
 | measurements produced by this repository | 109 |
-| lines of product code (`tools/` + `enumerators/` + `core-rs/src`) | 5 229 python + 1 713 rust |
+| lines of product code (`tools/` + `enumerators/` + `core-rs/src`) | 5 229 python + 1 777 rust |
 | guards in CI | 28 |
 
 <!-- END counters -->
