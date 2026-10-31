@@ -117,6 +117,10 @@ jobs:
         # sentence, five sections, a verdict from three words. The format is checked or it becomes three
         # variants by the second author.
         run: python3 lab/check-cases.py
+      - name: the sample bundle is reproducible from its own contents
+        # ADR-0018: the canonical form changed and the fixture had to be rebuilt with fresh keys. This
+        # runs that rebuild on every push, so the next format change is a normal commit, not a rescue.
+        run: python3 lab/rebuild-sample-bundle.py
       - name: metric digests resolve
         run: python3 lab/check-metric-digests.py --cards
       - name: backticked paths resolve
