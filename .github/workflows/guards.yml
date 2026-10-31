@@ -16,6 +16,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
+      - name: guard dependencies
+        # Without this step tools/fg_schema_check.py exits 2 ("jsonschema is required") and the schema
+        # step is red on every push, whatever the content. cryptography is what Ed25519 checks need.
+        run: python3 -m pip install --quiet jsonschema cryptography
       - name: secrets and local paths
         run: bash lab/check-secrets.sh
       - name: relative links resolve

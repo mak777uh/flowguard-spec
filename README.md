@@ -48,7 +48,9 @@ python lab/check-claims.py   # every claim typed; every cited artifact traceable
 ```
 
 All three run automatically on every push and pull request, together with the rest of the guard suite
-(`.github/workflows/guards.yml`). If someone ever commits a token, CI goes red instead of the reputation.
+(`.github/workflows/guards.yml`). The suite needs `jsonschema` and `cryptography`, which CI installs; without
+them the schema and Ed25519 checks cannot run. If someone ever commits a token, CI goes red instead of the
+reputation.
 
 ## Read first
 
