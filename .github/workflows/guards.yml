@@ -9,6 +9,22 @@ jobs:
   guards:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    services:
+      # E4 and E5 run the grant and call enumerators against a live server. Without one they score zero,
+      # so readiness drops to T1 and the generated STATUS can never match the committed one — the step was
+      # unfalsifiable in CI, not wrong. Port matches the harness default (54329). The service uses trust
+      # auth, so no secret is ever written into this file or into the job log.
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 54329:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
         with:
@@ -19,7 +35,9 @@ jobs:
       - name: guard dependencies
         # Without this step tools/fg_schema_check.py exits 2 ("jsonschema is required") and the schema
         # step is red on every push, whatever the content. cryptography is what Ed25519 checks need.
-        run: python3 -m pip install --quiet jsonschema cryptography
+        run: |
+          python3 -m pip install --quiet jsonschema cryptography
+          command -v psql || (sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client)
       - name: unit tests pin the defect classes
         # ADR-0017 names five breaks that cost a card each. Four of them are shape refusals and are pinned
         # here as the smallest document that used to be accepted; the fifth lives inside main() and is covered
