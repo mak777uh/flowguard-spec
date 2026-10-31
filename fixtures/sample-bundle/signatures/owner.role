@@ -1,1 +1,1 @@
-{"asserts": "risk_acceptance", "issuer": "owner", "accepted_scope": "5336c02a397cdf9665dc5cdf592990fd92edbcc0c0af1cea3565521097df1deb", "residual_risk": ["NC-01", "NC-02"], "valid_until": "2027-10-27", "statement": "the sample accepting party accepts the residual risk for the stated period"}
+{"asserts": "risk_acceptance", "issuer": "owner", "accepted_scope": "5336c02a397cdf9665dc5cdf592990fd92edbcc0c0af1cea3565521097df1deb", "residual_risk": ["NC-01", "NC-02"], "valid_until": "2027-01-01", "statement": "accepted by the named party for the stated period"}

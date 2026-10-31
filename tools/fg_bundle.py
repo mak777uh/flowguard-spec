@@ -18,6 +18,7 @@ import argparse
 import base64
 import hashlib
 import json
+import pathlib
 import shutil
 import sys
 from pathlib import Path
@@ -26,13 +27,26 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey,
 from cryptography.hazmat.primitives.serialization import (Encoding, PrivateFormat, PublicFormat, NoEncryption,
                                                            load_pem_private_key, load_pem_public_key)
 
+import importlib.util as _ilu
+
+# Load the canonicaliser by path: this file is executed both as a script and through importlib, and a
+# plain `import` depends on sys.path in a way that already failed once.
+_spec = _ilu.spec_from_file_location("fg_canonical", pathlib.Path(__file__).with_name("fg_canonical.py"))
+_fg_canonical = _ilu.module_from_spec(_spec)
+_spec.loader.exec_module(_fg_canonical)
+
 VERSION = "fg-bundle/1"
 SUBJECTS = ("code", "build", "config", "identity")
 
 
 def canon(doc) -> bytes:
-    """Canonical JSON: sorted keys, no whitespace. RFC 8785-shaped for this subset."""
-    return json.dumps(doc, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
+    """Canonical JSON: RFC 8785, including the number rule (ADR-0018).
+
+    The previous body was json.dumps(..., sort_keys=True) with a docstring calling itself
+    "RFC 8785-shaped"; for numbers it was not, which is how two honest implementations came to
+    disagree about the same document on 6 of 10 floats (E-M71).
+    """
+    return _fg_canonical.canonical_bytes(doc)
 
 
 def sha256_file(p: Path) -> str:
