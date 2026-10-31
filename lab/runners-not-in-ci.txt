@@ -31,3 +31,4 @@ e-m72-run.py  local-ritual  # deterministic; run by lab/round-check.sh
 e-m9-run.py  local-ritual  # deterministic; run by lab/round-check.sh
 e-m81-run.py  local-ritual  # deterministic; run by lab/round-check.sh
 e-m82-run.py  local-ritual  # deterministic; run by lab/round-check.sh
+e-m83-run.py  local-ritual  # deterministic; run by lab/round-check.sh
