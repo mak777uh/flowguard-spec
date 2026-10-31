@@ -39,9 +39,9 @@ jobs:
         run: python3 lab/check-eliminations.py
       - name: no CRLF, every shell script parses
         run: python3 lab/check-line-endings.py
-      - name: base commits resolve or are disclosed
-        # An anchor nobody can inspect is a story with a timestamp. Cards written before the repository was
-        # published name trees that are not git objects here; lab/commit-map.tsv carries them with a reason.
+      - name: base commits resolve
+        # An anchor nobody can inspect is a story with a timestamp. Every card's base_commit must be a commit
+        # in this repository; the guard refuses to run inside a shallow clone instead of inventing a defect.
         run: python3 lab/check-base-commit.py
       - name: published schemas accept the artifacts
         run: |
