@@ -106,6 +106,7 @@ reputation.
 | Audit | [whole-repository and method audit, 2026-10-28](docs/18-AUDIT-2026-10-28.md) · [how attacks are part of development](docs/19-ATTACK-PRACTICE.md) |
 | Hand-off | **[DOSSIER.md](DOSSIER.md)** — one generated, self-contained file to paste into any model (Russian) |
 | Validate | [how a schema owner confirms or denies a finding](docs/FOREIGN-VALIDATION.md) — the door to evidence tier 2, and the [published shape](schemas/foreign-validation-0.1.json) of the record that earns P1 |
+| Cases | [the format a person outside this repository can produce](cases/README.md) — one sentence, five sections, a verdict from three words |
 | Open | [questions for the owner](docs/QUESTIONS-FOR-OWNER.md) · [round 8 review pack](docs/16-ROUND8-QUESTIONS.md) · [round 8 disposition](docs/17-ROUND8-DISPOSITION.md) — only what cannot be decided here |
 | Process | `bash lab/round-check.sh` · `python tools/fg_audit.py` · `python tools/fg_readiness.py` |
 | Implementation | [enumerators](enumerators/grants-pg/README.md) (grant, call-graph, runtime, routes) · [verifier](tools/fg_verify.py) · [the stand](docs/50-IMPLEMENTATION-STAND.md) · [the harness](docs/51-HARNESS-BUILD.md) · [OSS product](docs/52-OSS-PRODUCT.md) |

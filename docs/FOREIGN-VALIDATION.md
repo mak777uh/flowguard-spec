@@ -87,6 +87,10 @@ rebuild_result: agreed by a third party
 `fixtures/` and never under `tools/_tmp/`: a synthetic record in a scratch directory once made P1 pass, which is
 why those paths are refused in code.
 
+The human half of the same evidence lives in [`../cases/`](../cases/README.md): one folder, one sentence, five
+sections — Claim, Evidence, Reproduce, Verdict, Limits. The JSON record is the machine-checkable part of that
+case, not a substitute for it. A case written by the author says so in `Limits` and does not count toward P1.
+
 ```json
 {
   "foreign_validation": [

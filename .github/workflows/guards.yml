@@ -112,6 +112,11 @@ jobs:
         # docs/34 opens with "counters, so nobody argues with prose" and had drifted four ways at once.
         # The block is generated now; this step fails when the tree moves and the page does not.
         run: python3 tools/fg_open_questions.py --check
+      - name: cases follow the format
+        # A case is what a person outside this repository can produce without reading its source: one
+        # sentence, five sections, a verdict from three words. The format is checked or it becomes three
+        # variants by the second author.
+        run: python3 lab/check-cases.py
       - name: metric digests resolve
         run: python3 lab/check-metric-digests.py --cards
       - name: backticked paths resolve

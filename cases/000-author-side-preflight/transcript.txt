@@ -1,0 +1,80 @@
+﻿FlowGuard preflight - outsider simulation - 2026-10-31 19:04:03
+Host OS: Microsoft Windows NT 10.0.26300.0
+
+=== 0. initdb (trust auth, UTF8, locale C) ===
+The files belonging to this database system will be owned by user "Admin".
+This user must also own the server process.
+
+The database cluster will be initialized with locale "C".
+The default text search configuration will be set to "english".
+
+Data page checksums are disabled.
+
+creating directory C:/Users/Admin/pgqa-fg/data ... ok
+creating subdirectories ... ok
+selecting dynamic shared memory implementation ... windows
+selecting default "max_connections" ... 100
+selecting default "shared_buffers" ... 128MB
+selecting default time zone ... Europe/Moscow
+creating configuration files ... ok
+running bootstrap script ... ok
+performing post-bootstrap initialization ... ok
+syncing data to disk ... ok
+
+Success. You can now start the database server using:
+
+    ^"C^:^\Users^\Admin^\miniconda3^\Library^\bin^\pg^_ctl^" -D ^"C^:^\Users^\Admin^\pgqa^-fg^\data^" -l logfile start
+
+
+
+=== 1. server start on port 5434 ===
+postgres pid: 29332
+server ready: True
+2026-10-31 19:04:12.399 MSK [29332] LOG:  starting PostgreSQL 17.2 on x86_64-windows, compiled by msvc-19.29.30154, 64-bit
+2026-10-31 19:04:12.404 MSK [29332] LOG:  listening on IPv4 address "127.0.0.1", port 5434
+2026-10-31 19:04:12.405 MSK [29332] LOG:  listening on IPv6 address "::1", port 5434
+2026-10-31 19:04:12.454 MSK [21772] LOG:  database system was shut down at 2026-10-31 19:04:09 MSK
+2026-10-31 19:04:12.481 MSK [29332] LOG:  database system is ready to accept connections
+
+
+=== 2a. create the outsider's own DB (shopdb) ===
+CREATE DATABASE
+
+
+=== 2b. load the shop schema into it ===
+
+
+=== 3. README step 1: pg_dump --schema-only ===
+
+dump bytes: 4511
+
+=== 4. README step 2: the one command (fg_init.py) ===
+[1/7 database] fg_try created
+[2/7 dump loaded] schema.sql, 4511 bytes
+[3/7 scope] 2 tables, 4 functions, 4 writing (density 1.0, band dense)
+[4/7 enumerated] source: 5 paths, 0 control point(s) -> <local-path>
+[5/7 callers enumerated] attributions: 2 function(s) reach public.audit -> <local-path>
+[6/7 inventory] <local-path> (5 paths)
+[7/7 verdict] CONSISTENT_DECLARED
+
+what this run produced:
+  inventory  <local-path>
+  claim      <local-path>
+
+note: the database this command creates is left in place on purpose - drop it when you are done,
+      or a fixture that expects to own the schema will refuse to rebuild (found when fg_try held
+      a role the fixture wanted to drop).
+
+next steps, in order of what they buy:
+  1. read the inventory: every path is a way to write the table without the control point
+  2. raise the claim only when the evidence raises it - the verifier refuses a claim above it
+  3. to bind the result to a party, create a bundle: python tools/fg_bundle.py create --help
+
+fg_init exit code: 0
+
+=== 5. stop the cluster ===
+waiting for server to shut down..... done
+server stopped
+
+
+=== done ===
