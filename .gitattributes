@@ -7,3 +7,10 @@
 # sample bundle (it came back INVALID).
 fixtures/** -text -eol
 fixtures/sample-bundle/** binary
+
+# Logs are byte-exact artifacts: a metric row carries the sha256 of the log it came from, and EOL
+# normalisation changes that number. On 2026-10-31 thirty-four logs were restored from the original
+# working copies after the committed versions were found to hash differently from the digests that cite
+# them: the digest had been computed over CRLF bytes and git had stored LF. A log that no longer hashes
+# to its digest is not a log, it is a rumour with a filename.
+lab/logs/** -text -eol
