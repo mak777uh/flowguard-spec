@@ -10,6 +10,16 @@ artifacts remain verifiable under their own, weaker rule and must be reported as
 
 ---
 
+### Numbers
+
+An integral float and its integer are the same bytes: `0.0` and `0` canonicalise to `0`, `1.0` to `1`. This follows
+RFC 8785 and ECMAScript `Number::toString`, and it is what makes a JavaScript implementation compute the address
+this repository computes. A non-integral number is written as the shortest string that round-trips; a number that is
+not finite is not JSON and is refused.
+
+An implementation written before this rule is not wrong about the rest of the page, and it will disagree on any
+artifact containing an integral float — which is exactly what the differential found (`E-M84`).
+
 ## 1. Layout
 
 ```

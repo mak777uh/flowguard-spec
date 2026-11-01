@@ -125,8 +125,21 @@ _HEX64 = re.compile(r"^[0-9a-f]{64}$")
 
 def canonical_bytes(doc):
     """README §2 / §4: recursive code-point key sort, (",", ":"), no spaces,
-    ensure_ascii=False, UTF-8, no trailing newline."""
-    text = json.dumps(doc, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    ensure_ascii=False, UTF-8, no trailing newline.
+
+    Numbers follow RFC 8785 as the page now requires (ADR-0018): an integral float prints without the
+    fractional part, so 0.0 and 0 are the same bytes and a JavaScript implementation computes the same
+    address. Without this the differential found that our own verifier and this one disagreed on the first
+    artifact containing 0.0 (E-M84)."""
+    def normalise(v):
+        if isinstance(v, float) and v.is_integer():
+            return int(v)
+        if isinstance(v, dict):
+            return {k: normalise(x) for k, x in v.items()}
+        if isinstance(v, list):
+            return [normalise(x) for x in v]
+        return v
+    text = json.dumps(normalise(doc), sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     return text.encode("utf-8")
 
 

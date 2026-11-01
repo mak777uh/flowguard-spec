@@ -11,3 +11,4 @@ checked by `lab/check-evidence-reachability.py`.
 | [2026-10-29-lexspec-reviews-flowguard.md](2026-10-29-lexspec-reviews-flowguard.md) | |
 | [2026-10-29-volna-reviews-flowguard-spec.md](2026-10-29-volna-reviews-flowguard-spec.md) | |
 | [2026-10-31-qoder-reviews-flowguard-disposition.md](2026-10-31-qoder-reviews-flowguard-disposition.md) | |
+| [2026-11-01-portfolio-contract-review.md](2026-11-01-portfolio-contract-review.md) | |
