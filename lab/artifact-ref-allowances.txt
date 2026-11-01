@@ -31,3 +31,5 @@ lab/library/index.jsonl  # path inside the VecDHT repository, cited in an intero
 docs/STATUS-v1.md  # path inside the VecDHT repository, cited in an interop note; not a local file
 docs/30  # LexSpec's own document, quoted inside their note interop/2026-10-29-lexspec-to-flowguard-2.md
 docs/10  # LexSpec's own specification, quoted inside the same note
+tools/_tmp  # gitignored scratch directory quoted by two evidence cards and by the P1 section; it must never exist in the tree
+tools/_tmp/  # the same directory written with a trailing slash
