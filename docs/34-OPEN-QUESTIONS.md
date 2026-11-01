@@ -20,7 +20,7 @@ Rust), 0 measurements (109 metric rows carry a command) and 2/0 cards (72 writte
 | counter | value |
 |---|---|
 | claims citing an artifact that does not exist | **0** |
-| experiment cards registered / run | **71 / 71** |
+| experiment cards registered / run | **72 / 72** |
 | ADRs | 19 |
 | kit conformance | **7 / 7** |
 | measurements produced by this repository | 109 |
